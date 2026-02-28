@@ -11,6 +11,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Özet Asistanı',
   description: 'Yapay Zeka Destekli Akademik Asistan',
+  other: {
+    'google-adsense-account': 'ca-pub-1484212824373758',
+  },
 };
 
 export default function RootLayout({
@@ -20,19 +23,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" className="dark">
-      <head>
-        {/* Google AdSense */}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1484212824373758"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
-      </head>
       <body className={cn(inter.className, "bg-background text-foreground antialiased overflow-hidden")}>
         <DashboardLayout>{children}</DashboardLayout>
         <Toaster richColors position="top-right" theme="dark" />
       </body>
+      {/* Google AdSense — beforeInteractive: sunucu tarafında ilk HTML'e eklenir */}
+      <Script
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1484212824373758"
+        crossOrigin="anonymous"
+        strategy="beforeInteractive"
+      />
     </html>
   );
 }
