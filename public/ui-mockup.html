@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Özet Asistanı — UI Mockup 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── DESIGN TOKENS ─────────────────────────────────── */
+    :root {
+      --bg:        #030014;
+      --bg2:       #0a0520;
+      --surface:   rgba(255,255,255,0.04);
+      --surface2:  rgba(255,255,255,0.08);
+      --border:    rgba(255,255,255,0.08);
+      --border2:   rgba(255,255,255,0.15);
+      --text:      #f0eeff;
+      --text2:     rgba(240,238,255,0.55);
+      --text3:     rgba(240,238,255,0.30);
+      --primary:   #7C3AED;
+      --primary2:  #9f5ff5;
+      --blue:      #3B82F6;
+      --cyan:      #06B6D4;
+      --grad:      linear-gradient(135deg, #7C3AED, #3B82F6, #06B6D4);
+      --grad2:     linear-gradient(135deg, #7C3AED 0%, #9f5ff5 50%, #06B6D4 100%);
+      --radius:    18px;
+      --radius-lg: 24px;
+      --blur:      backdrop-filter: blur(20px);
+      --shadow:    0 8px 32px rgba(124,58,237,0.15);
+      --glow:      0 0 30px rgba(124,58,237,0.4);
+    }
+    [data-theme="light"] {
+      --bg:       #f0eeff;
+      --bg2:      #e8e0ff;
+      --surface:  rgba(255,255,255,0.7);
+      --surface2: rgba(255,255,255,0.9);
+      --border:   rgba(124,58,237,0.12);
+      --border2:  rgba(124,58,237,0.25);
+      --text:     #1a0a3d;
+      --text2:    rgba(26,10,61,0.6);
+      --text3:    rgba(26,10,61,0.35);
+    }
+
+    /* ─── RESET & BASE ──────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.4s, color 0.4s;
+    }
+
+    /* ─── BACKGROUND ORBS ───────────────────────────────── */
+    .bg-orbs {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.35;
+      animation: orbFloat 8s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 600px; height: 600px; background: #7C3AED; top: -200px; left: -150px; animation-delay: 0s; }
+    .orb-2 { width: 400px; height: 400px; background: #3B82F6; top: 30%; right: -100px; animation-delay: -3s; }
+    .orb-3 { width: 350px; height: 350px; background: #06B6D4; bottom: -100px; left: 30%; animation-delay: -6s; }
+    @keyframes orbFloat {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.05); }
+    }
+
+    /* ─── GRID OVERLAY ──────────────────────────────────── */
+    .grid-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ─── LAYOUT ────────────────────────────────────────── */
+    .app { position: relative; z-index: 1; }
+
+    /* ─── NAV ───────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; inset-x: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(3,0,20,0.6);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.4s;
+    }
+    [data-theme="light"] nav { background: rgba(240,238,255,0.7); }
+    .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .logo-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--grad); display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--glow); transition: transform 0.3s;
+    }
+    .logo:hover .logo-icon { transform: scale(1.1) rotate(-5deg); }
+    .logo-text { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-link { font-size: 14px; font-weight: 500; color: var(--text2); cursor: pointer; transition: color 0.2s; background: none; border: none; }
+    .nav-link:hover { color: var(--primary2); }
+    .nav-sep { width: 1px; height: 20px; background: var(--border2); }
+    .btn-primary {
+      padding: 10px 24px; border-radius: 50px; border: none; cursor: pointer;
+      background: var(--grad); color: #fff; font-size: 14px; font-weight: 700;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(124,58,237,0.5); }
+    .btn-ghost {
+      padding: 10px 20px; border-radius: 50px; border: 1px solid var(--border2);
+      background: var(--surface); color: var(--text); font-size: 14px; font-weight: 600;
+      cursor: pointer; backdrop-filter: blur(10px); transition: all 0.2s;
+    }
+    .btn-ghost:hover { background: var(--surface2); border-color: var(--primary); }
+
+    /* ─── THEME TOGGLE ──────────────────────────────────── */
+    .theme-toggle {
+      width: 44px; height: 24px; border-radius: 12px; border: 1px solid var(--border2);
+      background: var(--surface2); cursor: pointer; position: relative; transition: background 0.3s;
+    }
+    .theme-toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--grad); transition: transform 0.3s;
+    }
+    [data-theme="light"] .theme-toggle::after { transform: translateX(20px); }
+
+    /* ─── TABS ──────────────────────────────────────────── */
+    .tabs {
+      display: flex; gap: 4px; padding: 4px;
+      background: var(--surface); border-radius: 14px; border: 1px solid var(--border);
+      margin: 0 auto 40px; width: fit-content;
+    }
+    .tab {
+      padding: 10px 24px; border-radius: 10px; border: none; cursor: pointer;
+      font-size: 14px; font-weight: 600; color: var(--text2);
+      background: transparent; transition: all 0.25s;
+    }
+    .tab.active {
+      background: var(--grad); color: #fff;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+    }
+
+    /* ─── SECTIONS ──────────────────────────────────────── */
+    section { padding: 100px 40px 60px; max-width: 1280px; margin: 0 auto; }
+    section:first-of-type { padding-top: 140px; }
+
+    /* ─── HERO ──────────────────────────────────────────── */
+    .hero { text-align: center; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 18px; border-radius: 50px;
+      background: var(--surface); border: 1px solid var(--border2);
+      font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--primary2); margin-bottom: 28px;
+      animation: fadeInDown 0.6s ease both;
+    }
+    .badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+    @keyframes fadeInDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeInUp   { from{opacity:0;transform:translateY(24px)}  to{opacity:1;transform:translateY(0)} }
+
+    h1 {
+      font-size: clamp(40px, 6vw, 80px); font-weight: 900; line-height: 1;
+      letter-spacing: -2px; margin-bottom: 24px;
+      animation: fadeInUp 0.7s 0.1s ease both;
+    }
+    .grad-text {
+      background: var(--grad2); -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px; color: var(--text2); max-width: 560px; margin: 0 auto 40px;
+      line-height: 1.7; animation: fadeInUp 0.7s 0.2s ease both;
+    }
+    .hero-cta { display: flex; gap: 16px; justify-content: center; margin-bottom: 60px; animation: fadeInUp 0.7s 0.3s ease both; }
+
+    /* ─── UPLOAD ZONE ───────────────────────────────────── */
+    .upload-zone {
+      position: relative; margin: 0 auto 32px;
+      max-width: 760px; border-radius: var(--radius-lg);
+      background: var(--surface); border: 2px dashed var(--border2);
+      backdrop-filter: blur(20px);
+      padding: 56px 40px;
+      cursor: pointer; overflow: hidden;
+      transition: border-color 0.3s, background 0.3s, transform 0.3s;
+      animation: fadeInUp 0.7s 0.4s ease both;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--primary2);
+      background: rgba(124,58,237,0.08);
+      transform: scale(1.01);
+    }
+    .upload-zone::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--grad); opacity: 0; transition: opacity 0.3s;
+    }
+    .upload-zone:hover::before { opacity: 0.04; }
+    .upload-icon-wrap {
+      width: 80px; height: 80px; border-radius: 24px; margin: 0 auto 20px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.2));
+      border: 1px solid rgba(124,58,237,0.3);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .upload-icon { font-size: 36px; }
+    .upload-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .upload-sub { font-size: 14px; color: var(--text2); margin-bottom: 24px; }
+    .file-badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .file-badge {
+      padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700;
+      border: 1px solid var(--border2); color: var(--text2); background: var(--surface2);
+    }
+    /* Particle canvas */
+    #particleCanvas {
+      position: absolute; inset: 0; pointer-events: none; border-radius: var(--radius-lg);
+    }
+
+    /* ─── SLIDER ────────────────────────────────────────── */
+    .slider-section {
+      max-width: 760px; margin: 0 auto 48px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px 32px;
+      backdrop-filter: blur(20px);
+      animation: fadeInUp 0.7s 0.5s ease both;
+    }
+    .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .slider-label { font-size: 14px; font-weight: 600; color: var(--text2); }
+    .slider-value {
+      font-size: 13px; font-weight: 700; padding: 4px 14px; border-radius: 20px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.2));
+      color: var(--primary2); border: 1px solid rgba(124,58,237,0.3);
+    }
+    .slider-track { position: relative; height: 6px; border-radius: 3px; background: var(--surface2); margin-bottom: 12px; }
+    .slider-fill { height: 100%; border-radius: 3px; background: var(--grad); transition: width 0.1s; }
+    input[type=range] {
+      position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; height: 100%;
+    }
+    .slider-thumb {
+      position: absolute; top: 50%; transform: translate(-50%, -50%);
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--grad); border: 3px solid var(--bg);
+      box-shadow: var(--glow); pointer-events: none; transition: left 0.1s;
+    }
+    .slider-labels { display: flex; justify-content: space-between; }
+    .slider-lbl { font-size: 11px; color: var(--text3); font-weight: 500; }
+
+    /* ─── DASHBOARD ─────────────────────────────────────── */
+    .dashboard { display: none; }
+    .dashboard.active { display: block; }
+    .main-view { display: none; }
+    .main-view.active { display: block; }
+
+    /* Stats row */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; backdrop-filter: blur(20px);
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-4px); border-color: var(--primary); box-shadow: var(--shadow); }
+    .stat-icon { font-size: 24px; margin-bottom: 12px; }
+    .stat-val { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin-bottom: 4px; }
+    .stat-lbl { font-size: 12px; color: var(--text2); font-weight: 500; }
+
+    /* Summary cards */
+    .section-title { font-size: 18px; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.3px; }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .summary-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; backdrop-filter: blur(20px);
+      transition: all 0.25s; cursor: pointer; position: relative; overflow: hidden;
+    }
+    .summary-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: var(--grad); opacity: 0; transition: opacity 0.3s;
+    }
+    .summary-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow); }
+    .summary-card:hover::after { opacity: 0.04; }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .card-tag {
+      font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 6px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .tag-academic { background: rgba(124,58,237,0.2); color: var(--primary2); border: 1px solid rgba(124,58,237,0.3); }
+    .tag-quick    { background: rgba(6,182,212,0.15); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
+    .card-date { font-size: 11px; color: var(--text3); }
+    .card-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+    .card-preview { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-actions { display: flex; gap: 8px; }
+    .card-btn {
+      flex: 1; padding: 8px; border-radius: 10px; border: 1px solid var(--border2);
+      background: var(--surface2); color: var(--text2); font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .card-btn:hover { background: rgba(124,58,237,0.15); border-color: var(--primary); color: var(--primary2); }
+    .card-btn.primary-btn { background: var(--grad); color: #fff; border: none; box-shadow: 0 4px 12px rgba(124,58,237,0.3); }
+    .card-btn.primary-btn:hover { transform: scale(1.03); }
+
+    /* Bottom row */
+    .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    /* Keyword cloud */
+    .keyword-cloud {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; backdrop-filter: blur(20px);
+      min-height: 200px; position: relative; overflow: hidden;
+    }
+    .kw-cloud-inner { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding-top: 8px; }
+    .kw-tag {
+      padding: 6px 14px; border-radius: 20px; font-weight: 600;
+      border: 1px solid; cursor: default;
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: kwFloat 4s ease-in-out infinite alternate;
+    }
+    .kw-tag:hover { transform: scale(1.1) translateY(-3px); box-shadow: var(--glow); }
+    @keyframes kwFloat {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-6px); }
+    }
+
+    /* Mode toggle */
+    .mode-panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px; backdrop-filter: blur(20px);
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .mode-toggle-wrap { display: flex; flex-direction: column; gap: 12px; }
+    .mode-toggle-track {
+      display: flex; background: var(--surface2); border-radius: 50px;
+      border: 1px solid var(--border2); padding: 4px; position: relative;
+    }
+    .mode-btn {
+      flex: 1; padding: 12px; border-radius: 50px; border: none; cursor: pointer;
+      font-size: 14px; font-weight: 700; color: var(--text2);
+      background: transparent; transition: all 0.3s; position: relative; z-index: 1;
+    }
+    .mode-btn.active { color: #fff; }
+    .mode-slider {
+      position: absolute; top: 4px; bottom: 4px; width: calc(50% - 4px);
+      border-radius: 50px; background: var(--grad);
+      box-shadow: 0 4px 16px rgba(124,58,237,0.4);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    .mode-slider.right { transform: translateX(calc(100% + 8px)); }
+    .mode-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+    /* Cite button */
+    .cite-btn {
+      width: 100%; padding: 14px; border-radius: 14px; border: 1px solid rgba(6,182,212,0.3);
+      background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(59,130,246,0.1));
+      color: var(--cyan); font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .cite-btn:hover { background: linear-gradient(135deg, rgba(6,182,212,0.2), rgba(59,130,246,0.2)); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(6,182,212,0.2); }
+
+    /* ─── WAVEFORM ──────────────────────────────────────── */
+    .waveform-bar {
+      position: fixed; bottom: 0; inset-x: 0; z-index: 50;
+      background: rgba(3,0,20,0.85); backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border); padding: 12px 40px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .wave-label { font-size: 12px; font-weight: 700; color: var(--primary2); white-space: nowrap; }
+    #waveCanvas { flex: 1; height: 40px; }
+    .wave-status { font-size: 11px; color: var(--text3); white-space: nowrap; }
+
+    /* ─── AI PROCESSING OVERLAY ─────────────────────────── */
+    .ai-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(3,0,20,0.85); backdrop-filter: blur(8px);
+      display: none; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+    }
+    .ai-overlay.show { display: flex; }
+    .ai-ring {
+      width: 100px; height: 100px; border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: var(--primary);
+      border-right-color: var(--cyan);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ai-text { font-size: 18px; font-weight: 700; color: var(--text); }
+    .ai-sub  { font-size: 14px; color: var(--text2); }
+    #aiParticleCanvas { position: absolute; inset: 0; pointer-events: none; }
+
+    /* ─── SCROLLBAR ─────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+    /* ─── RESPONSIVE ────────────────────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      section { padding: 100px 20px 40px; }
+      .stats-row { grid-template-columns: 1fr; }
+      .bottom-row { grid-template-columns: 1fr; }
+      .nav-links .nav-link { display: none; }
+      h1 { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+<div class="grid-overlay"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    </div>
+    <span class="logo-text">Özet Asistanı</span>
+  </a>
+  <div class="nav-links">
+    <button class="nav-link" onclick="showView('main')">Ana Ekran</button>
+    <button class="nav-link" onclick="showView('dashboard')">Dashboard</button>
+    <div class="nav-sep"></div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Tema değiştir"></button>
+    <button class="btn-ghost">Giriş Yap</button>
+    <button class="btn-primary">Ücretsiz Başla</button>
+  </div>
+</nav>
+
+<div class="app">
+
+  <!-- ═══════════════ MAIN VIEW ═══════════════ -->
+  <section class="main-view active" id="mainView">
+    <div class="hero">
+      <div class="badge">
+        <div class="badge-dot"></div>
+        Yeni Nesil Akademik Yapay Zeka · 2026
+      </div>
+      <h1>Akademik Derinliği<br><span class="grad-text">Yeniden Keşfedin</span></h1>
+      <p class="hero-sub">Binlerce sayfa makaleyi saniyeler içinde analiz edin, zihin haritaları oluşturun ve sunumlar hazırlayın.</p>
+      <div class="hero-cta">
+        <button class="btn-primary" onclick="triggerAI()">✨ Şimdi Dene</button>
+        <button class="btn-ghost" onclick="showView('dashboard')">Dashboard →</button>
+      </div>
+    </div>
+
+    <!-- UPLOAD ZONE -->
+    <div class="upload-zone" id="uploadZone"
+         ondragover="handleDragOver(event)"
+         ondragleave="handleDragLeave(event)"
+         ondrop="handleDrop(event)"
+         onclick="triggerAI()">
+      <canvas id="particleCanvas"></canvas>
+      <div style="position:relative;z-index:1;text-align:center;">
+        <div class="upload-icon-wrap">
+          <span class="upload-icon">☁️</span>
+        </div>
+        <div class="upload-title">Metni Yapıştır veya Dosya Yükle</div>
+        <div class="upload-sub">Sürükle-bırak veya tıkla · PDF, DOCX, TXT, MD desteklenir</div>
+        <div class="file-badges">
+          <span class="file-badge">📄 PDF</span>
+          <span class="file-badge">📝 DOCX</span>
+          <span class="file-badge">📋 TXT</span>
+          <span class="file-badge">🔖 MD</span>
+          <span class="file-badge">🔗 URL</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDER -->
+    <div class="slider-section">
+      <div class="slider-header">
+        <span class="slider-label">📏 Özet Uzunluğu</span>
+        <span class="slider-value" id="sliderVal">Orta (300 kelime)</span>
+      </div>
+      <div class="slider-track">
+        <div class="slider-fill" id="sliderFill" style="width:50%"></div>
+        <input type="range" min="0" max="100" value="50" id="lengthSlider" oninput="updateSlider(this.value)">
+        <div class="slider-thumb" id="sliderThumb" style="left:50%"></div>
+      </div>
+      <div class="slider-labels">
+        <span class="slider-lbl">⚡ Kısa (100 kelime)</span>
+        <span class="slider-lbl">📖 Orta (300 kelime)</span>
+        <span class="slider-lbl">🔬 Detaylı (800 kelime)</span>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="setTab(this,'academic')">🎓 Akademik Mod</button>
+      <button class="tab" onclick="setTab(this,'quick')">⚡ Hızlı Mod</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════ DASHBOARD ═══════════════ -->
+  <section class="dashboard" id="dashboardView">
+    <h1 style="font-size:36px;margin-bottom:8px;">Dashboard <span class="grad-text">📊</span></h1>
+    <p style="color:var(--text2);margin-bottom:32px;">Tüm özetleriniz ve analizleriniz burada.</p>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">📄</div>
+        <div class="stat-val grad-text">24</div>
+        <div class="stat-lbl">Bu Hafta Özet</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-val" style="color:var(--cyan)">18 saat</div>
+        <div class="stat-lbl">Zaman Kazanıldı</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-val" style="color:#10b981">%94</div>
+        <div class="stat-lbl">Akademik Skor</div>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="section-title">📚 Önceki Özetler</div>
+    <div class="cards-grid">
+      <div class="summary-card">
+        <div class="card-top">
+          <span class="card-tag tag-academic">Akademik</span>
+          <span class="card-date">18 Şub 2026</span>
+        </div>
+        <div class="card-title">Derin Öğrenme ile Doğal Dil İşleme: Güncel Yaklaşımlar</div>
+        <div class="card-preview">Bu çalışma, transformer mimarilerinin NLP görevlerindeki üstünlüğünü incelemekte ve BERT, GPT gibi modellerin akademik metinlerdeki performansını karşılaştırmaktadır...</div>
+        <div class="card-actions">
+          <button class="card-btn">👁 Görüntüle</button>
+          <button class="card-btn primary-btn">📚 Kaynakça Çıkar</button>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-top">
+          <span class="card-tag tag-quick">Hızlı</span>
+          <span class="card-date">17 Şub 2026</span>
+        </div>
+        <div class="card-title">Kuantum Hesaplama ve Kriptografi Üzerine Bir Derleme</div>
+        <div class="card-preview">Kuantum bilgisayarların mevcut şifreleme sistemlerine yönelik tehditleri ve post-kuantum kriptografi çözümleri ele alınmaktadır. Shor algoritması ve Grover algoritması...</div>
+        <div class="card-actions">
+          <button class="card-btn">👁 Görüntüle</button>
+          <button class="card-btn primary-btn">📚 Kaynakça Çıkar</button>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-top">
+          <span class="card-tag tag-academic">Akademik</span>
+          <span class="card-date">16 Şub 2026</span>
+        </div>
+        <div class="card-title">İklim Değişikliğinin Biyoçeşitlilik Üzerindeki Etkileri</div>
+        <div class="card-preview">Küresel ısınmanın ekosistemler üzerindeki kümülatif etkileri, tür göçleri ve habitat kayıpları bağlamında meta-analiz yöntemiyle incelenmektedir...</div>
+        <div class="card-actions">
+          <button class="card-btn">👁 Görüntüle</button>
+          <button class="card-btn primary-btn">📚 Kaynakça Çıkar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="bottom-row">
+      <!-- Keyword Cloud -->
+      <div class="keyword-cloud">
+        <div class="section-title" style="margin-bottom:16px;">🏷️ Anahtar Kelime Bulutu</div>
+        <div class="kw-cloud-inner" id="kwCloud"></div>
+      </div>
+
+      <!-- Mode + Cite -->
+      <div class="mode-panel">
+        <div class="section-title" style="margin-bottom:0">⚙️ Analiz Modu</div>
+        <div class="mode-toggle-wrap">
+          <div class="mode-toggle-track">
+            <div class="mode-slider" id="modeSlider"></div>
+            <button class="mode-btn active" id="modeAcademic" onclick="setMode('academic')">🎓 Akademik</button>
+            <button class="mode-btn" id="modeQuick" onclick="setMode('quick')">⚡ Hızlı</button>
+          </div>
+          <p class="mode-desc" id="modeDesc">Derinlemesine analiz, kaynak doğrulama, akademik dil ve yapılandırılmış çıktı. Tez ve makale çalışmaları için idealdir.</p>
+        </div>
+        <button class="cite-btn" onclick="triggerAI()">
+          📖 Kaynakça Otomatik Çıkar
+        </button>
+        <button class="btn-primary" style="width:100%;padding:14px;border-radius:14px;font-size:14px;" onclick="showView('main')">
+          + Yeni Özet Oluştur
+        </button>
+      </div>
+    </div>
+  </section>
+
+</div><!-- .app -->
+
+<!-- WAVEFORM BAR -->
+<div class="waveform-bar">
+  <span class="wave-label">🤖 AI Aktif</span>
+  <canvas id="waveCanvas"></canvas>
+  <span class="wave-status">Gemini 2.5 Flash · Hazır</span>
+</div>
+
+<!-- AI PROCESSING OVERLAY -->
+<div class="ai-overlay" id="aiOverlay">
+  <canvas id="aiParticleCanvas"></canvas>
+  <div class="ai-ring"></div>
+  <div class="ai-text">Yapay Zeka Analiz Ediyor...</div>
+  <div class="ai-sub">Metni işleniyor · Anahtar kavramlar çıkarılıyor · Özet oluşturuluyor</div>
+</div>
+
+<script>
+/* ─── THEME ─────────────────────────────────────────── */
+function toggleTheme() {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+
+/* ─── VIEW SWITCH ───────────────────────────────────── */
+function showView(v) {
+  document.getElementById('mainView').classList.toggle('active', v === 'main');
+  document.getElementById('dashboardView').classList.toggle('active', v === 'dashboard');
+}
+
+/* ─── TABS ──────────────────────────────────────────── */
+function setTab(el, mode) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ─── SLIDER ────────────────────────────────────────── */
+function updateSlider(v) {
+  const fill  = document.getElementById('sliderFill');
+  const thumb = document.getElementById('sliderThumb');
+  const val   = document.getElementById('sliderVal');
+  fill.style.width  = v + '%';
+  thumb.style.left  = v + '%';
+  const labels = ['Kısa (100 kelime)', 'Kısa-Orta (200 kelime)', 'Orta (300 kelime)', 'Orta-Uzun (500 kelime)', 'Detaylı (800 kelime)'];
+  val.textContent = labels[Math.round(v / 25)] || labels[4];
+}
+
+/* ─── MODE ──────────────────────────────────────────── */
+const modeDescs = {
+  academic: 'Derinlemesine analiz, kaynak doğrulama, akademik dil ve yapılandırılmış çıktı. Tez ve makale çalışmaları için idealdir.',
+  quick:    'Hızlı özet, ana fikir çıkarımı ve madde madde liste. Haber, blog veya hızlı okuma için idealdir.'
+};
+function setMode(m) {
+  const slider = document.getElementById('modeSlider');
+  slider.classList.toggle('right', m === 'quick');
+  document.getElementById('modeAcademic').classList.toggle('active', m === 'academic');
+  document.getElementById('modeQuick').classList.toggle('active', m === 'quick');
+  document.getElementById('modeDesc').textContent = modeDescs[m];
+}
+
+/* ─── DRAG & DROP ───────────────────────────────────── */
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.add('drag-over');
+}
+function handleDragLeave(e) {
+  document.getElementById('uploadZone').classList.remove('drag-over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag-over');
+  triggerAI();
+}
+
+/* ─── AI OVERLAY ────────────────────────────────────── */
+function triggerAI() {
+  const overlay = document.getElementById('aiOverlay');
+  overlay.classList.add('show');
+  startAIParticles();
+  setTimeout(() => overlay.classList.remove('show'), 3200);
+}
+
+/* ─── KEYWORD CLOUD ─────────────────────────────────── */
+const keywords = [
+  { text: 'metodoloji', size: 18, color: '#7C3AED' },
+  { text: 'hipotez',    size: 14, color: '#3B82F6' },
+  { text: 'analiz',     size: 22, color: '#06B6D4' },
+  { text: 'bulgular',   size: 16, color: '#9f5ff5' },
+  { text: 'sonuç',      size: 20, color: '#7C3AED' },
+  { text: 'literatür',  size: 14, color: '#3B82F6' },
+  { text: 'veri',       size: 18, color: '#06B6D4' },
+  { text: 'model',      size: 16, color: '#7C3AED' },
+  { text: 'istatistik', size: 13, color: '#9f5ff5' },
+  { text: 'örneklem',   size: 14, color: '#3B82F6' },
+  { text: 'regresyon',  size: 12, color: '#06B6D4' },
+  { text: 'korelasyon', size: 13, color: '#7C3AED' },
+  { text: 'paradigma',  size: 15, color: '#9f5ff5' },
+  { text: 'sentez',     size: 17, color: '#3B82F6' },
+];
+function buildKeywordCloud() {
+  const cloud = document.getElementById('kwCloud');
+  if (!cloud) return;
+  keywords.forEach((kw, i) => {
+    const el = document.createElement('span');
+    el.className = 'kw-tag';
+    el.textContent = kw.text;
+    el.style.fontSize = kw.size + 'px';
+    el.style.color = kw.color;
+    el.style.borderColor = kw.color + '44';
+    el.style.background = kw.color + '18';
+    el.style.animationDelay = (i * 0.3) + 's';
+    el.style.animationDuration = (3 + i * 0.2) + 's';
+    cloud.appendChild(el);
+  });
+}
+buildKeywordCloud();
+
+/* ─── UPLOAD ZONE PARTICLES ─────────────────────────── */
+(function initUploadParticles() {
+  const canvas = document.getElementById('particleCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let animId;
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function createParticle() {
+    return {
+      x: Math.random() * canvas.width,
+      y: canvas.height + 10,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: -(Math.random() * 1.5 + 0.5),
+      r: Math.random() * 3 + 1,
+      alpha: Math.random() * 0.6 + 0.2,
+      color: ['#7C3AED','#3B82F6','#06B6D4'][Math.floor(Math.random()*3)]
+    };
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (particles.length < 40) particles.push(createParticle());
+    particles = particles.filter(p => p.y > -10 && p.alpha > 0);
+    particles.forEach(p => {
+      p.x  += p.vx; p.y += p.vy; p.alpha -= 0.003;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + Math.round(p.alpha * 255).toString(16).padStart(2,'0');
+      ctx.fill();
+    });
+    animId = requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+/* ─── WAVEFORM ──────────────────────────────────────── */
+(function initWaveform() {
+  const canvas = document.getElementById('waveCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const W = canvas.width, H = canvas.height, mid = H / 2;
+    const grad = ctx.createLinearGradient(0, 0, W, 0);
+    grad.addColorStop(0,   '#7C3AED');
+    grad.addColorStop(0.5, '#3B82F6');
+    grad.addColorStop(1,   '#06B6D4');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 2;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#7C3AED';
+    ctx.beginPath();
+    for (let x = 0; x <= W; x++) {
+      const freq1 = Math.sin((x / W) * Math.PI * 6 + t) * 10;
+      const freq2 = Math.sin((x / W) * Math.PI * 12 + t * 1.5) * 5;
+      const freq3 = Math.sin((x / W) * Math.PI * 3  + t * 0.7) * 7;
+      const y = mid + freq1 + freq2 + freq3;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    t += 0.04;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── AI OVERLAY PARTICLES ──────────────────────────── */
+function startAIParticles() {
+  const canvas = document.getElementById('aiParticleCanvas');
+  if (!canvas) return;
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let start = Date.now();
+
+  for (let i = 0; i < 120; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 3 + 1;
+    particles.push({
+      x: canvas.width / 2, y: canvas.height / 2,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+      r: Math.random() * 4 + 1,
+      color: ['#7C3AED','#3B82F6','#06B6D4','#9f5ff5'][Math.floor(Math.random()*4)],
+      alpha: 1
+    });
+  }
+
+  function draw() {
+    if (Date.now() - start > 3000) { ctx.clearRect(0,0,canvas.width,canvas.height); return; }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.alpha -= 0.008;
+      if (p.alpha < 0) p.alpha = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + Math.round(p.alpha * 255).toString(16).padStart(2,'0');
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+</script>
+</body>
+</html>

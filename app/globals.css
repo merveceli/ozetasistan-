@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+:root {
+  /* Dark Theme by Default */
+  --background: #0f0f12;
+  --foreground: #f8fafc;
+
+  --card: #18181b;
+  --card-foreground: #f8fafc;
+
+  --popover: #18181b;
+  --popover-foreground: #f8fafc;
+
+  --primary: #8b5cf6;
+  /* Violet */
+  --primary-foreground: #ffffff;
+
+  --secondary: #27272a;
+  --secondary-foreground: #f8fafc;
+
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+
+  --accent: #27272a;
+  --accent-foreground: #f8fafc;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #f8fafc;
+
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #8b5cf6;
+
+  --radius: 0.75rem;
+}
+
+/* Optional Light Theme override IF needed, currently focusing on Dark */
+@media (prefers-color-scheme: light) {
+  /* Keeping it dark for now as per design request, but structure exists */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: rgba(24, 24, 27, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-card {
+  background: linear-gradient(145deg, rgba(39, 39, 42, 0.4), rgba(24, 24, 27, 0.4));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes shine {
+  from {
+    mask-position: 150%;
+  }
+
+  to {
+    mask-position: -50%;
+  }
+}
+
+.animate-shine {
+  mask-image: linear-gradient(120deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 80%);
+  mask-size: 200% 100%;
+  mask-repeat: no-repeat;
+  animation: shine 3s infinite;
+}
+
+.text-glow {
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.bg-dot-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
