@@ -1,6 +1,10 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
+/**
+ * Normal kullanıcı client'ı (anon key, RLS aktif)
+ */
 export async function createClient() {
     const cookieStore = await cookies()
 
@@ -23,6 +27,29 @@ export async function createClient() {
                         // user sessions.
                     }
                 },
+            },
+        }
+    )
+}
+
+/**
+ * Admin client (service_role key, RLS BYPASS)
+ * SADECE admin API rotalarında kullanılmalı!
+ */
+export function createAdminClient() {
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!serviceRoleKey) {
+        throw new Error('SUPABASE_SERVICE_ROLE_KEY env variable is not set')
+    }
+
+    return createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
             },
         }
     )

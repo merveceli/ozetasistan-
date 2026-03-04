@@ -117,7 +117,6 @@ export default function LandingPage() {
                 </Link>
                 <div className="hidden md:flex items-center space-x-8">
                     <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="text-sm font-medium text-white/60 hover:text-white transition-colors">Özellikler</button>
-                    <button onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })} className="text-sm font-medium text-white/60 hover:text-white transition-colors">Paketler</button>
                     <div className="h-4 w-px bg-white/10" />
                     <Link href="/auth/login" className="text-sm font-semibold hover:text-primary transition-colors">Giriş Yap</Link>
                     <Link href="/auth/signup" className="px-6 py-2.5 rounded-full bg-white text-[#030014] text-sm font-bold hover:bg-white/90 transition-all active:scale-95 shadow-xl shadow-white/5">
@@ -147,7 +146,7 @@ export default function LandingPage() {
                         Binlerce sayfa makaleyi saniyeler içinde analiz edin, zihin haritaları oluşturun ve sunumlar hazırlayın. Akademik başarınızın akıllı ortağı.
                     </motion.p>
 
-                    <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-5 mb-20">
+                    <motion.div variants={itemVariants} className="flex gap-5 mb-20">
                         <Link href="/auth/signup" className="group relative px-8 py-4 bg-primary text-white rounded-2xl font-black text-lg transition-all shadow-2xl shadow-primary/40 flex items-center justify-center overflow-hidden">
                             <span className="relative z-10 flex items-center">
                                 Şimdi Dene
@@ -155,12 +154,6 @@ export default function LandingPage() {
                             </span>
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                         </Link>
-                        <button
-                            onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-                            className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold text-lg transition-all border border-white/10 backdrop-blur-sm"
-                        >
-                            Paketleri Gör
-                        </button>
                     </motion.div>
 
                     {/* Dashboard Preview / Hero Visual */}
@@ -354,66 +347,7 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Pricing Section - Highly Focused */}
-            <section id="pricing" className="py-24 px-6 md:px-12 relative">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-20">
-                        <h2 className="text-5xl md:text-7xl font-black mb-8">Emeğinize Değer <span className="text-primary italic">Planlar</span>.</h2>
-                        <p className="text-white/50 text-xl">Sınırları kaldırın, verimliliğinizi katlayın.</p>
-                    </div>
 
-                    {isLoading ? (
-                        <div className="flex justify-center py-20"><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>
-                    ) : (
-                        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                            {packages.map((pkg) => (
-                                <div
-                                    key={pkg.id}
-                                    className={cn(
-                                        "relative flex flex-col rounded-[3rem] p-10 transition-all duration-500",
-                                        pkg.isPopular
-                                            ? "bg-primary text-white scale-105 shadow-2xl shadow-primary/30 z-10"
-                                            : "bg-white/5 border border-white/10 hover:border-white/20"
-                                    )}
-                                >
-                                    {pkg.isPopular && (
-                                        <div className="absolute top-6 right-6 bg-white/20 backdrop-blur-md text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">En Çok Tercih Edilen</div>
-                                    )}
-                                    <div className="mb-10">
-                                        <h3 className="text-2xl font-black mb-2">{pkg.display_name}</h3>
-                                        <div className="flex items-end gap-1">
-                                            <span className="text-5xl font-black">{pkg.price_monthly === 0 ? 'Bedava' : `₺${pkg.price_monthly}`}</span>
-                                            <span className={cn("text-sm pb-2 opacity-60", pkg.isPopular ? "text-white" : "text-white/60")}>/aylık</span>
-                                        </div>
-                                    </div>
-                                    <ul className="flex-1 space-y-5 mb-10">
-                                        {pkg.features.map((f, i) => (
-                                            <li key={i} className="flex items-start space-x-3">
-                                                <div className={cn("w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5", pkg.isPopular ? "bg-white/20" : "bg-primary/20")}>
-                                                    <CheckCircle2 className={cn("w-3 h-3", pkg.isPopular ? "text-white" : "text-primary")} />
-                                                </div>
-                                                <span className="text-sm font-medium opacity-80">{f}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <button
-                                        onClick={() => router.push('/auth/signup?package=' + pkg.id)}
-                                        className={cn(
-                                            "w-full py-5 rounded-[2rem] font-black text-lg transition-all active:scale-95",
-                                            pkg.isPopular
-                                                ? "bg-white text-primary shadow-xl hover:bg-white/90"
-                                                : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
-                                        )}
-                                    >
-                                        Hemen Başla
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </section>
 
             {/* Footer */}
             <footer className="py-20 border-t border-white/5 bg-black/40 backdrop-blur-3xl">
@@ -432,7 +366,6 @@ export default function LandingPage() {
                         <h5 className="font-black mb-6 uppercase tracking-widest text-[10px] text-white/60">Ürün</h5>
                         <ul className="space-y-4 text-sm font-medium text-white/40">
                             <li><button className="hover:text-primary transition-colors">Özellikler</button></li>
-                            <li><button className="hover:text-primary transition-colors">Fiyatlandırma</button></li>
                             <li><button className="hover:text-primary transition-colors">API</button></li>
                         </ul>
                     </div>

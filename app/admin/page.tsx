@@ -10,12 +10,39 @@ import {
     ArrowUpRight,
     ArrowDownRight,
     Zap,
+    BookOpen,
+    Network,
+    Mic,
     Globe,
-    Clock,
+    Brain,
+    Layers,
     AlertCircle,
-    Loader2
+    Loader2,
+    Minus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const FEATURE_META: Record<string, { label: string; icon: any; color: string }> = {
+    summary: { label: 'Özet', icon: FileCheck, color: 'text-emerald-400 bg-emerald-400/10' },
+    mindmap: { label: 'Zihin Haritası', icon: Network, color: 'text-blue-400 bg-blue-400/10' },
+    'focus-radio': { label: 'Odak Radyo', icon: Mic, color: 'text-pink-400 bg-pink-400/10' },
+    compare: { label: 'Karşılaştır', icon: Layers, color: 'text-orange-400 bg-orange-400/10' },
+    sentez: { label: 'Sentez', icon: Brain, color: 'text-purple-400 bg-purple-400/10' },
+    'web-scrape': { label: 'Web Tarama', icon: Globe, color: 'text-cyan-400 bg-cyan-400/10' },
+    kaynak: { label: 'Kaynak', icon: BookOpen, color: 'text-yellow-400 bg-yellow-400/10' },
+};
+
+function getFeatureMeta(name: string) {
+    return FEATURE_META[name] ?? { label: name, icon: Zap, color: 'text-gray-400 bg-gray-400/10' };
+}
+
+function timeAgo(dateStr: string): string {
+    const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+    if (diff < 60) return `${Math.floor(diff)}s önce`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}d önce`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}sa önce`;
+    return `${Math.floor(diff / 86400)}g önce`;
+}
 
 export default function AdminDashboard() {
     const [data, setData] = useState<any>(null);
@@ -60,7 +87,13 @@ export default function AdminDashboard() {
         );
     }
 
-    const { stats, recentUsers } = data;
+    const { stats, recentUsers, recentActivity } = data;
+
+    const formatTrend = (val: number) => {
+        if (val === null || val === undefined) return { label: '—', up: null };
+        const sign = val > 0 ? '+' : '';
+        return { label: `${sign}${val}%`, up: val >= 0 };
+    };
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -77,34 +110,30 @@ export default function AdminDashboard() {
                 <StatCard
                     title="Toplam Kullanıcı"
                     value={stats.totalUsers.toLocaleString()}
-                    trend="+12%"
-                    trendUp={true}
+                    trend={formatTrend(stats.trendUsers)}
                     icon={Users}
                     description="Tüm zamanlar"
                 />
                 <StatCard
                     title="Aktif Aboneler"
                     value={stats.activeSubscribers.toLocaleString()}
-                    trend="+5%"
-                    trendUp={true}
+                    trend={formatTrend(stats.trendSubscribers)}
                     icon={CreditCard}
                     description="Pro & Akademik"
                 />
                 <StatCard
                     title="Aylık Gelir"
-                    value={`₺${stats.monthlyRevenue.toLocaleString()}`}
-                    trend="+18%"
-                    trendUp={true}
+                    value={`₺${Number(stats.monthlyRevenue || 0).toLocaleString()}`}
+                    trend={formatTrend(stats.trendRevenue)}
                     icon={TrendingUp}
                     description="Son 30 gün"
                 />
                 <StatCard
                     title="Toplam Analiz"
                     value={stats.totalAnalyses.toLocaleString()}
-                    trend="-2%"
-                    trendUp={false}
+                    trend={formatTrend(stats.trendAnalyses)}
                     icon={FileCheck}
-                    description="AI İşlem adedi"
+                    description="Son 30 gün"
                 />
             </div>
 
@@ -116,7 +145,6 @@ export default function AdminDashboard() {
                             <Users className="w-5 h-5 text-primary" />
                             Son <span className="text-primary italic">Kullanıcılar</span>
                         </h2>
-                        <button className="text-xs font-bold text-primary hover:underline uppercase tracking-widest">Tümünü Gör</button>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
@@ -128,7 +156,13 @@ export default function AdminDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
-                                {recentUsers.map((user: any) => (
+                                {recentUsers.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={3} className="px-6 py-8 text-center text-gray-500 text-sm">
+                                            Henüz kullanıcı yok
+                                        </td>
+                                    </tr>
+                                ) : recentUsers.map((user: any) => (
                                     <tr key={user.id} className="group hover:bg-white/[0.02] transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
@@ -161,31 +195,43 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                {/* System Health */}
-                <div className="space-y-6">
-                    <div className="bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 rounded-3xl p-6 relative overflow-hidden group">
-                        <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-500" />
-                        <h2 className="font-bold text-xl mb-6 flex items-center gap-3">
-                            <Activity className="w-5 h-5 text-primary" />
-                            Sistem <span className="text-primary italic">Nabzı</span>
-                        </h2>
+                {/* Recent Activity Feed */}
+                <div className="bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 rounded-3xl p-6 relative overflow-hidden">
+                    <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+                    <h2 className="font-bold text-xl mb-5 flex items-center gap-3">
+                        <Activity className="w-5 h-5 text-primary" />
+                        Son <span className="text-primary italic">Aktivite</span>
+                    </h2>
 
-                        <div className="space-y-6">
-                            <HealthItem label="Server Uptime" value="99.98%" icon={Globe} color="text-emerald-400" />
-                            <HealthItem label="API Latency" value="142ms" icon={Zap} color="text-yellow-400" />
-                            <HealthItem label="DB Load" value="12%" icon={Activity} color="text-blue-400" />
-                            <HealthItem label="Token Oranı" value="Düşük" icon={Clock} color="text-purple-400" />
-                        </div>
-
-                        <div className="mt-8 p-4 bg-white/5 border border-white/10 rounded-2xl">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Aylık Kota Kullanımı</span>
-                                <span className="text-xs font-bold text-primary">78%</span>
-                            </div>
-                            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: '78%' }} />
-                            </div>
-                        </div>
+                    <div className="space-y-3 relative z-10">
+                        {recentActivity?.length === 0 ? (
+                            <p className="text-gray-500 text-sm text-center py-8">Henüz aktivite yok</p>
+                        ) : recentActivity?.map((log: any) => {
+                            const meta = getFeatureMeta(log.feature_name);
+                            const IconComp = meta.icon;
+                            const profile = Array.isArray(log.profiles) ? log.profiles[0] : log.profiles;
+                            return (
+                                <div key={log.id} className="flex items-start gap-3 group">
+                                    <div className={cn("p-2 rounded-xl flex-shrink-0 mt-0.5", meta.color)}>
+                                        <IconComp className="w-3.5 h-3.5" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-xs font-bold text-white truncate">
+                                            {profile?.full_name || profile?.email || 'Bilinmeyen'}
+                                        </p>
+                                        <p className="text-[10px] text-gray-400">
+                                            {meta.label}
+                                            {log.tokens_used > 0 && (
+                                                <span className="ml-1 text-gray-600">· {log.tokens_used.toLocaleString()} token</span>
+                                            )}
+                                        </p>
+                                    </div>
+                                    <span className="text-[10px] text-gray-600 flex-shrink-0 mt-0.5">
+                                        {timeAgo(log.created_at)}
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -193,7 +239,13 @@ export default function AdminDashboard() {
     );
 }
 
-function StatCard({ title, value, trend, trendUp, icon: Icon, description }: any) {
+function StatCard({ title, value, trend, icon: Icon, description }: {
+    title: string;
+    value: string;
+    trend: { label: string; up: boolean | null };
+    icon: any;
+    description: string;
+}) {
     return (
         <div className="bg-white/5 border border-white/10 p-6 rounded-3xl hover:border-primary/50 transition-all duration-300 group">
             <div className="flex items-center justify-between mb-4">
@@ -202,10 +254,14 @@ function StatCard({ title, value, trend, trendUp, icon: Icon, description }: any
                 </div>
                 <div className={cn(
                     "flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full",
-                    trendUp ? "text-emerald-400 bg-emerald-400/10" : "text-red-400 bg-red-400/10"
+                    trend.up === true ? "text-emerald-400 bg-emerald-400/10" :
+                        trend.up === false ? "text-red-400 bg-red-400/10" :
+                            "text-gray-500 bg-gray-500/10"
                 )}>
-                    {trendUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                    {trend}
+                    {trend.up === true ? <ArrowUpRight className="w-3 h-3" /> :
+                        trend.up === false ? <ArrowDownRight className="w-3 h-3" /> :
+                            <Minus className="w-3 h-3" />}
+                    {trend.label}
                 </div>
             </div>
             <div>
@@ -213,20 +269,6 @@ function StatCard({ title, value, trend, trendUp, icon: Icon, description }: any
                 <h3 className="text-2xl font-black text-white tracking-tight">{value}</h3>
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-2">{description}</p>
             </div>
-        </div>
-    );
-}
-
-function HealthItem({ label, value, icon: Icon, color }: any) {
-    return (
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-                <div className={cn("p-2 rounded-xl bg-white/5", color)}>
-                    <Icon className="w-4 h-4" />
-                </div>
-                <span className="text-sm font-medium text-gray-300">{label}</span>
-            </div>
-            <span className="font-bold text-sm">{value}</span>
         </div>
     );
 }

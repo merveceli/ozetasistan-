@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { UploadArea } from '@/components/UploadArea';
 import { ActivityList } from '@/components/ActivityList';
 import { StatsCard } from '@/components/StatsCard';
+import { BannerAd } from '@/components/BannerAd';
 import { Clock, BookOpen, Sparkles, MonitorPlay, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -122,6 +123,9 @@ export default function Home() {
           <UploadArea />
         </div>
 
+        {/* Reklam Banner - Upload ile Aktiviteler arası */}
+        <BannerAd variant="horizontal" slot={0} />
+
         {/* Bottom Section: Activities & Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Activities */}
@@ -145,6 +149,8 @@ export default function Home() {
               description="Başarı katsayısı"
               icon={Clock}
             />
+            {/* Stats altı compact banner */}
+            <BannerAd variant="compact" slot={2} />
           </div>
         </div>
       </div>

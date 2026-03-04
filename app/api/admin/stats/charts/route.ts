@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -9,6 +9,8 @@ export async function GET(request: Request) {
         if (user?.app_metadata?.is_admin !== true) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
+
+        const adminDb = createAdminClient();
 
         // Son 7 günlük gerçek feature_usage_logs verisi
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();

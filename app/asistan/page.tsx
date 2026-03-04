@@ -1,4 +1,5 @@
 import { ChatInterface } from "@/components/ChatInterface";
+import { Suspense } from "react";
 
 export default function AssistantPage() {
     return (
@@ -9,7 +10,9 @@ export default function AssistantPage() {
                     <p className="text-muted-foreground text-sm">Araştırmalarınızda size özel yapay zeka desteği.</p>
                 </div>
                 <div className="flex-1 min-h-0"> {/* min-h-0 is crucial for flex child scrolling */}
-                    <ChatInterface />
+                    <Suspense fallback={<div className="flex items-center justify-center p-8"><p className="text-muted-foreground animate-pulse">Asistan Yükleniyor...</p></div>}>
+                        <ChatInterface />
+                    </Suspense>
                 </div>
             </div>
         </div>

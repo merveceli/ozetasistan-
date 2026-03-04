@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -6,24 +6,24 @@ export async function GET(request: Request) {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Security Check: Only Admin/SuperAdmin
-        const isAdmin = user?.app_metadata?.is_admin === true;
-        if (!isAdmin) {
+        if (!user || user.app_metadata?.is_admin !== true) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
+
+        const adminDb = createAdminClient();
 
         const { searchParams } = new URL(request.url);
         const days = parseInt(searchParams.get('days') || '30');
 
-        // Fetch Stats from RPC
-        const { data: stats, error: statsError } = await supabase.rpc('get_admin_dashboard_stats', {
-            days_range: days
+        // Stats via RPC (includes real trend calculations)
+        const { data: stats, error: statsError } = await adminDb.rpc('get_admin_dashboard_stats', {
+            days_range: days,
         });
 
         if (statsError) throw statsError;
 
-        // Fetch Recent Users
-        const { data: recentUsers, error: usersError } = await supabase
+        // Recent Users
+        const { data: recentUsers, error: usersError } = await adminDb
             .from('profiles')
             .select('id, full_name, email, subscription_tier, created_at')
             .order('created_at', { ascending: false })
@@ -31,10 +31,31 @@ export async function GET(request: Request) {
 
         if (usersError) throw usersError;
 
+        // Recent Activity (last 10 feature usage logs with user info)
+        const { data: recentActivity, error: activityError } = await adminDb
+            .from('feature_usage_logs')
+            .select(`
+                id,
+                feature_name,
+                tokens_used,
+                created_at,
+                profiles:user_id ( full_name, email )
+            `)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (activityError) {
+            console.warn('Activity fetch warning:', activityError.message);
+        }
+
         return NextResponse.json({
-            stats,
-            recentUsers,
-            environment: process.env.NODE_ENV
+            stats: stats || {
+                totalUsers: 0, activeSubscribers: 0, monthlyRevenue: 0, totalAnalyses: 0,
+                trendUsers: 0, trendSubscribers: 0, trendRevenue: 0, trendAnalyses: 0,
+            },
+            recentUsers: recentUsers || [],
+            recentActivity: recentActivity || [],
+            environment: process.env.NODE_ENV,
         });
 
     } catch (error: any) {
@@ -42,3 +63,4 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+

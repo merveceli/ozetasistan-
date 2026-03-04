@@ -24,9 +24,7 @@ interface QuotaStatus {
 export default function SettingsPage() {
     const [user, setUser] = useState<{ full_name?: string, email?: string, subscription_tier?: string } | null>(null);
     const [quotaStatus, setQuotaStatus] = useState<QuotaStatus | null>(null);
-    const [packages, setPackages] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
 
     useEffect(() => {
         fetchData();
@@ -35,10 +33,9 @@ export default function SettingsPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [userRes, quotaRes, packagesRes] = await Promise.all([
+            const [userRes, quotaRes] = await Promise.all([
                 fetch('/api/user'),
-                fetch('/api/quota'),
-                fetch('/api/admin/stats/charts') // We'll just fetch packages from a new endpoint or reusing an existing one. Actually, let's create a specific public one or use the supabase client.
+                fetch('/api/quota')
             ]);
 
             if (userRes.ok) {
@@ -51,20 +48,6 @@ export default function SettingsPage() {
                 setQuotaStatus(quotaData.quotaStatus);
             }
 
-            // For now, let's just hardcode or fetch if we had an endpoint. 
-            // Better to use the database directly if possible, or a simple fetch.
-            const pkgRes = await fetch('/api/quota'); // quota endpoint usually has package info
-            if (pkgRes.ok) {
-                // In a real app, we'd have /api/packages
-            }
-
-            // Temporary hardcoded packages for UI if fetch fails
-            setPackages([
-                { id: 'free', display_name: 'Ücretsiz', price_monthly: 0, features: ['5 Döküman', '10 Analiz', '2 Sunum'] },
-                { id: 'student', display_name: 'Öğrenci', price_monthly: 49.90, features: ['50 Döküman', '100 Analiz', '20 Sunum', 'Sesli Not'] },
-                { id: 'academic', display_name: 'Akademik', price_monthly: 99.90, features: ['Sınırsız Analiz', 'Sınırsız Sunum', 'Öncelikli Destek'] }
-            ]);
-
         } catch (err) {
             console.error('Failed to fetch settings data', err);
         } finally {
@@ -72,44 +55,7 @@ export default function SettingsPage() {
         }
     };
 
-    const handleUpgrade = async (packageId: string) => {
-        if (packageId === user?.subscription_tier) return;
 
-        try {
-            setIsUpgrading(packageId);
-            const res = await fetch('/api/payment/shopier', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ packageId })
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Ödeme başlatılamadı');
-
-            // 1. Create a dynamic form
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = data.action;
-
-            // 2. Add hidden fields
-            Object.entries(data.fields).forEach(([key, value]) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = value as string;
-                form.appendChild(input);
-            });
-
-            // 3. Submit form
-            document.body.appendChild(form);
-            form.submit();
-
-        } catch (err: any) {
-            toast.error(err.message);
-        } finally {
-            setIsUpgrading(null);
-        }
-    };
 
     if (loading) {
         return (
@@ -266,68 +212,7 @@ export default function SettingsPage() {
                     </div>
                 </div>
 
-                {/* Subscription Plans */}
-                <div className="md:col-span-3 space-y-6">
-                    <div className="flex items-center gap-3 mb-2">
-                        <Sparkles className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Planını Yükselt</h3>
-                    </div>
 
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {packages.map((pkg) => {
-                            const isCurrent = user?.subscription_tier === pkg.id;
-                            return (
-                                <div
-                                    key={pkg.id}
-                                    className={cn(
-                                        "glass-card p-8 rounded-[2.5rem] border border-white/5 flex flex-col relative overflow-hidden transition-all",
-                                        isCurrent && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
-                                    )}
-                                >
-                                    {isCurrent && (
-                                        <div className="absolute top-4 right-4 bg-primary/20 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest"> Mevcut Plan </div>
-                                    )}
-                                    <div className="mb-6">
-                                        <h4 className="text-xl font-bold">{pkg.display_name}</h4>
-                                        <div className="flex items-end gap-1 mt-1">
-                                            <span className="text-3xl font-black">{pkg.price_monthly === 0 ? 'Ücretsiz' : `₺${pkg.price_monthly}`}</span>
-                                            {pkg.price_monthly > 0 && <span className="text-xs text-muted-foreground pb-1">/ay</span>}
-                                        </div>
-                                    </div>
-                                    <ul className="space-y-3 mb-8 flex-1">
-                                        {pkg.features.map((feature: string, idx: number) => (
-                                            <li key={idx} className="text-xs flex items-center gap-2 text-muted-foreground">
-                                                <Check className="w-3 h-3 text-primary" />
-                                                {feature}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <button
-                                        onClick={() => handleUpgrade(pkg.id)}
-                                        disabled={isCurrent || (isUpgrading !== null)}
-                                        className={cn(
-                                            "w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2",
-                                            isCurrent
-                                                ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-default"
-                                                : "bg-primary text-white hover:opacity-90 active:scale-95 shadow-lg shadow-primary/10"
-                                        )}
-                                    >
-                                        {isUpgrading === pkg.id ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                        ) : isCurrent ? (
-                                            "Aktif"
-                                        ) : (
-                                            <>
-                                                {pkg.price_monthly === 0 ? "Seç" : "Yükselt"}
-                                                <Zap className="w-3 h-3" />
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
 
             </div>
         </div>

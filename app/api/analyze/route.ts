@@ -13,13 +13,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Document ID is required' }, { status: 400 });
         }
 
-        // Validate level
-        const validLevels = ['student', 'academic', 'professor', 'metadata', 'deep_analysis', 'presentation', 'analysis_package'];
-        if (level && !validLevels.includes(level)) {
-            // Default to 'student' if invalid, or just proceed? Let's generic processing handle it or error.
-            // For now, let's keep it flexible or default to 'student' if missing.
-        }
-
         const supabase = await createClient();
 
         // Auth check
@@ -54,7 +47,7 @@ export async function POST(request: Request) {
                 }, { status: 403 });
             }
         } else {
-            // Guest trial only allows basic academic level
+            // Guest trial only allows basic level
             if (level && level !== 'student' && level !== 'metadata') {
                 return NextResponse.json({
                     error: 'Misafir kullanıcılar sadece temel analiz yapabilir.',
@@ -94,57 +87,43 @@ export async function POST(request: Request) {
 
         console.log('📦 File downloaded, size:', fileData.size);
 
-        // Prepare prompt
-        // Prepare prompt
+        // ─── Prompt Templates ────────────────────────────────────────────────
         let promptTemplate = '';
 
         if (level === 'metadata') {
-            promptTemplate = `Yüklenmiş olan PDF dosyasını analiz et.
-Sadece bu PDF dosyasının içeriğini kullan.
-Dış bilgi kullanma.
+            promptTemplate = `Yuklenmiş olan PDF dosyasini analiz et.
+Sadece bu PDF dosyasinin icerigini kullan.
+Dis bilgi kullanma.
 
-Çıktının tamamı Türkçe olmak zorundadır. İngilizce tek bir cümle bile üretme.
-Eğer PDF İngilizce bile olsa, çıktıyı mutlaka Türkçe üret.
+Ciktinin tamami Turkce olmak zorundadir.
+Eger PDF Ingilizce bile olsa, ciktiy mutlaka Turkce uret.
 
-Aşağıdaki bilgileri aynen çıkar:
-
-1. Makalenin başlığı
+Asagidaki bilgileri aynen cikar:
+1. Makalenin basligi
 2. Yazar isimleri
-3. Yayın yılı (varsa)
-4. Makalenin ilk paragrafının ilk iki cümlesi
+3. Yayin yili (varsa)
+4. Makalenin ilk paragrafinin ilk iki cumlesi
 
-Eğer bu bilgiler PDF’ten okunamıyorsa,
-açıkça şu ifadeyi yaz:
-
-"PDF içeriği okunamıyor veya metin çıkarılamadı."
+Eger bu bilgiler PDF den okunamazsa, "error" alanina "PDF icerigi okunamiyor" yaz.
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {
-  "title": "Makale başlığı",
+  "title": "Makale basligi",
   "authors": ["Yazar 1", "Yazar 2"],
   "year": "2024",
-  "first_paragraph_intro": "İlk iki cümle...",
-  "error": "PDF içeriği okunamıyor... (eğer okunamazsa)"
+  "first_paragraph_intro": "Ilk iki cumle...",
+  "error": null
 }`;
+
         } else if (level === 'deep_analysis') {
-            promptTemplate = `Yüklenmiş olan akademik PDF dosyasını analiz et.
+            promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
 
-Sadece ve sadece bu PDF içeriğini kullan.
-Dış bilgi kullanma ve tahmin yapma.
+Sadece ve sadece bu PDF icerigini kullan.
+Dis bilgi kullanma ve tahmin yapma.
+Ciktinin tamami Turkce olmalidir.
 
-Çıktının tamamı Türkçe olmak zorundadır. İngilizce tek bir cümle bile üretme.
-Eğer PDF İngilizce bile olsa, çıktıyı mutlaka Türkçe üret.
-
-Aşağıdaki başlıklara göre kısa maddeler halinde cevap ver:
-
-- Amaç ve Problem
-- Yöntem
-- Veri / Deney ortamı
-- Bulgular
-- Katkı
-- Sınırlılıklar
-
-Eğer herhangi bir başlık için PDF’te açık bilgi yoksa, şu ifadeyi yaz: "Bu bilgi makalede açıkça belirtilmemiştir."
+Asagidaki basliklar icin kisa maddeler olustur. Her alan icin 2-4 madde yeter.
+Eger bir baslik icin PDF de bilgi yoksa: "Bu bilgi makalede acikca belirtilmemistir." yaz.
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {
@@ -155,161 +134,308 @@ Return ONLY valid JSON (no markdown, no code blocks):
   "katki": ["Madde 1", "Madde 2"],
   "sinirliliklar": ["Madde 1", "Madde 2"]
 }`;
+
         } else if (level === 'presentation') {
-            promptTemplate = `Yüklenmiş olan akademik PDF dosyasını analiz et.
+            promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
 
-Sadece ve sadece bu PDF dosyasının içeriğini kullan.
-Dış bilgi kullanma, tahmin etme, uydurma yapma.
+Sadece bu PDF dosyasinin icerigini kullan.
+Dis bilgi kullanma, tahmin etme.
+Ciktinin tamami Turkce olmalidir.
 
-Çıktının tamamı Türkçe olmak zorundadır. İngilizce tek bir cümle bile üretme.
-Eğer PDF İngilizce bile olsa, çıktıyı mutlaka Türkçe üret.
+Bu PDF e dayanarak TAM OLARAK 8 slaytan olusan akademik bir sunum hazirla.
+Her slaytta 3-5 kisa madde olsun.
 
-Bu PDF’e dayanarak TAM OLARAK 8 slayttan oluşan akademik bir sunum hazırla.
-
-Her slayt için şu formatı kullan:
-
-Slayt X Başlık:
-- Madde
-- Madde
-- Madde
-
-Her slaytta 3 ile 5 arasında kısa ve net madde olsun.
-
-Slayt yapısı aşağıdaki sırayla ilerlemelidir:
-
-1. Çalışmanın başlığı ve genel amacı
-2. Problem tanımı
-3. Makalenin kendi içinden kısa literatür bağlamı
-4. Kullanılan yöntem / yaklaşım
-5. Deney ortamı veya veri seti
-6. Bulgular / sonuçlar
-7. Çalışmanın katkısı (yenilik / novelty)
-8. Sınırlılıklar ve gelecek çalışmalar
-
-Sadece PDF’te açıkça bulunan bilgileri kullan.
-
-Eğer bir slayt için PDF’te yeterli bilgi yoksa,
-şu ifadeyi yaz:
-
-"Bu slayt için makalede yeterli bilgi bulunmamaktadır."
+Slayt sirasi:
+1. Calismanin basligi ve genel amaci
+2. Problem tanimi
+3. Literatur baglami
+4. Kullanilan yontem
+5. Deney ortami veya veri seti
+6. Bulgular
+7. Calismanin katkisi
+8. Sinirliliklar ve gelecek calismalar
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {
   "slides": [
-    {
-      "slide_number": 1,
-      "title": "Çalışmanın Başlığı ve Amacı",
-      "content": ["Madde 1", "Madde 2", "Madde 3"]
-    },
-    {
-      "slide_number": 2,
-      "title": "Problem Tanımı",
-      "content": ["Madde 1", "Madde 2", "Madde 3"]
-    },
-    // ... total 8 slides
+    { "slide_number": 1, "title": "Baslik", "content": ["Madde 1", "Madde 2", "Madde 3"] },
+    { "slide_number": 2, "title": "Problem", "content": ["Madde 1", "Madde 2"] }
   ]
 }`;
+
         } else if (level === 'analysis_package') {
-            promptTemplate = `Yüklenmiş olan akademik PDF dosyasını analiz et.
+            promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
 
-Sadece ve sadece bu PDF içeriğini kullan.
-Dış bilgi kullanma, tahmin etme, uydurma yapma.
+Sadece bu PDF icerigini kullan. Dis bilgi kullanma.
+Ciktiyi tamamen Turkce ver.
 
-Çıktıyı tamamen Türkçe ver.
+Asagidaki yapida kompakt bir Analiz Paketi uret. Her alan en fazla 2-3 madde icerecek.
 
-Aşağıdaki yapıda, kısa ve kompakt bir "Analiz Paketi" üret. Bu paket daha sonra sunum ve zihin haritası oluşturmak için kullanılacaktır.
-
-Formatı aynen koru:
-
-ANALIZ_PAKETI:
-
-Başlık:
-Yazarlar:
-Yıl:
-
-Amaç ve Problem:
-Yöntem:
-Veri / Deney ortamı:
-Bulgular:
-Katkı:
-Sınırlılıklar:
-
-Her alan en fazla 2–3 kısa madde içersin.
-Eğer bir alan PDF’te açıkça yoksa: "Makale içinde açıkça belirtilmemiştir." yaz.
-
-Return ONLY valid JSON (no markdown, no code blocks) with a single key 'analysis_package' containing the full formatted text string:
+Return ONLY valid JSON (no markdown, no code blocks):
 {
-  "analysis_package": "ANALIZ_PAKETI:\\n\\nBaşlık: ..."
+  "analysis_package": "ANALIZ_PAKETI:\\n\\nBaslik: ...\\nYazarlar: ...\\nYil: ...\\n\\nAmac ve Problem: ...\\nYontem: ...\\nVeri: ...\\nBulgular: ...\\nKatki: ...\\nSinirliliklar: ..."
 }`;
-        } else {
-            promptTemplate = `Bu ${document.file_type === 'pdf' ? 'PDF' : 'text'} belgesini ${level} seviyesindeki bir okuyucu için analiz et.
 
-Çıktının tamamı Türkçe olmak zorundadır. İngilizce tek bir cümle bile üretme.
-Eğer PDF İngilizce bile olsa, çıktıyı mutlaka Türkçe üret.
+        } else if (level === 'student') {
+            // ─── ÖĞRENCİ MODU: Kapsamlı ders notu formatı ───
+            promptTemplate = `Sen cok deneyimli, sevecen ve konuyu gercekten anlatan bir ogretmensin.
+Verilen PDF belgesini, konuyu hic bilmeyen bir lise veya universite ogrencisine sifirdan ve kapsamli bicimde anlat.
 
-${level === 'student' ? 'Şunları sağla: net bir özet, zor terimler sözlüğü, 5 anahtar cümle.' : ''}
-${level === 'academic' ? 'Şunları sağla: literatürdeki konumu, metodoloji eleştirisi, sınırlılıklar.' : ''}
-${level === 'professor' ? 'Şunları sağla: atıf potansiyeli, karşıt görüş karşılaştırması, araştırma boşlukları.' : ''}
+MUTLAK KURALLAR:
+1. Ciktinin TAMAMI Turkce olmalidir. PDF Ingilizce bile olsa Turkce yaz.
+2. Sadece gecerli JSON uret. Markdown KULLANMA, kod blogu KULLANMA.
+3. JSON icinde satirbaslari icin sadece \\n kullan.
+4. Ozel karakterleri escape et.
 
-Ayrıca, öğrenme amacıyla en az 10 adet flashcard (ön yüzünde terim/soru, arka yüzünde ayrıntılı açıklama/cevap) ve en az 5 adet çoktan seçmeli quiz sorusu (her biri 4 şıklı ve bir doğru cevaplı) oluştur.
+OZET YAPISI - summary alani BU SIRAYA GORE yazilmali:
 
-Sadece geçerli JSON döndür (markdown yok, kod bloğu yok). Anahtarlar İngilizce kalsın, değerler Türkçe olsun:
+GIRIS - konuya giris, neden onemli, hayatta nerede karsilasiyoruz? (en az 2 paragraf)
+TEMEL KAVRAMLAR - PDF deki temel tanimlar ve kavramlar sade dille (her birine ornek ver)
+ANA KONULAR - PDF deki TUM ana baslik ve alt basliklarini tek tek anlat, hic atlama (en buyuk bolum)
+UYGULAMA - bu konu gercek hayatta nerede kullanilir, ornekler
+OZET - akilda kalmasi gereken 3-5 kritik bilgi
+
+Her bolum iki \\n ile ayrilsin. En az 800 kelime olsun. Ogrenciye ders anlatan bir ogretmen gibi yaz.
+
+Return ONLY valid JSON (no markdown wrapper, no code fences):
 {
-  "summary": "Ana özet (Türkçe)...",
-  "key_points": ["Madde 1", "Madde 2", "Madde 3"],
-  "glossary": { "Terim1": "Tanım1", "Terim2": "Tanım2" },
-  "critique": {
-    "strengths": ["Güçlü Yön 1", "Güçlü Yön 2"],
-    "weaknesses": ["Zayıf Yön 1", "Zayıf Yön 2"],
-    "methodology": "Metodoloji analizi..."
+  "summary": "GIRIS:\\n[konuya giris ve neden onemli - 2 paragraf]\\n\\nTEMEL KAVRAMLAR:\\n[temel tanimlar ve aciklamalar - her biri ornekli]\\n\\nANA KONULAR:\\n[PDF deki her bolum tek tek, kapsamli anlatim]\\n\\nUYGULAMA:\\n[gercek hayat ornekleri ve kullanim alanlari]\\n\\nOZET:\\n[akilda kalmasi gerekenler - 3-5 madde]",
+  "key_points": [
+    "1. kritik nokta - ogrenci icin neden onemli oldugunu yaz",
+    "2. kritik nokta",
+    "3. kritik nokta",
+    "4. kritik nokta",
+    "5. kritik nokta",
+    "6. kritik nokta",
+    "7. kritik nokta"
+  ],
+  "glossary": {
+    "Terim 1": "Ogrenci diline cevirilmis aciklama ve gunluk hayat ornegi",
+    "Terim 2": "Aciklama ve ornek",
+    "Terim 3": "Aciklama ve ornek",
+    "Terim 4": "Aciklama ve ornek",
+    "Terim 5": "Aciklama ve ornek"
   },
-  "level_specific_insight": "Seviyeye özel içgörüler...",
+  "critique": {
+    "strengths": ["Belgenin ogrenci icin anlasilir yonu 1", "Guclu yon 2", "Guclu yon 3"],
+    "weaknesses": ["Ogrenciyi zorlayabilecek nokta 1", "Eksik nokta 2"],
+    "methodology": "Bu bilgi nasil elde edilmis? Arastirma mi, deney mi? Ogrenci icin anlasılir sekilde acikla."
+  },
+  "level_specific_insight": "OGRENCI REHBERI\\n\\nBu Konuyu Anlamak Icin Once Sunlari Bil:\\n- [on bilgi 1]\\n- [on bilgi 2]\\n\\nGunluk Hayatta Nerede Karsilasariz:\\n- [somut ornek 1]\\n- [somut ornek 2]\\n\\nOgrencilerin Sik Yaptigi Hatalar:\\n- [yanilgi 1 ve nasil onlenir]\\n- [yanilgi 2 ve nasil onlenir]\\n\\nSinavda Cikabilecek Soru Tipleri:\\n- [soru tipi 1]\\n- [soru tipi 2]\\n- [soru tipi 3]\\n\\nKonuyu Pekistirmek Icin Ipuclari:\\n- [strateji 1]\\n- [strateji 2]",
   "mind_map": {
     "name": "Ana Konu",
     "children": [
-      { "name": "Alt Başlık 1", "children": [{ "name": "Detay 1" }] }
+      { "name": "Alt Baslik 1", "children": [{ "name": "Detay 1" }, { "name": "Detay 2" }] },
+      { "name": "Alt Baslik 2", "children": [{ "name": "Detay 3" }, { "name": "Detay 4" }] },
+      { "name": "Alt Baslik 3", "children": [{ "name": "Detay 5" }] }
     ]
   },
   "citation_metadata": {
-    "title": "Belge Başlığı",
+    "title": "Belge Basligi",
     "author": "Yazar(lar)",
     "year": "2024",
-    "doi": "Yoksa N/A",
-    "publisher": "Yayıncı"
+    "doi": "N/A",
+    "publisher": "Yayinci"
   },
   "study_module": {
     "flashcards": [
-      { "front": "1. Terim veya Soru", "back": "Burada açıklama veya cevap mutlaka olmalı" },
-      { "front": "2. Terim veya Soru", "back": "Burada açıklama veya cevap mutlaka olmalı" }
-      // En az 10 tane
+      { "front": "Konu 1 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
+      { "front": "Konu 2 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
+      { "front": "Konu 3 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
+      { "front": "Konu 4 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
+      { "front": "Konu 5 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
+      { "front": "Konu 6 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
+      { "front": "Konu 7 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
+      { "front": "Konu 8 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
+      { "front": "Konu 9 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
+      { "front": "Konu 10 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
+      { "front": "Konu 11 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
+      { "front": "Konu 12 nedir?", "back": "Kisa net cevap ve gunluk ornek" }
     ],
     "quiz": [
-      { 
-        "question": "Soru 1?", 
-        "options": ["Seçenek A", "Seçenek B", "Seçenek C", "Seçenek D"], 
-        "answer": 0 
-      }
-      // En az 5 tane
+      { "question": "Bilgi sorusu 1?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 0 },
+      { "question": "Kavrama sorusu 2?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 1 },
+      { "question": "Uygulama sorusu 3?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 2 },
+      { "question": "Analiz sorusu 4?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 0 },
+      { "question": "Degerlendirme sorusu 5?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 3 },
+      { "question": "Sentez sorusu 6?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 1 }
     ]
   }
 }`;
+
+        } else if (level === 'academic') {
+            // ─── AKADEMİK MOD: PDF kalite değerlendirmesi ───
+            promptTemplate = `Sen akademik bir danisман ve literatur uzmanisın. Verilen PDF belgesini hem icerik hem de akademik kalite acisindan cok yonlu degerlendir.
+
+MUTLAK KURALLAR:
+1. Ciktinin tamami Turkce olmalidir.
+2. Sadece gecerli JSON uret. Markdown kullanma.
+3. JSON icinde satirbaslari icin sadece \\n kullan.
+
+AKADEMIK MOD - PDF KALITE DEGERLENDIRMESI:
+Bu mod belgeyi ozetlemekle kalmaz; akademik kalitesini ve yeterlilgini degerlendirir.
+
+Analiz et:
+1. KAYNAK YETERLILIGI - Yeterli referans var mi? Atiflar guncel mi? Kaynak cesitliligi?
+2. KAPSAM - Konu derinlemesine islenmis mi? Literatur bosluklar kapatilmis mi?
+3. METODOLOJİK RIGOR - Yontem uygun mu? Gecerlilik ve guvenilirlik saglanmis mi?
+4. TEORİK CERCEVE - Hangi teoriye dayanıyor? Yeterli mi?
+5. OZGUNLUK - Katki orijinal mi? Alanda neyi one suruyor?
+
+Ozet: Icerik ozeti → Akademik baglam → Guclu ve zayif yonler → Genel degerlendirme (en az 4 paragraf)
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "summary": "icerik ozeti paragraf\\n\\nakademik baglam paragraf\\n\\nguclu ve zayif yonler paragraf\\n\\ngenel degerlendirme paragraf",
+  "key_points": [
+    "Akademik bulgu 1", "Bulgu 2", "Bulgu 3", "Bulgu 4", "Bulgu 5", "Bulgu 6", "Bulgu 7"
+  ],
+  "glossary": {
+    "Teknik Terim 1": "Akademik baglamda tanimi ve literaturdeki kullanimi",
+    "Teknik Terim 2": "Tanim ve kullanim",
+    "Teknik Terim 3": "Tanim ve kullanim"
+  },
+  "critique": {
+    "strengths": ["Akademik guclu yon 1 - neden?", "Guclu yon 2", "Guclu yon 3"],
+    "weaknesses": ["Akademik zayif yon 1 - nasil giderilebilir?", "Zayif yon 2"],
+    "methodology": "Kullanilan arastirma yontemi, veri toplama ve analiz yaklasimi, validite ve guvenilirlik degerlendirmesi."
+  },
+  "level_specific_insight": "AKADEMIK DEGERLENDIRME RAPORU\\n\\nKaynak Yeterliligi:\\n[Bu belge yeterli kaynak sunuyor mu? Atiflarin sayisi, guncelligi ve cesitliligi? Eksik kaynaklar?]\\n\\nKapsam ve Derinlik:\\n[Konu yeterince ele alinmis mi? Hangi alt basliklar eksik? Literatur bosluklari ne olcude kapatiliyor?]\\n\\nMetodoloji Degerlendirmesi:\\n[Arastirma deseni uygun mu? Orneklem yeterli mi? İstatistiksel analizler dogru mu?]\\n\\nTeorik Cerceve:\\n[Hangi teorilere dayaniyor? Bu cerceve yeterli mi? Alternatif teorik yaklasimlar var mi?]\\n\\nGenel Akademik Degerlendirme:\\n[Bu belge literatore ne kadar katki sagliyor? Hangi arastirmaci profile hitap ediyor?]",
+  "mind_map": {
+    "name": "Arastirma Konusu",
+    "children": [
+      { "name": "Arastirma Sorusu", "children": [{ "name": "Alt problem 1" }, { "name": "Alt problem 2" }] },
+      { "name": "Metodoloji", "children": [{ "name": "Yontem" }, { "name": "Veri" }] },
+      { "name": "Bulgular", "children": [{ "name": "Ana bulgu" }, { "name": "Katki" }] }
+    ]
+  },
+  "citation_metadata": {
+    "title": "Belge Basligi",
+    "author": "Yazar(lar)",
+    "year": "2024",
+    "doi": "N/A",
+    "publisher": "Yayinci"
+  },
+  "study_module": {
+    "flashcards": [
+      { "front": "Akademik kavram 1", "back": "Literaturdeki tanimi ve bu belgede nasil kullanildigi" },
+      { "front": "Akademik kavram 2", "back": "Tanimi ve kullanimi" },
+      { "front": "Akademik kavram 3", "back": "Tanimi ve kullanimi" },
+      { "front": "Akademik kavram 4", "back": "Tanimi ve kullanimi" },
+      { "front": "Akademik kavram 5", "back": "Tanimi ve kullanimi" },
+      { "front": "Akademik kavram 6", "back": "Tanimi ve kullanimi" },
+      { "front": "Akademik kavram 7", "back": "Tanimi ve kullanimi" },
+      { "front": "Akademik kavram 8", "back": "Tanimi ve kullanimi" },
+      { "front": "Akademik kavram 9", "back": "Tanimi ve kullanimi" },
+      { "front": "Akademik kavram 10", "back": "Tanimi ve kullanimi" }
+    ],
+    "quiz": [
+      { "question": "Akademik analitik soru 1?", "options": ["A", "B", "C", "D"], "answer": 0 },
+      { "question": "Analitik soru 2?", "options": ["A", "B", "C", "D"], "answer": 1 },
+      { "question": "Analitik soru 3?", "options": ["A", "B", "C", "D"], "answer": 2 },
+      { "question": "Analitik soru 4?", "options": ["A", "B", "C", "D"], "answer": 3 },
+      { "question": "Analitik soru 5?", "options": ["A", "B", "C", "D"], "answer": 0 }
+    ]
+  }
+}`;
+
+        } else if (level === 'professor') {
+            // ─── PROFESÖR MODU: İleri düzey akademik analiz ───
+            promptTemplate = `Sen alaninда uzman, yillarin deneyimine sahip bir profesorsun. Verilen PDF belgesini, meslektasin olan baska bir profesore sunar gibi ileri duzey akademik terminolojiyle analiz et.
+
+MUTLAK KURALLAR:
+1. Ciktinin tamami Turkce olmalidir. Teknik terimler orijinal dilde parantez icinde Turkce karsiligi ile gosterilebilir.
+2. Sadece gecerli JSON uret. Markdown kullanma.
+3. JSON icinde satirbaslari icin sadece \\n kullan.
+
+PROFESOR MODU - İLERI DUZEY ANALIZ:
+- Epistemolojik cerceve ve ontolojik varsayimlari sorgula
+- Metodolojik paradigma (pozitivizm, yorumsamacilik, elestirel teori) belirle ve elestir
+- Atif agi potansiyeli ve h-endeks etkisini degerlendir
+- Alandaki teorik catismalar baglaminda eseri konumlandir
+- Karsit argümanlar ve alternatif paradigmatik yaklasimlar sun
+- Arastirma boslukları (research gap) ve gelecek arastirma ajandasi ciz
+- İstatistiksel guc analizi, effect size, replikasyon krizi baglaminda degerlendir
+
+Ozet: en az 5 teknik paragraf, akademik terminoloji agirlikli.
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "summary": "Epistemolojik zemin paragraf\\n\\nMetodolojik paradigma paragraf\\n\\nTeorik konumlanma paragraf\\n\\nBulgular ve oncekilerle kiyaslama paragraf\\n\\nAlandaki yansimalar paragraf",
+  "key_points": [
+    "İleri duzey akademik iddia 1 - teorik cerceve ile birlikte",
+    "Kritik bulgu 2",
+    "Metodolojik katki 3",
+    "Teorik celisiki 4",
+    "Arastirma boslugu 5",
+    "Atif potansiyeli 6",
+    "Paradigmatik etkisi 7",
+    "Gelecek arastirma yonu 8"
+  ],
+  "glossary": {
+    "Teknik Terim 1 (EN)": "Tanimi, literaturdeki tartisma gecmisi ve bu eserle iliskisi",
+    "Teknik Terim 2 (EN)": "Tanimi ve iliskisi",
+    "Teknik Terim 3 (EN)": "Tanimi ve iliskisi",
+    "Teknik Terim 4 (EN)": "Tanimi ve iliskisi"
+  },
+  "critique": {
+    "strengths": ["Epistemolojik tutarlilik - neden?", "Metodolojik guc - hangi acidon?", "Teorik ozgunluk", "Atif degeri"],
+    "weaknesses": ["Metodolojik sinirlilik - hangi paradigmatik acidon?", "İc gecerlilik sorunlari", "Dis gecerlilik kisitlari", "Kavramsal belirsizlikler"],
+    "methodology": "Arastirma paradigmasi (pozitivist/yorumsamaci/karma), orneklem teorisi (purposive/random), veri analiz yaklasimi (tumevariм/tumdengelim), guvenilirlik ve gecerlilik stratejileri, olasi onyargi kaynaklari ve confounding degiskenler."
+  },
+  "level_specific_insight": "PROFESOR MODU - İLERİ DUZEY ANALIZ\\n\\nEpistemolojik Cerceve:\\n[Eserin dayandigı bilgi teorisi? Ontolojik varsayımlar? Paradigma nerede konumlaniyor?]\\n\\nTeorik Catismalar ve Karsit Gorusler:\\n[Bu eser hangi teorilere meydan okuyor? Hangi akademisyenler karsi arguman uretir? Literatur tartismasi?]\\n\\nAtif Agi ve Alan Etkisi:\\n[Atif potansiyeli? Hangi calismalari etkileyecek? h-endeksine katkisi? Hangi dergilerde yayimlanabilir?]\\n\\nMetodolojik Rigor Degerlendirmesi:\\n[Statistical power, effect size, p-value yorumlama, replikasyon krizi baglamı, confounding faktorler]\\n\\nArastirma Boslukları (Research Gap):\\n[Hangi sorular acikta kaliyor? Hangi metodoloji ile takip edilmeli? Interdisciplinary firsatlar?]\\n\\nYayin Stratejisi:\\n[Hangi Q1/Q2 dergilere gonderilebilir? Hangi konferanslar uygun?]",
+  "mind_map": {
+    "name": "Arastirma Paradigmasi",
+    "children": [
+      { "name": "Epistemolojik Zemin", "children": [{ "name": "Ontolojik varsayim" }, { "name": "Paradigma" }] },
+      { "name": "Metodolojik Cerceve", "children": [{ "name": "Arastirma deseni" }, { "name": "Analiz yaklasimi" }] },
+      { "name": "Teorik Katki", "children": [{ "name": "Mevcut teorilerle iliski" }] },
+      { "name": "Arastirma Boslukları", "children": [{ "name": "Takip arastirma yonleri" }] }
+    ]
+  },
+  "citation_metadata": {
+    "title": "Belge Basligi",
+    "author": "Yazar(lar)",
+    "year": "2024",
+    "doi": "N/A",
+    "publisher": "Yayinci"
+  },
+  "study_module": {
+    "flashcards": [
+      { "front": "İleri duzey kavram 1", "back": "Literaturdeki kullanimi, tartisma tarihi ve bu eserdeki rolu" },
+      { "front": "İleri duzey kavram 2", "back": "Kullanimi ve rolu" },
+      { "front": "İleri duzey kavram 3", "back": "Kullanimi ve rolu" },
+      { "front": "İleri duzey kavram 4", "back": "Kullanimi ve rolu" },
+      { "front": "İleri duzey kavram 5", "back": "Kullanimi ve rolu" },
+      { "front": "İleri duzey kavram 6", "back": "Kullanimi ve rolu" },
+      { "front": "İleri duzey kavram 7", "back": "Kullanimi ve rolu" },
+      { "front": "İleri duzey kavram 8", "back": "Kullanimi ve rolu" }
+    ],
+    "quiz": [
+      { "question": "İleri duzey analitik soru 1 (sentez/degerlendirme)?", "options": ["A", "B", "C", "D"], "answer": 0 },
+      { "question": "Analitik soru 2?", "options": ["A", "B", "C", "D"], "answer": 1 },
+      { "question": "Analitik soru 3?", "options": ["A", "B", "C", "D"], "answer": 2 },
+      { "question": "Analitik soru 4?", "options": ["A", "B", "C", "D"], "answer": 3 },
+      { "question": "Analitik soru 5?", "options": ["A", "B", "C", "D"], "answer": 0 }
+    ]
+  }
+}`;
+
+        } else {
+            // Fallback — beklenmedik level değerleri için student modunu kullan
+            promptTemplate = `Verilen belgeyi Turkce olarak ozetle.
+JSON formatinda don: { "summary": "ozet", "key_points": ["madde 1", "madde 2"], "glossary": {}, "critique": { "strengths": [], "weaknesses": [], "methodology": "" }, "level_specific_insight": "", "mind_map": { "name": "Konu", "children": [] }, "citation_metadata": { "title": "", "author": "", "year": "", "doi": "", "publisher": "" }, "study_module": { "flashcards": [], "quiz": [] } }`;
         }
 
+        // ─── Gemini API Call ─────────────────────────────────────────────────
         let result;
 
         if (document.file_type === 'pdf') {
             try {
                 console.log('📄 Processing PDF...');
-
-                // Convert to base64
                 const arrayBuffer = await fileData.arrayBuffer();
                 const base64 = Buffer.from(arrayBuffer).toString('base64');
-
                 console.log('✅ PDF converted to base64');
-
-                // Use Gemini model (imported from lib/gemini)
-                // const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
                 console.log('🤖 Sending to Gemini...');
 
                 result = await model.generateContent([
@@ -326,16 +452,17 @@ Sadece geçerli JSON döndür (markdown yok, kod bloğu yok). Anahtarlar İngili
 
             } catch (pdfError: any) {
                 console.error('❌ PDF processing error:', pdfError);
-                console.error('Error details:', {
-                    message: pdfError.message,
-                    stack: pdfError.stack,
-                    name: pdfError.name
-                });
+                // Mark as failed
+                await supabase
+                    .from('documents')
+                    .update({ analysis_status: 'failed' })
+                    .eq('id', documentId);
                 return NextResponse.json({
-                    error: 'PDF processing failed',
+                    error: 'PDF isleme hatasi. Lutfen tekrar deneyin.',
                     details: pdfError.message
                 }, { status: 500 });
             }
+
         } else if (document.file_type === 'url') {
             console.log('🌐 Processing URL...');
             const urlText = (await fileData.text()).trim();
@@ -343,7 +470,6 @@ Sadece geçerli JSON döndür (markdown yok, kod bloğu yok). Anahtarlar İngili
             try {
                 const urlResponse = await fetch(urlText);
                 const html = await urlResponse.text();
-                // Basic HTML body extraction
                 const bodyMatch = html.match(/<body[^>]*>([\w|\W]*)<\/body>/im);
                 let contentText = bodyMatch ? bodyMatch[1] : html;
                 contentText = contentText.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ');
@@ -355,33 +481,30 @@ Sadece geçerli JSON döndür (markdown yok, kod bloğu yok). Anahtarlar İngili
                 );
             } catch (error) {
                 console.error('URL Fetch Error:', error);
-                throw new Error('URL içeriği okunamadı.');
+                throw new Error('URL icerigi okunamadi.');
             }
+
         } else {
-            // Text files
             console.log('📝 Processing text file...');
             const text = await fileData.text();
-
             result = await model.generateContent(
                 promptTemplate + '\n\nDocument content:\n' + text.slice(0, 50000)
             );
         }
 
-        // Parse response
+        // ─── Parse Response ───────────────────────────────────────────────────
         const response = await result.response;
         const textResponse = response.text();
-
         console.log('📝 Response length:', textResponse.length);
 
         let analysisData;
         try {
-            // Clean response
             let cleanJson = textResponse.trim();
 
-            // Remove markdown code blocks
-            cleanJson = cleanJson.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+            // Remove markdown code blocks if present
+            cleanJson = cleanJson.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
 
-            // Remove any leading/trailing non-JSON characters
+            // Find JSON boundaries
             const jsonStart = cleanJson.indexOf('{');
             const jsonEnd = cleanJson.lastIndexOf('}');
 
@@ -395,25 +518,28 @@ Sadece geçerli JSON döndür (markdown yok, kod bloğu yok). Anahtarlar İngili
 
         } catch (parseError: any) {
             console.error('❌ JSON parse error:', parseError);
-            console.error('Raw response:', textResponse.substring(0, 500));
+            console.error('Raw response (first 500):', textResponse.substring(0, 500));
+
+            // Mark as failed
+            await supabase
+                .from('documents')
+                .update({ analysis_status: 'failed' })
+                .eq('id', documentId);
+
             return NextResponse.json({
-                error: 'Failed to parse AI response',
-                details: parseError.message,
-                rawResponse: textResponse.substring(0, 200)
+                error: 'Yapay zeka yaniti isle nemedi. Lutfen tekrar deneyin.',
+                details: parseError.message
             }, { status: 500 });
         }
 
-        // Update status
+        // ─── Save & Respond ───────────────────────────────────────────────────
         await supabase
             .from('documents')
             .update({ analysis_status: 'completed' })
             .eq('id', documentId);
 
-        // Analiz kredisini tüket (önce user_credits, sonra aylık kota)
-        // Bu SADECE yeni Generate işleminde çağrılır
         if (user) {
             await consumeAnalysisCredit(user.id);
-            // Feature usage log — admin istatistikleri için
             await logFeatureUsage(user.id, level || 'summary', documentId);
         }
 
@@ -421,12 +547,11 @@ Sadece geçerli JSON döndür (markdown yok, kod bloğu yok). Anahtarlar İngili
 
         const jsonResponse = NextResponse.json(analysisData);
 
-        // If this was a guest analysis, set the trial_completed cookie
         if (!user) {
             jsonResponse.cookies.set('trial_completed', 'true', {
                 path: '/',
-                maxAge: 60 * 60 * 24 * 365, // 1 year
-                httpOnly: false, // Middleware needs to read it
+                maxAge: 60 * 60 * 24 * 365,
+                httpOnly: false,
             });
         }
 
@@ -436,14 +561,18 @@ Sadece geçerli JSON döndür (markdown yok, kod bloğu yok). Anahtarlar İngili
         console.error('❌ Fatal error:', error);
         console.error('Stack:', error.stack);
 
-        // Update status to failed
-        const supabase = await createClient();
-        if (document) {
-            await supabase
-                .from('documents')
-                .update({ analysis_status: 'failed' })
-                .eq('id', document);
-        }
+        try {
+            const supabase = await createClient();
+            const { documentId } = await (async () => {
+                try { return await request.json(); } catch { return {}; }
+            })();
+            if (documentId) {
+                await supabase
+                    .from('documents')
+                    .update({ analysis_status: 'failed' })
+                    .eq('id', documentId);
+            }
+        } catch { /* ignore cleanup errors */ }
 
         return NextResponse.json({
             error: error.message || 'Internal Server Error',

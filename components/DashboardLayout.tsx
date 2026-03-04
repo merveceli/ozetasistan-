@@ -1,29 +1,60 @@
 "use client";
 
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from '@/components/Sidebar';
-import { cn } from '@/lib/utils'; // Assuming utils exist
+import { cn } from '@/lib/utils';
+import { Menu, X } from 'lucide-react';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
     const isPublicPage = pathname === '/landing' || pathname.startsWith('/auth');
     const isAdminPage = pathname === '/admin' || pathname.startsWith('/admin/');
     const hideSidebar = isPublicPage || isAdminPage;
 
     return (
-        <div className="flex h-screen w-full">
-            {/* Sidebar - sadece private sayfalarda */}
+        <div className="flex h-screen w-full overflow-hidden">
+            {/* Sidebar - Desktop */}
             {!hideSidebar && (
-                <aside className="hidden md:flex flex-col w-64 fixed inset-y-0 z-50">
+                <aside className="hidden md:flex flex-col w-64 shrink-0">
                     <Sidebar />
                 </aside>
             )}
 
+            {/* Sidebar - Mobile Overlay */}
+            {!hideSidebar && isMobileSidebarOpen && (
+                <>
+                    {/* Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+                        onClick={() => setIsMobileSidebarOpen(false)}
+                    />
+                    {/* Mobile Sidebar */}
+                    <aside className="fixed inset-y-0 left-0 z-50 flex flex-col w-72 md:hidden animate-in slide-in-from-left duration-300">
+                        <Sidebar />
+                        <button
+                            onClick={() => setIsMobileSidebarOpen(false)}
+                            className="absolute top-4 right-4 p-2 rounded-lg bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </aside>
+                </>
+            )}
+
             {/* Main Content */}
-            <main className={cn(
-                "flex-1 relative bg-background flex flex-col h-screen overflow-hidden",
-                !hideSidebar && "ml-0 md:ml-64" // Sadece private sayfalarda margin
-            )}>
+            <main className="flex-1 relative bg-background flex flex-col h-screen overflow-hidden">
+                {/* Mobile hamburger button */}
+                {!hideSidebar && (
+                    <button
+                        onClick={() => setIsMobileSidebarOpen(true)}
+                        className="md:hidden absolute top-4 left-4 z-30 p-2 rounded-lg bg-card border border-border text-muted-foreground hover:text-foreground transition-colors shadow-sm"
+                    >
+                        <Menu className="w-5 h-5" />
+                    </button>
+                )}
                 {children}
             </main>
         </div>

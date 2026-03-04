@@ -10,6 +10,7 @@ import {
 import { cn } from '@/lib/utils';
 import { UserRole } from '@/types';
 import { toast } from 'sonner';
+import { BannerAd } from '@/components/BannerAd';
 
 interface MindMapNode {
     name: string;
@@ -303,28 +304,77 @@ METODOLOJİ: ${data.critique.methodology}
     const flashcards = data.study_module?.flashcards || [];
     const quiz = data.study_module?.quiz || [];
 
+    // Mode config for theming
+    const modeConfig = {
+        student: {
+            label: 'Öğrenci',
+            sublabel: 'Öğretmen gibi anlat',
+            icon: <BookOpen className="w-4 h-4" />,
+            activeClass: 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30',
+            badgeClass: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+            insightClass: 'bg-emerald-500/10 border-emerald-500/30',
+            insightTitle: '📚 Öğrenci Rehberi',
+            insightTitleClass: 'text-emerald-500',
+        },
+        academic: {
+            label: 'Akademik',
+            sublabel: 'PDF kalite değerlendirmesi',
+            icon: <GraduationCap className="w-4 h-4" />,
+            activeClass: 'bg-blue-500 text-white shadow-md shadow-blue-500/30',
+            badgeClass: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+            insightClass: 'bg-blue-500/10 border-blue-500/30',
+            insightTitle: '📊 Akademik Değerlendirme Raporu',
+            insightTitleClass: 'text-blue-500',
+        },
+        professor: {
+            label: 'Profesör',
+            sublabel: 'İleri düzey analiz',
+            icon: <BrainCircuit className="w-4 h-4" />,
+            activeClass: 'bg-purple-500 text-white shadow-md shadow-purple-500/30',
+            badgeClass: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+            insightClass: 'bg-purple-500/10 border-purple-500/30',
+            insightTitle: '🎓 Profesör Modu — İleri Düzey Analiz',
+            insightTitleClass: 'text-purple-500',
+        },
+        admin: {
+            label: 'Admin',
+            sublabel: 'Sistem yöneticisi',
+            icon: <BrainCircuit className="w-4 h-4" />,
+            activeClass: 'bg-gray-600 text-white shadow-md',
+            badgeClass: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+            insightClass: 'bg-gray-500/10 border-gray-500/30',
+            insightTitle: '⚙️ Admin Analizi',
+            insightTitleClass: 'text-gray-400',
+        },
+    } as const;
+    const cfg = modeConfig[currentLevel as keyof typeof modeConfig] ?? modeConfig.student;
+
     return (
         <div className="flex flex-col h-full space-y-6">
             {/* Level Selector */}
-            <div className="flex justify-center mb-4">
-                <div className="bg-secondary/50 p-1 rounded-full border border-border flex space-x-1">
-                    {(['student', 'academic', 'professor'] as UserRole[]).map((level) => (
-                        <button
-                            key={level}
-                            onClick={() => onLevelChange(level)}
-                            className={cn(
-                                "px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center space-x-2",
-                                currentLevel === level ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                            )}
-                        >
-                            {level === 'student' && <BookOpen className="w-4 h-4" />}
-                            {level === 'academic' && <GraduationCap className="w-4 h-4" />}
-                            {level === 'professor' && <BrainCircuit className="w-4 h-4" />}
-                            <span className="capitalize">
-                                {level === 'student' ? 'Öğrenci' : level === 'academic' ? 'Akademik' : 'Profesör'}
-                            </span>
-                        </button>
-                    ))}
+            <div className="flex flex-col items-center gap-2 mb-4">
+                <div className="bg-secondary/50 p-1 rounded-2xl border border-border flex space-x-1">
+                    {(['student', 'academic', 'professor'] as Array<keyof typeof modeConfig>).map((level) => {
+                        const mc = modeConfig[level];
+                        return (
+                            <button
+                                key={level}
+                                onClick={() => onLevelChange(level)}
+                                className={cn(
+                                    "px-4 py-2 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-0.5",
+                                    currentLevel === level ? mc.activeClass : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                                )}
+                            >
+                                <span className="flex items-center gap-1.5">{mc.icon}{mc.label}</span>
+                                <span className={cn("text-[9px] font-normal opacity-80", currentLevel === level ? "text-white/80" : "text-muted-foreground")}>{mc.sublabel}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+                <div className={cn("text-[11px] font-semibold px-3 py-1 rounded-full border", cfg.badgeClass)}>
+                    {currentLevel === 'student' && '🎒 Öğrenci Modu: Konuyu öğretmen gibi açıklıyoruz'}
+                    {currentLevel === 'academic' && '🔬 Akademik Mod: PDF kalitesi ve kaynak yeterliliği değerlendiriliyor'}
+                    {currentLevel === 'professor' && '🎓 Profesör Modu: Epistemolojik ve metodolojik derinlemesine analiz'}
                 </div>
             </div>
 
@@ -356,8 +406,10 @@ METODOLOJİ: ${data.critique.methodology}
                     {activeTab === 'summary' && (
                         <div className="space-y-6 animate-in fade-in duration-300">
                             <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-lg font-bold text-primary flex items-center">
-                                    <BookOpen className="w-5 h-5 mr-2" /> Genel Özet
+                                <h3 className="text-lg font-bold flex items-center" style={{ color: 'inherit' }}>
+                                    {currentLevel === 'student' && <><BookOpen className="w-5 h-5 mr-2 text-emerald-500" /> <span className="text-emerald-500">Öğretmen Anlatımı</span></>}
+                                    {currentLevel === 'academic' && <><GraduationCap className="w-5 h-5 mr-2 text-blue-500" /> <span className="text-blue-500">Akademik Değerlendirme</span></>}
+                                    {currentLevel === 'professor' && <><BrainCircuit className="w-5 h-5 mr-2 text-purple-500" /> <span className="text-purple-500">Derinlemesine Analiz</span></>}
                                 </h3>
                                 <div className="flex items-center space-x-2">
                                     <button
@@ -376,17 +428,77 @@ METODOLOJİ: ${data.critique.methodology}
                                     </button>
                                 </div>
                             </div>
-                            <p className="text-muted-foreground leading-relaxed">{data.summary}</p>
 
-                            <div className="bg-secondary/20 p-5 rounded-2xl border border-border">
-                                <h4 className="font-bold mb-2 flex items-center text-sm"><Sparkles className="w-4 h-4 mr-2 text-yellow-500" /> Seviye Analizi</h4>
-                                <p className="text-sm italic text-muted-foreground">{data.level_specific_insight}</p>
+                            {/* Özet - öğrenci modunda bölüm başlıkları ile render */}
+                            <div className="space-y-1">
+                                {data.summary.split('\n').map((line, i) => {
+                                    const trimmed = line.trim();
+                                    if (!trimmed) return <div key={i} className="h-3" />;
+
+                                    // Büyük harfli bölüm başlıkları (GİRİŞ:, TEMEL KAVRAMLAR:, vb.)
+                                    const isSectionHeading = /^[A-ZÇĞİÖŞÜa-zçğişöü\s]{3,30}:$/.test(trimmed) ||
+                                        /^(GİRİŞ|TEMEL KAVRAMLAR?|ANA KONULAR?|UYGULAMA|ÖZET|GIRIS|TEMEL|ANA|BAGLAM|SONUC)/i.test(trimmed);
+
+                                    if (isSectionHeading) {
+                                        return (
+                                            <div key={i} className={cn(
+                                                'mt-5 mb-2 pb-1 border-b flex items-center gap-2',
+                                                currentLevel === 'student' ? 'border-emerald-500/30' :
+                                                    currentLevel === 'academic' ? 'border-blue-500/30' :
+                                                        'border-purple-500/30'
+                                            )}>
+                                                <span className={cn(
+                                                    'text-xs font-black uppercase tracking-widest',
+                                                    currentLevel === 'student' ? 'text-emerald-500' :
+                                                        currentLevel === 'academic' ? 'text-blue-500' :
+                                                            'text-purple-500'
+                                                )}>{trimmed}</span>
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <p key={i} className="text-sm text-muted-foreground leading-relaxed">{trimmed}</p>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Banner Reklam - özet ve rehber arası */}
+                            <BannerAd variant="horizontal" slot={0} className="my-2" />
+
+                            {/* Level-specific insight - moda göre renkli kutu */}
+                            <div className={cn("p-5 rounded-2xl border", cfg.insightClass)}>
+                                <h4 className={cn("font-bold mb-3 flex items-center text-sm", cfg.insightTitleClass)}>
+                                    <Sparkles className="w-4 h-4 mr-2" />
+                                    {cfg.insightTitle}
+                                </h4>
+                                <div className="space-y-1.5">
+                                    {data.level_specific_insight.split('\n').map((line, i) => {
+                                        const trimmed = line.trim();
+                                        if (!trimmed) return <div key={i} className="h-1" />;
+                                        // Büyük harfle başlayan başlık satırları
+                                        const isHeading = /^[A-ZÇĞIÖŞÜ]{2}/.test(trimmed) && !trimmed.startsWith('-');
+                                        return isHeading ? (
+                                            <p key={i} className={cn("font-bold text-xs mt-3 first:mt-0 uppercase tracking-wide", cfg.insightTitleClass)}>{trimmed}</p>
+                                        ) : (
+                                            <p key={i} className="text-xs text-muted-foreground pl-2 leading-relaxed">{trimmed}</p>
+                                        );
+                                    })}
+                                </div>
                             </div>
 
                             <ul className="space-y-3">
                                 {data.key_points.map((point, i) => (
-                                    <li key={i} className="flex gap-4 p-4 bg-secondary/10 rounded-xl border border-border/50">
-                                        <span className="w-6 h-6 shrink-0 bg-primary/20 text-primary rounded-full flex items-center justify-center text-xs font-black">{i + 1}</span>
+                                    <li key={i} className={cn("flex gap-4 p-4 rounded-xl border",
+                                        currentLevel === 'student' ? 'bg-emerald-500/5 border-emerald-500/20' :
+                                            currentLevel === 'academic' ? 'bg-blue-500/5 border-blue-500/20' :
+                                                'bg-purple-500/5 border-purple-500/20'
+                                    )}>
+                                        <span className={cn("w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-black text-white",
+                                            currentLevel === 'student' ? 'bg-emerald-500' :
+                                                currentLevel === 'academic' ? 'bg-blue-500' :
+                                                    'bg-purple-500'
+                                        )}>{i + 1}</span>
                                         <span className="text-sm">{point}</span>
                                     </li>
                                 ))}
@@ -501,7 +613,7 @@ METODOLOJİ: ${data.critique.methodology}
                 </div>
 
                 {/* Sidebar Actions */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <div className="bg-card border border-border rounded-2xl p-6">
                         <h4 className="text-xs font-black uppercase text-muted-foreground mb-4 tracking-widest">Panel Araçları</h4>
                         <button onClick={generatePresentation} disabled={isGeneratingSlides} className="w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold">
@@ -553,6 +665,10 @@ METODOLOJİ: ${data.critique.methodology}
                             </button>
                         </div>
                     </div>
+
+                    {/* Sidebar Banner Reklamları */}
+                    <BannerAd variant="compact" slot={1} />
+                    <BannerAd variant="compact" slot={2} />
                 </div>
             </div>
 
