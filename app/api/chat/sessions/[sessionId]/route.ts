@@ -4,8 +4,9 @@ import { NextResponse } from 'next/server';
 // GET: Belirli bir sohbetin mesajlarını getir
 export async function GET(
     request: Request,
-    { params }: { params: { sessionId: string } }
+    { params }: { params: Promise<{ sessionId: string }> }
 ) {
+    const { sessionId } = await params;
     try {
         const supabase = await createClient();
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -14,7 +15,6 @@ export async function GET(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const sessionId = params.sessionId;
 
         // Önce oturumun bu kullanıcıya ait olduğunu doğrula
         const { data: session, error: sessionError } = await supabase
