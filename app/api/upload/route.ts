@@ -50,7 +50,21 @@ export async function POST(request: Request) {
                 }, { status: 403 });
             }
         } else {
-            console.log('⚠️ No authenticated user, using dummy ID. This may fail RLS policies.');
+            console.log('⚠️ No authenticated user, using dummy ID. Checking trial status.');
+
+            // SECURITY CHECK: Check if the guest has already completed a trial
+            // In Next.js App Router we read cookies from the incoming request directly
+            const cookieHeader = request.headers.get('cookie') || '';
+            const hasCompletedTrial = cookieHeader.includes('trial_completed=true');
+
+            if (hasCompletedTrial) {
+                return NextResponse.json({
+                    error: 'Ücretsiz deneme hakkınızı doldurdunuz. Lütfen analiz yapmaya devam etmek için giriş yapın veya kayıt olun.',
+                    needsUpgrade: true,
+                    needsLogin: true
+                }, { status: 403 });
+            }
+
             // Guest trial only allows PDF/Doc
             if (type !== 'pdf') {
                 return NextResponse.json({

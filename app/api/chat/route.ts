@@ -76,42 +76,26 @@ export async function POST(request: Request) {
             });
         }
 
-        // TAVSİYE 2: Veritabanı Kaydı İçin Paralel (Arka Plan) İşlem
-        // Kullanıcının mesaj kaydının Gemini request'ini yavaşlatmasını önlemek için ayrı asenkron task başlatıyoruz.
-        const saveUserMessagePromise = (async () => {
+        // Supabase RPC ile hem oturumu hem mesajı tek seferde (veya atomik olarak) kaydet
+        const saveMessage = async (role: 'user' | 'assistant', content: string, isImage: boolean = false) => {
             if (user && sessionId) {
                 try {
-                    const { data: existingSession } = await supabase
-                        .from('chat_sessions')
-                        .select('id')
-                        .eq('id', sessionId)
-                        .eq('user_id', user.id)
-                        .single();
-
-                    if (!existingSession) {
-                        await supabase.from('chat_sessions').insert({
-                            id: sessionId,
-                            user_id: user.id,
-                            title: message.slice(0, 80) + (message.length > 80 ? '...' : ''),
-                        });
-                    } else {
-                        await supabase
-                            .from('chat_sessions')
-                            .update({ updated_at: new Date().toISOString() })
-                            .eq('id', sessionId);
-                    }
-
-                    await supabase.from('chat_messages').insert({
-                        session_id: sessionId,
-                        role: 'user',
-                        content: message,
-                        image_url: imageBase64 ? `[Görsel eklendi]` : null,
+                    await supabase.rpc('save_chat_message_v2', {
+                        p_session_id: sessionId,
+                        p_user_id: user.id,
+                        p_role: role,
+                        p_content: content,
+                        p_image_url: isImage ? `[Görsel eklendi]` : null,
+                        p_title: role === 'user' ? (content.slice(0, 80) + (content.length > 80 ? '...' : '')) : null
                     });
                 } catch (e) {
-                    console.error('Chat user DB save error:', e);
+                    console.error(`Chat ${role} save error:`, e);
                 }
             }
-        })();
+        };
+
+        // Kullanıcı mesajını hemen kaydet (arka planda)
+        const saveUserMessagePromise = saveMessage('user', message, !!imageBase64);
 
         // TAVSİYE 1: AI Yanıtlarında Streaming
         if (stream) {
@@ -133,15 +117,10 @@ export async function POST(request: Request) {
                         controller.close();
 
                         // Stream tamamlandığında asistan yanıtını arka planda kaydet.
-                        // (Bu aşamada kullanıcı ilk kelimeleri çoktan görüp okumaya başladı bile)
                         if (user && sessionId) {
                             try {
-                                await saveUserMessagePromise; // User tablosunun sorunsuz yazıldığından emin ol
-                                await supabase.from('chat_messages').insert({
-                                    session_id: sessionId,
-                                    role: 'assistant',
-                                    content: fullText,
-                                });
+                                await saveUserMessagePromise;
+                                await saveMessage('assistant', fullText);
                             } catch (e) {
                                 console.error('Chat assistant DB save error:', e);
                             }
@@ -165,11 +144,7 @@ export async function POST(request: Request) {
             if (user && sessionId) {
                 try {
                     await saveUserMessagePromise;
-                    await supabase.from('chat_messages').insert({
-                        session_id: sessionId,
-                        role: 'assistant',
-                        content: text,
-                    });
+                    await saveMessage('assistant', text);
                 } catch (e) {
                     console.error('Chat DB error:', e);
                 }

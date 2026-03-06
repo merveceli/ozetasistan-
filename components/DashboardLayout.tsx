@@ -15,7 +15,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const hideSidebar = isPublicPage || isAdminPage;
 
     return (
-        <div className="flex h-screen w-full overflow-hidden">
+        <div className="flex min-h-screen w-full">
             {/* Sidebar - Desktop */}
             {!hideSidebar && (
                 <aside className="hidden md:flex flex-col w-64 shrink-0">
@@ -45,7 +45,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             )}
 
             {/* Main Content */}
-            <main className="flex-1 relative bg-background flex flex-col h-screen overflow-hidden">
+            <main className="flex-1 relative bg-background flex flex-col min-h-screen">
                 {/* Mobile hamburger button */}
                 {!hideSidebar && (
                     <button

@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from 'react';
-import { X, ExternalLink, Sparkles, BookOpen, GraduationCap, Zap } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { X, ExternalLink, BookOpen, GraduationCap, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BannerAdProps {
-    variant?: 'horizontal' | 'vertical' | 'compact';
+    variant?: 'horizontal' | 'vertical' | 'compact' | 'adsense';
     className?: string;
-    slot?: number; // farklı reklam slotları için
+    slot?: number;
+    adSlotId?: string; // Google AdSense slot ID
 }
 
-// Simüle edilmiş reklam içerikleri - gerçek reklam entegrasyonunda burası Google AdSense kodu olur
+// AdSense Publisher ID
+const ADSENSE_PUB_ID = 'ca-pub-1484212824373758';
+
+// ─── Fallback reklam içerikleri (AdSense yüklenemezse gösterilir) ─────────────
 const adContents = [
     {
         id: 1,
@@ -56,14 +60,69 @@ const adContents = [
     },
 ];
 
-export function BannerAd({ variant = 'horizontal', className, slot = 0 }: BannerAdProps) {
+// ─── Google AdSense Unit bileşeni ─────────────────────────────────────────────
+function AdSenseUnit({ adSlotId, className }: { adSlotId: string; className?: string }) {
+    const adRef = useRef<HTMLModElement>(null);
+    const [failed, setFailed] = useState(false);
+
+    useEffect(() => {
+        try {
+            if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
+                ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+            }
+        } catch (err) {
+            console.warn('AdSense push error:', err);
+            setFailed(true);
+        }
+
+        // 3 saniyede reklam yüklenmediyse fallback göster
+        const timer = setTimeout(() => {
+            if (adRef.current) {
+                const iframe = adRef.current.querySelector('iframe');
+                if (!iframe || iframe.offsetWidth === 0) setFailed(true);
+            }
+        }, 3000);
+
+        return () => clearTimeout(timer);
+    }, [adSlotId]);
+
+    if (failed) return null; // Üst bileşen fallback gösterecek
+
+    return (
+        <ins
+            ref={adRef}
+            className={cn('adsbygoogle', className)}
+            style={{ display: 'block' }}
+            data-ad-client={ADSENSE_PUB_ID}
+            data-ad-slot={adSlotId}
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+        />
+    );
+}
+
+export function BannerAd({ variant = 'horizontal', className, slot = 0, adSlotId }: BannerAdProps) {
     const [dismissed, setDismissed] = useState(false);
     const ad = adContents[slot % adContents.length];
     const Icon = ad.icon;
 
     if (dismissed) return null;
 
-    // Compact varyant — kenar çubukları için
+    // ─── Gerçek AdSense varyantı ──────────────────────────────────────────────
+    if (variant === 'adsense') {
+        const activeSlotId = adSlotId || '1234567890'; // Default test/placeholder slot
+        return (
+            <div className={cn('relative my-4 bg-white/5 border border-white/10 rounded-2xl overflow-hidden p-2 backdrop-blur-sm', className)}>
+                {/* "Reklam" etiketi */}
+                <div className="absolute top-1 left-2 text-[9px] text-muted-foreground/40 font-bold uppercase tracking-widest select-none z-10">
+                    Reklam
+                </div>
+                <AdSenseUnit adSlotId={activeSlotId} className="min-h-[90px] w-full" />
+            </div>
+        );
+    }
+
+    // ─── Compact varyant — kenar çubukları için ────────────────────────────────
     if (variant === 'compact') {
         return (
             <div className={cn(
@@ -78,7 +137,7 @@ export function BannerAd({ variant = 'horizontal', className, slot = 0 }: Banner
                     <X className="w-3 h-3 text-muted-foreground" />
                 </button>
                 <div className="flex items-start gap-3">
-                    <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0', `bg-${ad.iconColor.split('-')[1]}-500/10`)}>
+                    <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-white/5')}>
                         <Icon className={cn('w-4 h-4', ad.iconColor)} />
                     </div>
                     <div className="min-w-0">
@@ -97,7 +156,7 @@ export function BannerAd({ variant = 'horizontal', className, slot = 0 }: Banner
         );
     }
 
-    // Vertical varyant
+    // ─── Vertical varyant ─────────────────────────────────────────────────────
     if (variant === 'vertical') {
         return (
             <div className={cn(
@@ -112,7 +171,7 @@ export function BannerAd({ variant = 'horizontal', className, slot = 0 }: Banner
                     <X className="w-3 h-3 text-muted-foreground" />
                 </button>
                 <div className="text-center space-y-3">
-                    <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center mx-auto', `bg-white/5`)}>
+                    <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center mx-auto bg-white/5')}>
                         <Icon className={cn('w-6 h-6', ad.iconColor)} />
                     </div>
                     <span className={cn('text-[9px] font-black uppercase tracking-widest block', ad.labelColor)}>{ad.label}</span>
@@ -130,7 +189,7 @@ export function BannerAd({ variant = 'horizontal', className, slot = 0 }: Banner
         );
     }
 
-    // Horizontal (default) varyant — sayfa arası
+    // ─── Horizontal (default) varyant ─────────────────────────────────────────
     return (
         <div className={cn(
             'group relative rounded-2xl border bg-gradient-to-r overflow-hidden transition-all duration-300 hover:border-white/10',
@@ -143,12 +202,10 @@ export function BannerAd({ variant = 'horizontal', className, slot = 0 }: Banner
             }} />
 
             <div className="relative flex items-center gap-4 p-4">
-                {/* İkon */}
                 <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-white/5')}>
                     <Icon className={cn('w-5 h-5', ad.iconColor)} />
                 </div>
 
-                {/* İçerik */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                         <span className={cn('text-[9px] font-black uppercase tracking-widest', ad.labelColor)}>{ad.label}</span>
@@ -158,7 +215,6 @@ export function BannerAd({ variant = 'horizontal', className, slot = 0 }: Banner
                     <p className="text-xs text-muted-foreground truncate hidden sm:block">{ad.desc}</p>
                 </div>
 
-                {/* CTA */}
                 <div className="flex items-center gap-2 shrink-0">
                     <a
                         href={ad.href}

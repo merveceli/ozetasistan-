@@ -136,38 +136,56 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange }: Su
 
     const handleDownload = (format: 'pdf' | 'word') => {
         if (!data) return;
+
+        // Safely access data properties with fallbacks
+        const summaryText = data.summary || "Özet bulunamadı.";
+        const keyPoints = data.key_points || [];
+        const glossaryEntries = Object.entries(data.glossary || {});
+        const methodology = data.critique?.methodology || "Belirtilmemiş.";
+        const strengths = data.critique?.strengths || [];
+        const weaknesses = data.critique?.weaknesses || [];
+        const meta = data.citation_metadata;
+
         const fullText = [
             `ÖZET ASİSTANI - DÖKÜMAN ANALİZİ`,
             `${'='.repeat(50)}`,
             ``,
             `📋 GENEL ÖZET`,
             `${'-'.repeat(30)}`,
-            data.summary,
+            summaryText,
             ``,
-            `🔑 ANA NOKTALAR`,
-            `${'-'.repeat(30)}`,
-            ...data.key_points.map((p, i) => `${i + 1}. ${p}`),
-            ``,
-            `📖 TERİMLER SÖZLÜĞÜ`,
-            `${'-'.repeat(30)}`,
-            ...Object.entries(data.glossary).map(([t, d]) => `• ${t}: ${d}`),
-            ``,
+            ...(keyPoints.length > 0 ? [
+                `🔑 ANA NOKTALAR`,
+                `${'-'.repeat(30)}`,
+                ...keyPoints.map((p, i) => `${i + 1}. ${p}`),
+                ``
+            ] : []),
+            ...(glossaryEntries.length > 0 ? [
+                `📖 TERİMLER SÖZLÜĞÜ`,
+                `${'-'.repeat(30)}`,
+                ...glossaryEntries.map(([t, d]) => `• ${t}: ${d}`),
+                ``
+            ] : []),
             `🔬 KRİTİK ANALİZ`,
             `${'-'.repeat(30)}`,
-            `Metodoloji: ${data.critique.methodology}`,
+            `Metodoloji: ${methodology}`,
             ``,
-            `Güçlü Yönler:`,
-            ...data.critique.strengths.map(s => `  ✓ ${s}`),
-            ``,
-            `Eksikler:`,
-            ...data.critique.weaknesses.map(w => `  ✗ ${w}`),
-            ``,
-            data.citation_metadata ? [
+            ...(strengths.length > 0 ? [
+                `Güçlü Yönler:`,
+                ...strengths.map(s => `  ✓ ${s}`),
+                ``
+            ] : []),
+            ...(weaknesses.length > 0 ? [
+                `Eksikler:`,
+                ...weaknesses.map(w => `  ✗ ${w}`),
+                ``
+            ] : []),
+            ...(meta ? [
                 `📚 KAYNAKÇA (APA)`,
                 `${'-'.repeat(30)}`,
-                `${data.citation_metadata.author} (${data.citation_metadata.year}). ${data.citation_metadata.title}. ${data.citation_metadata.publisher}.`,
-            ].join('\n') : '',
-            ``,
+                `${meta.author || ''} (${meta.year || ''}). ${meta.title || ''}. ${meta.publisher || ''}.`,
+                ``
+            ] : []),
             `Özet Asistanı tarafından oluşturulmuştur. © ${new Date().getFullYear()}`,
         ].join('\n');
 
@@ -195,14 +213,13 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange }: Su
 <body>
   <h1>📄 Özet Asistanı — Döküman Analizi</h1>
   <h2>📋 Genel Özet</h2>
-  <div class="section"><p>${data.summary}</p></div>
-  <h2>🔑 Ana Noktalar</h2>
-  <ul>${data.key_points.map(p => `<li>${p}</li>`).join('')}</ul>
+  <div class="section"><p>${summaryText}</p></div>
+  ${keyPoints.length > 0 ? `<h2>🔑 Ana Noktalar</h2><ul>${keyPoints.map(p => `<li>${p}</li>`).join('')}</ul>` : ''}
   <h2>🔬 Kritik Analiz</h2>
-  <div class="section"><p><strong>Metodoloji:</strong> ${data.critique.methodology}</p></div>
-  <h2>✅ Güçlü Yönler</h2><ul>${data.critique.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
-  <h2>⚠️ Eksikler</h2><ul>${data.critique.weaknesses.map(w => `<li>${w}</li>`).join('')}</ul>
-  ${data.citation_metadata ? `<h2>📚 Kaynakça</h2><div class="section"><p>${data.citation_metadata.author} (${data.citation_metadata.year}). <em>${data.citation_metadata.title}</em>. ${data.citation_metadata.publisher}.</p></div>` : ''}
+  <div class="section"><p><strong>Metodoloji:</strong> ${methodology}</p></div>
+  ${strengths.length > 0 ? `<h2>✅ Güçlü Yönler</h2><ul>${strengths.map(s => `<li>${s}</li>`).join('')}</ul>` : ''}
+  ${weaknesses.length > 0 ? `<h2>⚠️ Eksikler</h2><ul>${weaknesses.map(w => `<li>${w}</li>`).join('')}</ul>` : ''}
+  ${meta ? `<h2>📚 Kaynakça</h2><div class="section"><p>${meta.author || ''} (${meta.year || ''}). <em>${meta.title || ''}</em>. ${meta.publisher || ''}.</p></div>` : ''}
   <footer>Özet Asistanı tarafından oluşturulmuştur • ${new Date().toLocaleDateString('tr-TR')}</footer>
 </body>
 </html>`);
@@ -431,7 +448,7 @@ METODOLOJİ: ${data.critique.methodology}
 
                             {/* Özet - öğrenci modunda bölüm başlıkları ile render */}
                             <div className="space-y-1">
-                                {data.summary.split('\n').map((line, i) => {
+                                {(data.summary || "").split('\n').map((line, i) => {
                                     const trimmed = line.trim();
                                     if (!trimmed) return <div key={i} className="h-3" />;
 
@@ -473,7 +490,7 @@ METODOLOJİ: ${data.critique.methodology}
                                     {cfg.insightTitle}
                                 </h4>
                                 <div className="space-y-1.5">
-                                    {data.level_specific_insight.split('\n').map((line, i) => {
+                                    {(data.level_specific_insight || "").split('\n').map((line, i) => {
                                         const trimmed = line.trim();
                                         if (!trimmed) return <div key={i} className="h-1" />;
                                         // Büyük harfle başlayan başlık satırları
@@ -488,7 +505,7 @@ METODOLOJİ: ${data.critique.methodology}
                             </div>
 
                             <ul className="space-y-3">
-                                {data.key_points.map((point, i) => (
+                                {(data.key_points || []).map((point, i) => (
                                     <li key={i} className={cn("flex gap-4 p-4 rounded-xl border",
                                         currentLevel === 'student' ? 'bg-emerald-500/5 border-emerald-500/20' :
                                             currentLevel === 'academic' ? 'bg-blue-500/5 border-blue-500/20' :
@@ -560,7 +577,7 @@ METODOLOJİ: ${data.critique.methodology}
 
                     {activeTab === 'glossary' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-300">
-                            {Object.entries(data.glossary).map(([term, def], i) => (
+                            {Object.entries(data.glossary || {}).map(([term, def], i) => (
                                 <div key={i} className="p-4 bg-secondary/10 border border-border rounded-2xl">
                                     <h4 className="font-bold text-primary mb-1">{term}</h4>
                                     <p className="text-xs text-muted-foreground">{def}</p>
@@ -573,16 +590,16 @@ METODOLOJİ: ${data.critique.methodology}
                         <div className="space-y-6 animate-in fade-in duration-300">
                             <div className="bg-orange-500/10 p-5 rounded-2xl border border-orange-500/20">
                                 <h4 className="font-bold text-orange-500 mb-2 flex items-center"><Search className="w-4 h-4 mr-2" /> Metodoloji</h4>
-                                <p className="text-sm text-muted-foreground">{data.critique.methodology}</p>
+                                <p className="text-sm text-muted-foreground">{data.critique?.methodology || "Belirtilmemiş."}</p>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <h4 className="font-bold text-green-500 text-sm">Güçlü Yönler</h4>
-                                    {data.critique.strengths.map((s, i) => <p key={i} className="text-xs text-muted-foreground">• {s}</p>)}
+                                    {(data.critique?.strengths || []).map((s, i) => <p key={i} className="text-xs text-muted-foreground">• {s}</p>)}
                                 </div>
                                 <div className="space-y-2">
                                     <h4 className="font-bold text-red-500 text-sm">Eksikler</h4>
-                                    {data.critique.weaknesses.map((w, i) => <p key={i} className="text-xs text-muted-foreground">• {w}</p>)}
+                                    {(data.critique?.weaknesses || []).map((w, i) => <p key={i} className="text-xs text-muted-foreground">• {w}</p>)}
                                 </div>
                             </div>
                         </div>

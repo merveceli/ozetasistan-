@@ -124,7 +124,7 @@ export default function Home() {
         </div>
 
         {/* Reklam Banner - Upload ile Aktiviteler arası */}
-        <BannerAd variant="horizontal" slot={0} />
+        <BannerAd variant="adsense" />
 
         {/* Bottom Section: Activities & Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -149,8 +149,8 @@ export default function Home() {
               description="Başarı katsayısı"
               icon={Clock}
             />
-            {/* Stats altı compact banner */}
-            <BannerAd variant="compact" slot={2} />
+            {/* Stats altı dik banner */}
+            <BannerAd variant="adsense" className="h-[400px]" />
           </div>
         </div>
       </div>

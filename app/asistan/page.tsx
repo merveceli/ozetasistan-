@@ -1,4 +1,5 @@
 import { ChatInterface } from "@/components/ChatInterface";
+import { BannerAd } from "@/components/BannerAd";
 import { Suspense } from "react";
 
 export default function AssistantPage() {
@@ -8,6 +9,10 @@ export default function AssistantPage() {
                 <div className="mb-4">
                     <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400 w-fit">Akademik Asistan</h1>
                     <p className="text-muted-foreground text-sm">Araştırmalarınızda size özel yapay zeka desteği.</p>
+                </div>
+                {/* Asistan header reklamı */}
+                <div className="mb-4">
+                    <BannerAd variant="adsense" />
                 </div>
                 <div className="flex-1 min-h-0"> {/* min-h-0 is crucial for flex child scrolling */}
                     <Suspense fallback={<div className="flex items-center justify-center p-8"><p className="text-muted-foreground animate-pulse">Asistan Yükleniyor...</p></div>}>

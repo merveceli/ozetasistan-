@@ -1,97 +1,110 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { model } from '@/lib/gemini';
 import { checkQuota, consumeAnalysisCredit, logFeatureUsage } from '@/lib/quota';
 
+// Vercel Serverless ve Edge fonksiyonları için zaman aşımı (Timeout) süresini maksimuma çıkarır (Hobby: 60s, Pro: 300s)
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
-    try {
-        console.log('🔍 Analysis request start');
-        const { documentId, level } = await request.json();
-        console.log('📄 Request data:', { documentId, level });
+  let currentDocumentId: string | null = null;
+  try {
+    console.log('🔍 Analysis request start');
+    const { documentId, level } = await request.json();
+    currentDocumentId = documentId; // Assign documentId to currentDocumentId
+    console.log('📄 Request data:', { documentId, level });
 
-        if (!documentId) {
-            return NextResponse.json({ error: 'Document ID is required' }, { status: 400 });
-        }
+    if (!documentId) {
+      return NextResponse.json({ error: 'Document ID is required' }, { status: 400 });
+    }
 
-        const supabase = await createClient();
+    const supabase = await createClient();
 
-        // Auth check
-        const { data: { user } } = await supabase.auth.getUser();
-        console.log(user ? `✅ User: ${user.id}` : '⚠️ No user');
+    // Auth check
+    const { data: { user } } = await supabase.auth.getUser();
+    console.log(user ? `✅ User: ${user.id}` : '⚠️ No user');
 
-        // Check quota and tier for authenticated users
-        if (user) {
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('subscription_tier')
-                .eq('id', user.id)
-                .single();
+    // Check quota and tier for authenticated users
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_tier')
+        .eq('id', user.id)
+        .single();
 
-            const userTier = profile?.subscription_tier || 'free';
+      const userTier = profile?.subscription_tier || 'free';
 
-            // Tier-based depth restriction
-            const restrictedLevels = ['academic', 'professor', 'deep_analysis', 'analysis_package'];
-            if (userTier === 'free' && restrictedLevels.includes(level)) {
-                return NextResponse.json({
-                    error: 'Bu analiz derinliği için üyeliğinizi yükseltmeniz gerekmektedir.',
-                    needsUpgrade: true
-                }, { status: 403 });
-            }
+      // Tier-based depth restriction
+      const restrictedLevels = ['academic', 'professor', 'deep_analysis', 'analysis_package'];
+      if (userTier === 'free' && restrictedLevels.includes(level)) {
+        return NextResponse.json({
+          error: 'Bu analiz derinliği için üyeliğinizi yükseltmeniz gerekmektedir.',
+          needsUpgrade: true
+        }, { status: 403 });
+      }
 
-            const quotaCheck = await checkQuota(user.id, 'analyze');
-            if (!quotaCheck.allowed) {
-                return NextResponse.json({
-                    error: 'Kullanım kotası aşıldı',
-                    message: quotaCheck.reason,
-                    needsUpgrade: true
-                }, { status: 403 });
-            }
-        } else {
-            // Guest trial only allows basic level
-            if (level && level !== 'student' && level !== 'metadata') {
-                return NextResponse.json({
-                    error: 'Misafir kullanıcılar sadece temel analiz yapabilir.',
-                    needsUpgrade: true
-                }, { status: 403 });
-            }
-        }
+      const quotaCheck = await checkQuota(user.id, 'analyze');
+      if (!quotaCheck.allowed) {
+        return NextResponse.json({
+          error: 'Kullanım kotası aşıldı',
+          message: quotaCheck.reason,
+          needsUpgrade: true
+        }, { status: 403 });
+      }
+    } else {
+      // Guest trial only allows basic level
+      if (level && level !== 'student' && level !== 'metadata') {
+        return NextResponse.json({
+          error: 'Misafir kullanıcılar sadece temel analiz yapabilir.',
+          needsUpgrade: true
+        }, { status: 403 });
+      }
+    }
 
-        // Fetch document
-        let query = supabase.from('documents').select('*').eq('id', documentId);
-        if (user) query = query.eq('user_id', user.id);
+    // Fetch document
+    let query = supabase.from('documents').select('*').eq('id', documentId);
+    if (user) query = query.eq('user_id', user.id);
 
-        const { data: document, error: dbError } = await query.single();
+    const { data: document, error: dbError } = await query.single();
 
-        if (dbError || !document) {
-            console.error('❌ Document not found:', dbError);
-            return NextResponse.json({ error: 'Document not found' }, { status: 404 });
-        }
+    if (dbError || !document) {
+      console.error('❌ Document not found:', dbError);
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+    }
 
-        console.log('📄 Document:', document.name, document.file_type);
+    console.log('📄 Document:', document.name, document.file_type);
 
-        // Update status to processing
-        await supabase
-            .from('documents')
-            .update({ analysis_status: 'processing' })
-            .eq('id', documentId);
+    // Check if we already have the analysis for this specific level cached
+    if (document.analysis_status === 'completed' && document.metadata && document.metadata[level]) {
+      console.log(`✅ Found cached analysis for level: ${level}. Skipping AI generation.`);
+      return NextResponse.json(document.metadata[level]);
+    }
 
-        // Download file
-        const { data: fileData, error: storageError } = await supabase.storage
-            .from('documents')
-            .download(document.file_path);
+    const supabaseAdmin = createAdminClient();
 
-        if (storageError || !fileData) {
-            console.error('❌ Storage error:', storageError);
-            return NextResponse.json({ error: 'Failed to download file' }, { status: 500 });
-        }
+    // Update status to processing (using admin client to bypass RLS for guest users)
+    await supabaseAdmin
+      .from('documents')
+      .update({ analysis_status: 'processing' })
+      .eq('id', documentId);
 
-        console.log('📦 File downloaded, size:', fileData.size);
+    // Download file
+    const { data: fileData, error: storageError } = await supabase.storage
+      .from('documents')
+      .download(document.file_path);
 
-        // ─── Prompt Templates ────────────────────────────────────────────────
-        let promptTemplate = '';
+    if (storageError || !fileData) {
+      console.error('❌ Storage error:', storageError);
+      return NextResponse.json({ error: 'Failed to download file' }, { status: 500 });
+    }
 
-        if (level === 'metadata') {
-            promptTemplate = `Yuklenmiş olan PDF dosyasini analiz et.
+    console.log('📦 File downloaded, size:', fileData.size);
+
+    // ─── Prompt Templates ────────────────────────────────────────────────
+    let promptTemplate = '';
+
+    if (level === 'metadata') {
+      promptTemplate = `Yuklenmiş olan PDF dosyasini analiz et.
 Sadece bu PDF dosyasinin icerigini kullan.
 Dis bilgi kullanma.
 
@@ -115,8 +128,8 @@ Return ONLY valid JSON (no markdown, no code blocks):
   "error": null
 }`;
 
-        } else if (level === 'deep_analysis') {
-            promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
+    } else if (level === 'deep_analysis') {
+      promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
 
 Sadece ve sadece bu PDF icerigini kullan.
 Dis bilgi kullanma ve tahmin yapma.
@@ -135,8 +148,8 @@ Return ONLY valid JSON (no markdown, no code blocks):
   "sinirliliklar": ["Madde 1", "Madde 2"]
 }`;
 
-        } else if (level === 'presentation') {
-            promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
+    } else if (level === 'presentation') {
+      promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
 
 Sadece bu PDF dosyasinin icerigini kullan.
 Dis bilgi kullanma, tahmin etme.
@@ -163,8 +176,8 @@ Return ONLY valid JSON (no markdown, no code blocks):
   ]
 }`;
 
-        } else if (level === 'analysis_package') {
-            promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
+    } else if (level === 'analysis_package') {
+      promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
 
 Sadece bu PDF icerigini kullan. Dis bilgi kullanma.
 Ciktiyi tamamen Turkce ver.
@@ -176,9 +189,9 @@ Return ONLY valid JSON (no markdown, no code blocks):
   "analysis_package": "ANALIZ_PAKETI:\\n\\nBaslik: ...\\nYazarlar: ...\\nYil: ...\\n\\nAmac ve Problem: ...\\nYontem: ...\\nVeri: ...\\nBulgular: ...\\nKatki: ...\\nSinirliliklar: ..."
 }`;
 
-        } else if (level === 'student') {
-            // ─── ÖĞRENCİ MODU: Kapsamlı ders notu formatı ───
-            promptTemplate = `Sen cok deneyimli, sevecen ve konuyu gercekten anlatan bir ogretmensin.
+    } else if (level === 'student') {
+      // ─── ÖĞRENCİ MODU: Kapsamlı ders notu formatı ───
+      promptTemplate = `Sen cok deneyimli, sevecen ve konuyu gercekten anlatan bir ogretmensin.
 Verilen PDF belgesini, konuyu hic bilmeyen bir lise veya universite ogrencisine sifirdan ve kapsamli bicimde anlat.
 
 MUTLAK KURALLAR:
@@ -263,9 +276,9 @@ Return ONLY valid JSON (no markdown wrapper, no code fences):
   }
 }`;
 
-        } else if (level === 'academic') {
-            // ─── AKADEMİK MOD: PDF kalite değerlendirmesi ───
-            promptTemplate = `Sen akademik bir danisман ve literatur uzmanisın. Verilen PDF belgesini hem icerik hem de akademik kalite acisindan cok yonlu degerlendir.
+    } else if (level === 'academic') {
+      // ─── AKADEMİK MOD: PDF kalite değerlendirmesi ───
+      promptTemplate = `Sen akademik bir danisман ve literatur uzmanisın. Verilen PDF belgesini hem icerik hem de akademik kalite acisindan cok yonlu degerlendir.
 
 MUTLAK KURALLAR:
 1. Ciktinin tamami Turkce olmalidir.
@@ -339,9 +352,9 @@ Return ONLY valid JSON (no markdown, no code blocks):
   }
 }`;
 
-        } else if (level === 'professor') {
-            // ─── PROFESÖR MODU: İleri düzey akademik analiz ───
-            promptTemplate = `Sen alaninда uzman, yillarin deneyimine sahip bir profesorsun. Verilen PDF belgesini, meslektasin olan baska bir profesore sunar gibi ileri duzey akademik terminolojiyle analiz et.
+    } else if (level === 'professor') {
+      // ─── PROFESÖR MODU: İleri düzey akademik analiz ───
+      promptTemplate = `Sen alaninда uzman, yillarin deneyimine sahip bir profesorsun. Verilen PDF belgesini, meslektasin olan baska bir profesore sunar gibi ileri duzey akademik terminolojiyle analiz et.
 
 MUTLAK KURALLAR:
 1. Ciktinin tamami Turkce olmalidir. Teknik terimler orijinal dilde parantez icinde Turkce karsiligi ile gosterilebilir.
@@ -421,162 +434,174 @@ Return ONLY valid JSON (no markdown, no code blocks):
   }
 }`;
 
-        } else {
-            // Fallback — beklenmedik level değerleri için student modunu kullan
-            promptTemplate = `Verilen belgeyi Turkce olarak ozetle.
+    } else {
+      // Fallback — beklenmedik level değerleri için student modunu kullan
+      promptTemplate = `Verilen belgeyi Turkce olarak ozetle.
 JSON formatinda don: { "summary": "ozet", "key_points": ["madde 1", "madde 2"], "glossary": {}, "critique": { "strengths": [], "weaknesses": [], "methodology": "" }, "level_specific_insight": "", "mind_map": { "name": "Konu", "children": [] }, "citation_metadata": { "title": "", "author": "", "year": "", "doi": "", "publisher": "" }, "study_module": { "flashcards": [], "quiz": [] } }`;
-        }
-
-        // ─── Gemini API Call ─────────────────────────────────────────────────
-        let result;
-
-        if (document.file_type === 'pdf') {
-            try {
-                console.log('📄 Processing PDF...');
-                const arrayBuffer = await fileData.arrayBuffer();
-                const base64 = Buffer.from(arrayBuffer).toString('base64');
-                console.log('✅ PDF converted to base64');
-                console.log('🤖 Sending to Gemini...');
-
-                result = await model.generateContent([
-                    {
-                        inlineData: {
-                            mimeType: 'application/pdf',
-                            data: base64
-                        }
-                    },
-                    { text: promptTemplate }
-                ]);
-
-                console.log('✅ Gemini responded');
-
-            } catch (pdfError: any) {
-                console.error('❌ PDF processing error:', pdfError);
-                // Mark as failed
-                await supabase
-                    .from('documents')
-                    .update({ analysis_status: 'failed' })
-                    .eq('id', documentId);
-                return NextResponse.json({
-                    error: 'PDF isleme hatasi. Lutfen tekrar deneyin.',
-                    details: pdfError.message
-                }, { status: 500 });
-            }
-
-        } else if (document.file_type === 'url') {
-            console.log('🌐 Processing URL...');
-            const urlText = (await fileData.text()).trim();
-            console.log('Fetching URL:', urlText);
-            try {
-                const urlResponse = await fetch(urlText);
-                const html = await urlResponse.text();
-                const bodyMatch = html.match(/<body[^>]*>([\w|\W]*)<\/body>/im);
-                let contentText = bodyMatch ? bodyMatch[1] : html;
-                contentText = contentText.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ');
-                contentText = contentText.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ');
-                contentText = contentText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
-
-                result = await model.generateContent(
-                    promptTemplate + '\n\nDocument content:\n' + contentText.slice(0, 50000)
-                );
-            } catch (error) {
-                console.error('URL Fetch Error:', error);
-                throw new Error('URL icerigi okunamadi.');
-            }
-
-        } else {
-            console.log('📝 Processing text file...');
-            const text = await fileData.text();
-            result = await model.generateContent(
-                promptTemplate + '\n\nDocument content:\n' + text.slice(0, 50000)
-            );
-        }
-
-        // ─── Parse Response ───────────────────────────────────────────────────
-        const response = await result.response;
-        const textResponse = response.text();
-        console.log('📝 Response length:', textResponse.length);
-
-        let analysisData;
-        try {
-            let cleanJson = textResponse.trim();
-
-            // Remove markdown code blocks if present
-            cleanJson = cleanJson.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
-
-            // Find JSON boundaries
-            const jsonStart = cleanJson.indexOf('{');
-            const jsonEnd = cleanJson.lastIndexOf('}');
-
-            if (jsonStart !== -1 && jsonEnd !== -1) {
-                cleanJson = cleanJson.substring(jsonStart, jsonEnd + 1);
-            }
-
-            console.log('🔍 Parsing JSON...');
-            analysisData = JSON.parse(cleanJson);
-            console.log('✅ JSON parsed successfully');
-
-        } catch (parseError: any) {
-            console.error('❌ JSON parse error:', parseError);
-            console.error('Raw response (first 500):', textResponse.substring(0, 500));
-
-            // Mark as failed
-            await supabase
-                .from('documents')
-                .update({ analysis_status: 'failed' })
-                .eq('id', documentId);
-
-            return NextResponse.json({
-                error: 'Yapay zeka yaniti isle nemedi. Lutfen tekrar deneyin.',
-                details: parseError.message
-            }, { status: 500 });
-        }
-
-        // ─── Save & Respond ───────────────────────────────────────────────────
-        await supabase
-            .from('documents')
-            .update({ analysis_status: 'completed' })
-            .eq('id', documentId);
-
-        if (user) {
-            await consumeAnalysisCredit(user.id);
-            await logFeatureUsage(user.id, level || 'summary', documentId);
-        }
-
-        console.log('✅ Analysis complete');
-
-        const jsonResponse = NextResponse.json(analysisData);
-
-        if (!user) {
-            jsonResponse.cookies.set('trial_completed', 'true', {
-                path: '/',
-                maxAge: 60 * 60 * 24 * 365,
-                httpOnly: false,
-            });
-        }
-
-        return jsonResponse;
-
-    } catch (error: any) {
-        console.error('❌ Fatal error:', error);
-        console.error('Stack:', error.stack);
-
-        try {
-            const supabase = await createClient();
-            const { documentId } = await (async () => {
-                try { return await request.json(); } catch { return {}; }
-            })();
-            if (documentId) {
-                await supabase
-                    .from('documents')
-                    .update({ analysis_status: 'failed' })
-                    .eq('id', documentId);
-            }
-        } catch { /* ignore cleanup errors */ }
-
-        return NextResponse.json({
-            error: error.message || 'Internal Server Error',
-            details: error.toString()
-        }, { status: 500 });
     }
+
+    // ─── Gemini API Call ─────────────────────────────────────────────────
+    let result;
+
+    if (document.file_type === 'pdf') {
+      try {
+        console.log('📄 Processing PDF...');
+        const arrayBuffer = await fileData.arrayBuffer();
+        const base64 = Buffer.from(arrayBuffer).toString('base64');
+        console.log('✅ PDF converted to base64');
+        console.log('🤖 Sending to Gemini...');
+
+        result = await model.generateContent([
+          {
+            inlineData: {
+              mimeType: 'application/pdf',
+              data: base64
+            }
+          },
+          { text: promptTemplate }
+        ]);
+
+        console.log('✅ Gemini responded');
+
+      } catch (pdfError: any) {
+        console.error('❌ PDF processing error:', pdfError);
+        // Mark as failed
+        await supabase
+          .from('documents')
+          .update({ analysis_status: 'failed' })
+          .eq('id', documentId);
+        return NextResponse.json({
+          error: 'PDF isleme hatasi. Lutfen tekrar deneyin.',
+          details: pdfError.message
+        }, { status: 500 });
+      }
+
+    } else if (document.file_type === 'url') {
+      console.log('🌐 Processing URL...');
+      const urlText = (await fileData.text()).trim();
+      console.log('Fetching URL:', urlText);
+      try {
+        const urlResponse = await fetch(urlText);
+        const html = await urlResponse.text();
+        const bodyMatch = html.match(/<body[^>]*>([\w|\W]*)<\/body>/im);
+        let contentText = bodyMatch ? bodyMatch[1] : html;
+        contentText = contentText.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ');
+        contentText = contentText.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ');
+        contentText = contentText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+
+        result = await model.generateContent(
+          promptTemplate + '\n\nDocument content:\n' + contentText.slice(0, 50000)
+        );
+      } catch (error) {
+        console.error('URL Fetch Error:', error);
+        throw new Error('URL icerigi okunamadi.');
+      }
+
+    } else {
+      console.log('📝 Processing text file...');
+      const text = await fileData.text();
+      result = await model.generateContent(
+        promptTemplate + '\n\nDocument content:\n' + text.slice(0, 50000)
+      );
+    }
+
+    // ─── Parse Response ───────────────────────────────────────────────────
+    const response = await result.response;
+    const textResponse = response.text();
+    console.log('📝 Response length:', textResponse.length);
+
+    let analysisData;
+    try {
+      let cleanJson = textResponse.trim();
+
+      // Remove markdown code blocks if present
+      cleanJson = cleanJson.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+
+      // Find JSON boundaries
+      const jsonStart = cleanJson.indexOf('{');
+      const jsonEnd = cleanJson.lastIndexOf('}');
+
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        cleanJson = cleanJson.substring(jsonStart, jsonEnd + 1);
+      }
+
+      console.log('🔍 Parsing JSON...');
+      analysisData = JSON.parse(cleanJson);
+      console.log('✅ JSON parsed successfully');
+
+    } catch (parseError: any) {
+      console.error('❌ JSON parse error:', parseError);
+      console.error('Raw response (first 500):', textResponse.substring(0, 500));
+
+      // Mark as failed using admin client
+      await supabaseAdmin
+        .from('documents')
+        .update({ analysis_status: 'failed' })
+        .eq('id', documentId);
+
+      return NextResponse.json({
+        error: 'Yapay zeka yaniti isle nemedi. Lutfen tekrar deneyin.',
+        details: parseError.message
+      }, { status: 500 });
+    }
+
+    // ─── Save & Respond ───────────────────────────────────────────────────
+    const existingMetadata = document.metadata || {};
+    const updatedMetadata = {
+      ...existingMetadata,
+      [level]: analysisData
+    };
+
+    const { error: updateError } = await supabaseAdmin
+      .from('documents')
+      .update({
+        analysis_status: 'completed',
+        metadata: updatedMetadata
+      })
+      .eq('id', documentId);
+
+    if (updateError) {
+      console.error('❌ Failed to save analysis metadata:', updateError);
+    } else {
+      console.log('✅ Metadata saved to Supabase');
+    }
+
+    if (user) {
+      await consumeAnalysisCredit(user.id);
+      await logFeatureUsage(user.id, level || 'summary', documentId);
+    }
+
+    console.log('✅ Analysis complete');
+
+    const jsonResponse = NextResponse.json(analysisData);
+
+    if (!user) {
+      jsonResponse.cookies.set('trial_completed', 'true', {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 365,
+        httpOnly: false,
+      });
+    }
+
+    return jsonResponse;
+
+  } catch (error: any) {
+    console.error('❌ Fatal error:', error);
+    console.error('Stack:', error.stack);
+
+    try {
+      if (currentDocumentId) {
+        const supabase = await createClient();
+        await supabase
+          .from('documents')
+          .update({ analysis_status: 'failed' })
+          .eq('id', currentDocumentId);
+      }
+    } catch { /* ignore cleanup errors */ }
+
+    return NextResponse.json({
+      error: error.message || 'Bir sunucu hatası oluştu, işlem zaman aşımına uğramış olabilir.',
+      details: error.toString()
+    }, { status: 500 });
+  }
 }

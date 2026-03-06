@@ -1,8 +1,9 @@
 "use client";
 
-import { UploadCloud, Link as LinkIcon, Loader2, Lock, Sparkles, FileText, Globe, X, Send, AlertCircle } from 'lucide-react';
+import { UploadCloud, Link as LinkIcon, Loader2, Lock, Sparkles, FileText, Globe, X, Send, AlertCircle, HardDrive, LayoutList } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { UpgradeModal } from './modals/UpgradeModal';
 import { toast } from 'sonner';
@@ -75,6 +76,9 @@ export function UploadArea() {
     const [urlInput, setUrlInput] = useState("");
     const [textInput, setTextInput] = useState("");
 
+    // Cloud Integration Modal State
+    const [selectedCloudSource, setSelectedCloudSource] = useState<{ id: string, name: string } | null>(null);
+
     useEffect(() => {
         fetchUser();
     }, []);
@@ -89,10 +93,11 @@ export function UploadArea() {
         }
     };
 
-    const handleFeatureClick = (feature: string, requiredTier: 'student' | 'academic', action: () => void) => {
+    const handleFeatureClick = (feature: string, requiredTier: 'free' | 'student' | 'academic', action: () => void) => {
         const userTier = user?.subscription_tier || 'free';
 
-        const isAllowed = (requiredTier === 'student' && userTier !== 'free') ||
+        const isAllowed = requiredTier === 'free' ||
+            (requiredTier === 'student' && userTier !== 'free') ||
             (requiredTier === 'academic' && userTier === 'academic');
 
         if (isAllowed) {
@@ -207,6 +212,61 @@ export function UploadArea() {
                 onClose={() => setShowUpgradeModal(false)}
                 feature={selectedFeature}
             />
+
+            {/* Cloud Integration Modal */}
+            <AnimatePresence>
+                {selectedCloudSource && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setSelectedCloudSource(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.95, y: 20 }}
+                            className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border"
+                            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                        >
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                                        <HardDrive className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black">{selectedCloudSource.name}</h3>
+                                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-0.5">Bulut Aktarımı</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setSelectedCloudSource(null)} className="p-2 hover:bg-secondary rounded-xl transition-colors">
+                                    <X className="w-5 h-5 text-muted-foreground" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4 mb-6">
+                                <p className="text-sm text-foreground/80 leading-relaxed font-medium">
+                                    {selectedCloudSource.name} hesabınızdaki <b>makale, tez ve dokümanlarınızı</b> doğrudan sisteme çağırarak analiz edebileceksiniz.
+                                </p>
+                                <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start gap-3">
+                                    <LayoutList className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                                    <p className="text-xs text-muted-foreground">
+                                        Bu menü şuan geliştirme aşamasındadır. Yakında <b>{selectedCloudSource.name}</b> üzerinden doğrudan döküman seçerek bilgisayara indirmeye gerek kalmadan özet çıkartabileceksiniz!
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setSelectedCloudSource(null)}
+                                className="w-full py-3.5 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                            >
+                                Anladım, sabırsızlıkla bekliyorum!
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <input
                 type="file"
@@ -347,14 +407,14 @@ export function UploadArea() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
-                        { id: 'drive', name: 'Google Drive', icon: 'bg-blue-500/10 text-blue-500', requiredTier: 'academic' },
-                        { id: 'zotero', name: 'Zotero', icon: 'bg-red-500/10 text-red-500', requiredTier: 'academic' },
-                        { id: 'mendeley', name: 'Mendeley', icon: 'bg-orange-500/10 text-orange-500', requiredTier: 'academic' },
-                        { id: 'dropbox', name: 'Dropbox', icon: 'bg-blue-400/10 text-blue-400', requiredTier: 'student' }
+                        { id: 'drive', name: 'Google Drive', icon: 'bg-blue-500/10 text-blue-500', requiredTier: 'free' },
+                        { id: 'zotero', name: 'Zotero', icon: 'bg-red-500/10 text-red-500', requiredTier: 'free' },
+                        { id: 'mendeley', name: 'Mendeley', icon: 'bg-orange-500/10 text-orange-500', requiredTier: 'free' },
+                        { id: 'dropbox', name: 'Dropbox', icon: 'bg-blue-400/10 text-blue-400', requiredTier: 'free' }
                     ].map((source) => (
                         <button
                             key={source.id}
-                            onClick={() => handleFeatureClick(source.name, source.requiredTier as any, () => alert(`${source.name} entegrasyonu yakında eklenecek!`))}
+                            onClick={() => handleFeatureClick(source.name, source.requiredTier as any, () => setSelectedCloudSource({ id: source.id, name: source.name }))}
                             className="flex items-center space-x-3 p-4 bg-secondary/10 hover:bg-secondary/20 border border-border rounded-xl transition-all group overflow-hidden relative"
                         >
                             <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", source.icon)}>

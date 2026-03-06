@@ -5,9 +5,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Headphones, Play, Pause, SkipBack, SkipForward,
     Volume2, VolumeX, FileText, RefreshCw,
-    Loader2, AlertCircle, CheckCircle2
+    Loader2, AlertCircle, CheckCircle2,
+    Timer, Coffee, Trophy, Flame, ChevronRight, BarChart2, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// ─── Pomodoro Types ──────────────────────────────────────────────────────────
+type PomodoroPhase = 'work' | 'break';
+interface PomodoroSession {
+    date: string;
+    focusMinutes: number;
+    completedPomodoros: number;
+}
+
+const POMODORO_PRESETS = [
+    { label: '25 / 5', work: 25, break: 5 },
+    { label: '50 / 10', work: 50, break: 10 },
+    { label: '90 / 20', work: 90, break: 20 },
+] as const;
 
 interface DocumentItem {
     id: string;
@@ -73,8 +88,8 @@ function getTurkishVoice(gender: 'male' | 'female'): SpeechSynthesisVoice | null
     if (trVoices.length > 0) {
         const genderKeywords =
             gender === 'female'
-                ? /female|kadın|kadin|woman|girl/i
-                : /male|erkek|man|boy/i;
+                ? /female|kadın|kadin|woman|girl|emel|ayşe|zeynep/i
+                : /male|erkek|man|boy|tolga|ahmet|kemal/i;
         const match = trVoices.find(v => genderKeywords.test(v.name));
         if (match) return match;
 
@@ -167,6 +182,74 @@ export default function FocusRadioPage() {
     const progress = totalChunks > 0 ? Math.round((currentChunk / totalChunks) * 100) : 0;
     const isPlaying = playerState === 'playing';
     const isPaused = playerState === 'paused';
+
+    // ── Pomodoro State
+    const [pomodoroActive, setPomodoroActive] = useState(false);
+    const [pomodoroPhase, setPomodoroPhase] = useState<PomodoroPhase>('work');
+    const [pomodoroPresetIdx, setPomodoroPresetIdx] = useState(0);
+    const [pomodoroSecondsLeft, setPomodoroSecondsLeft] = useState(25 * 60);
+    const [completedPomodoros, setCompletedPomodoros] = useState(0);
+    const [totalFocusSeconds, setTotalFocusSeconds] = useState(0);
+    const [showPomodoroReport, setShowPomodoroReport] = useState(false);
+    const [showPomodoroPanel, setShowPomodoroPanel] = useState(false);
+    const pomodoroIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const currentPreset = POMODORO_PRESETS[pomodoroPresetIdx];
+
+    // Pomodoro Tick
+    useEffect(() => {
+        if (!pomodoroActive) {
+            if (pomodoroIntervalRef.current) clearInterval(pomodoroIntervalRef.current);
+            return;
+        }
+        pomodoroIntervalRef.current = setInterval(() => {
+            setPomodoroSecondsLeft(prev => {
+                if (prev <= 1) {
+                    // Phase switch
+                    setPomodoroPhase(ph => {
+                        if (ph === 'work') {
+                            setCompletedPomodoros(c => c + 1);
+                            setTotalFocusSeconds(s => s + currentPreset.work * 60);
+                            return 'break';
+                        } else {
+                            return 'work';
+                        }
+                    });
+                    return 0; // Will be reset by phase change effect
+                }
+                if (pomodoroPhase === 'work') {
+                    setTotalFocusSeconds(s => s + 1);
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => { if (pomodoroIntervalRef.current) clearInterval(pomodoroIntervalRef.current); };
+    }, [pomodoroActive, pomodoroPhase, currentPreset]);
+
+    // Reset timer on phase switch
+    useEffect(() => {
+        const secs = pomodoroPhase === 'work'
+            ? currentPreset.work * 60
+            : currentPreset.break * 60;
+        setPomodoroSecondsLeft(secs);
+    }, [pomodoroPhase, currentPreset]);
+
+    const pomodoroMinutes = Math.floor(pomodoroSecondsLeft / 60);
+    const pomodoroSecs = pomodoroSecondsLeft % 60;
+    const pomodoroProgressPct = pomodoroPhase === 'work'
+        ? ((currentPreset.work * 60 - pomodoroSecondsLeft) / (currentPreset.work * 60)) * 100
+        : ((currentPreset.break * 60 - pomodoroSecondsLeft) / (currentPreset.break * 60)) * 100;
+
+    const handlePomodoroToggle = () => {
+        if (!pomodoroActive) {
+            setPomodoroPhase('work');
+            setPomodoroSecondsLeft(currentPreset.work * 60);
+        } else {
+            // Show report on stop
+            if (totalFocusSeconds > 0) setShowPomodoroReport(true);
+        }
+        setPomodoroActive(a => !a);
+    };
 
     /* ── Load documents ──────────────────────────────────────────────────── */
     useEffect(() => {
@@ -366,7 +449,19 @@ export default function FocusRadioPage() {
         setIsMuted(false);
     };
 
-    /* ── Cleanup on unmount ─────────────────────────────────────────────── */
+    /* ── Cleanup on unmount & Pomodoro Playback Logic ─────────────────────── */
+    const prevPhaseRef = useRef<PomodoroPhase>(pomodoroPhase);
+
+    useEffect(() => {
+        if (!pomodoroActive) return;
+        if (prevPhaseRef.current === 'work' && pomodoroPhase === 'break') {
+            if (playerState === 'playing') pauseSpeech();
+        } else if (prevPhaseRef.current === 'break' && pomodoroPhase === 'work') {
+            if (summaryText && (playerState === 'paused' || playerState === 'idle')) resumeSpeech();
+        }
+        prevPhaseRef.current = pomodoroPhase;
+    }, [pomodoroPhase, pomodoroActive, playerState, summaryText, pauseSpeech, resumeSpeech]);
+
     useEffect(() => () => {
         isPlayingRef.current = false;
         window.speechSynthesis?.cancel();
@@ -374,19 +469,161 @@ export default function FocusRadioPage() {
 
     /* ── UI ──────────────────────────────────────────────────────────────── */
     return (
-        <div className="flex flex-col h-full overflow-hidden bg-background">
+        <div className="flex flex-col h-full overflow-hidden bg-background relative">
 
-            {/* ── Page Header ─────────────────────────────────────── */}
+            {/* ── Pomodoro Report Modal ── */}
+            <AnimatePresence>
+                {showPomodoroReport && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        onClick={() => setShowPomodoroReport(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+                            onClick={e => e.stopPropagation()}
+                            className="bg-card border border-border rounded-3xl p-8 w-full max-w-sm shadow-2xl"
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-primary/20 rounded-2xl flex items-center justify-center">
+                                        <Trophy className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Odak Raporu</p>
+                                        <p className="text-lg font-black">Harika İş!</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setShowPomodoroReport(false)} className="p-1.5 hover:bg-secondary rounded-xl transition-colors">
+                                    <X className="w-4 h-4 text-muted-foreground" />
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                <div className="bg-secondary/50 rounded-2xl p-4 text-center">
+                                    <Flame className="w-6 h-6 text-orange-400 mx-auto mb-2" />
+                                    <p className="text-2xl font-black tabular-nums">{Math.round(totalFocusSeconds / 60)}</p>
+                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide">Odak Dakikası</p>
+                                </div>
+                                <div className="bg-secondary/50 rounded-2xl p-4 text-center">
+                                    <BarChart2 className="w-6 h-6 text-primary mx-auto mb-2" />
+                                    <p className="text-2xl font-black tabular-nums">{completedPomodoros}</p>
+                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide">Pomodoro</p>
+                                </div>
+                            </div>
+                            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 text-center">
+                                <p className="text-sm font-bold">{Math.round(totalFocusSeconds / 60)} dakika kesintisiz odaklandınız! 🎉</p>
+                                <p className="text-xs text-muted-foreground mt-1">{completedPomodoros} Pomodoro tamamlandı.</p>
+                            </div>
+                            <button
+                                onClick={() => { setShowPomodoroReport(false); setTotalFocusSeconds(0); setCompletedPomodoros(0); }}
+                                className="mt-4 w-full py-3 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors"
+                            >
+                                Yeni Oturum Başlat
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Page Header ── */}
             <div className="shrink-0 px-8 pt-8 pb-4">
-                <div className="flex items-center gap-3 mb-1">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center shadow-lg shadow-primary/20">
-                        <Headphones className="w-5 h-5 text-white" />
+                <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center shadow-lg shadow-primary/20">
+                            <Headphones className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-black tracking-tight">Focus Radio</h1>
+                            <p className="text-xs text-muted-foreground font-medium">Özetlenen makalelerini sesli dinle</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-2xl font-black tracking-tight">Focus Radio</h1>
-                        <p className="text-xs text-muted-foreground font-medium">Özetlenen makalelerini sesli dinle</p>
-                    </div>
+                    <button
+                        onClick={() => setShowPomodoroPanel(p => !p)}
+                        className={cn(
+                            "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold transition-all",
+                            showPomodoroPanel
+                                ? "bg-primary/20 border-primary/40 text-primary"
+                                : "bg-secondary/50 border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
+                        )}
+                    >
+                        <Timer className="w-4 h-4" />
+                        Pomodoro
+                        {pomodoroActive && (
+                            <span className="ml-1 px-1.5 py-0.5 text-[10px] font-black bg-primary text-white rounded-md tabular-nums">
+                                {String(pomodoroMinutes).padStart(2, '0')}:{String(pomodoroSecs).padStart(2, '0')}
+                            </span>
+                        )}
+                    </button>
                 </div>
+
+                <AnimatePresence>
+                    {showPomodoroPanel && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden mt-4"
+                        >
+                            <div className="bg-card/50 border border-border rounded-2xl p-5 flex flex-wrap items-center gap-6">
+                                <div className="flex flex-col items-center">
+                                    <div className="relative w-20 h-20">
+                                        <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
+                                            <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" strokeWidth="6" className="text-secondary" />
+                                            <circle cx="40" cy="40" r="34" fill="none"
+                                                stroke={pomodoroPhase === 'work' ? '#7C3AED' : '#10B981'}
+                                                strokeWidth="6" strokeLinecap="round"
+                                                strokeDasharray={`${2 * Math.PI * 34}`}
+                                                strokeDashoffset={`${2 * Math.PI * 34 * (1 - pomodoroProgressPct / 100)}`}
+                                                style={{ transition: 'stroke-dashoffset 1s linear' }}
+                                            />
+                                        </svg>
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <span className="text-lg font-black tabular-nums">
+                                                {String(pomodoroMinutes).padStart(2, '0')}:{String(pomodoroSecs).padStart(2, '0')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className={cn("mt-2 px-2 py-0.5 rounded-full text-[10px] font-black uppercase",
+                                        pomodoroPhase === 'work' ? 'bg-primary/20 text-primary' : 'bg-emerald-500/20 text-emerald-400'
+                                    )}>
+                                        {pomodoroPhase === 'work' ? '🔥 Çalışma' : '☕ Mola'}
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Süre Ayarı</p>
+                                    <div className="flex gap-2">
+                                        {POMODORO_PRESETS.map((preset, idx) => (
+                                            <button key={preset.label} onClick={() => { if (!pomodoroActive) setPomodoroPresetIdx(idx); }}
+                                                disabled={pomodoroActive}
+                                                className={cn("px-3 py-1.5 rounded-xl text-xs font-bold border transition-all",
+                                                    pomodoroPresetIdx === idx
+                                                        ? "bg-primary/20 border-primary/40 text-primary"
+                                                        : "bg-secondary/50 border-border text-muted-foreground hover:bg-secondary disabled:opacity-50"
+                                                )}
+                                            >{preset.label} dk</button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="text-center">
+                                        <p className="text-xl font-black tabular-nums text-orange-400">{completedPomodoros}</p>
+                                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide">Pomodoro</p>
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-xl font-black tabular-nums text-primary">{Math.round(totalFocusSeconds / 60)}</p>
+                                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide">Odak dk</p>
+                                    </div>
+                                </div>
+                                <button onClick={handlePomodoroToggle}
+                                    className={cn("ml-auto px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2",
+                                        pomodoroActive
+                                            ? "bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30"
+                                            : "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20"
+                                    )}>
+                                    {pomodoroActive ? <><Coffee className="w-4 h-4" /> Durdur</> : <><Timer className="w-4 h-4" /> Başlat</>}
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             <div className="flex-1 overflow-hidden flex flex-col md:flex-row gap-0">

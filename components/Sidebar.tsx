@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
+import { BannerAd } from '@/components/BannerAd';
 
 const mainNav = [
     { name: 'Ana Panel', href: '/', icon: LayoutDashboard },
@@ -137,6 +138,11 @@ export function Sidebar() {
                     </div>
                 )}
             </nav>
+
+            {/* Reklam alanı */}
+            <div className="px-4 mb-4">
+                <BannerAd variant="adsense" className="min-h-[100px]" />
+            </div>
 
             {/* ─── Bottom: Settings ─── */}
             <div className="p-4 border-t border-border space-y-1">

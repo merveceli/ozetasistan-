@@ -275,12 +275,12 @@ export default function LandingPage() {
                 </motion.div>
             </section>
 
-            {/* Bento Grid Features */}
+            {/* Premium Features Grid */}
             <section id="features" className="py-24 px-6 md:px-12 bg-white/[0.02]">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                         <div className="max-w-2xl">
-                            <h2 className="text-4xl md:text-6xl font-black mb-6 leading-none">Limitleri <span className="text-primary italic">Zorlayan</span> Özellikler.</h2>
+                            <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight">Limitleri <span className="text-primary italic">Zorlayan</span> Özellikler.</h2>
                             <p className="text-white/50 text-lg">Yapay zeka teknolojisinin en ileri noktasını akademik ihtiyaçlarınızla birleştirdik.</p>
                         </div>
                         <button className="flex items-center space-x-2 text-primary font-black uppercase text-sm tracking-widest hover:translate-x-2 transition-transform">
@@ -289,44 +289,43 @@ export default function LandingPage() {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-6 gap-6 h-auto md:h-[600px]">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Main Feature */}
-                        <div className="md:col-span-3 md:row-span-2 group relative bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-[2.5rem] border border-white/10 p-10 overflow-hidden hover:border-primary/50 transition-all duration-500 flex flex-col justify-end">
+                        <div className="md:col-span-2 relative bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-[2rem] border border-white/10 p-10 overflow-hidden hover:border-primary/50 transition-all duration-500 flex flex-col justify-end min-h-[360px]">
                             <div className="absolute top-10 right-10 flex gap-2">
                                 <div className="w-12 h-12 bg-white/10 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/20"><Brain className="w-6 h-6 text-white" /></div>
                             </div>
                             <div className="relative z-10">
                                 <h3 className="text-3xl font-black mb-4">Gemini 2.5 Flash Gücü</h3>
-                                <p className="text-white/60 text-lg max-w-md">En karmaşık makaleleri saniyeler içinde analiz eden, çok dilli ve yüksek kapasiteli yapay zeka deneyimi.</p>
+                                <p className="text-white/60 text-lg max-w-md">En karmaşık akademik makaleleri saniyeler içinde analiz eden, çok dilli ve yüksek kapasiteli yapay zeka deneyimi.</p>
                             </div>
                             <div className="absolute top-0 -right-20 w-80 h-80 bg-primary/30 blur-[100px] rounded-full group-hover:bg-primary/50 transition-all duration-500" />
                         </div>
 
-                        <div className="md:col-span-3 grid grid-cols-2 gap-6">
-                            <div className="bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/10 p-8 hover:bg-white/10 transition-all group">
-                                <Presentation className="w-10 h-10 text-blue-400 mb-6 group-hover:scale-110 transition-transform" />
-                                <h4 className="text-xl font-bold mb-2">Otomatik Sunum</h4>
-                                <p className="text-white/40 text-sm">Analizlerinizden profesyonel slaytlar üretin.</p>
-                            </div>
-                            <div className="bg-white/5 backdrop-blur-md rounded-[2.5rem] border border-white/10 p-8 hover:bg-white/10 transition-all group">
-                                <Network className="w-10 h-10 text-purple-400 mb-6 group-hover:scale-110 transition-transform" />
-                                <h4 className="text-xl font-bold mb-2">Çapraz Okuma</h4>
-                                <p className="text-white/40 text-sm">Birden fazla kaynağı birbiriyle sentezleyin.</p>
-                            </div>
+                        {/* Feature 2 */}
+                        <div className="md:col-span-1 bg-white/5 backdrop-blur-md rounded-[2rem] border border-white/10 p-10 hover:bg-white/10 transition-all flex flex-col justify-end min-h-[360px]">
+                            <Presentation className="w-12 h-12 text-blue-400 mb-8" />
+                            <h4 className="text-2xl font-bold mb-3">Otomatik Sunum</h4>
+                            <p className="text-white/40">Analizlerinizden profesyonel, sektörel slaytlar üretin.</p>
                         </div>
 
-                        <div className="md:col-span-1 bg-gradient-to-t from-orange-500/20 to-transparent rounded-[2.5rem] border border-white/10 p-8 flex flex-col items-center justify-center text-center group">
-                            <Mic className="w-10 h-10 text-orange-400 mb-4 group-hover:animate-pulse" />
-                            <h4 className="text-lg font-bold">Sesli Not</h4>
+                        {/* Feature 3 */}
+                        <div className="md:col-span-1 bg-white/5 backdrop-blur-md rounded-[2rem] border border-white/10 p-10 hover:bg-white/10 transition-all flex flex-col justify-end min-h-[360px]">
+                            <Network className="w-12 h-12 text-purple-400 mb-8" />
+                            <h4 className="text-2xl font-bold mb-3">Çapraz Okuma</h4>
+                            <p className="text-white/40">Birden fazla kaynağı sentezleyip gizli çelişkileri ve bağları bulun.</p>
                         </div>
-                        <div className="md:col-span-2 bg-gradient-to-t from-emerald-500/10 to-transparent rounded-[2.5rem] border border-white/10 p-8 flex items-center space-x-6 group">
-                            <div className="w-16 h-16 bg-emerald-500/20 rounded-3xl flex items-center justify-center group-hover:rotate-12 transition-transform">
-                                <Video className="w-8 h-8 text-emerald-400" />
+
+                        {/* Feature 4 */}
+                        <div className="md:col-span-2 relative bg-gradient-to-tl from-emerald-500/10 to-transparent rounded-[2rem] border border-white/10 p-10 hover:border-emerald-500/30 transition-all flex flex-col justify-end min-h-[360px] overflow-hidden">
+                            <div className="absolute top-10 right-10">
+                                <div className="w-12 h-12 bg-emerald-500/20 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-emerald-500/20"><Mic className="w-6 h-6 text-emerald-400" /></div>
                             </div>
-                            <div>
-                                <h4 className="text-xl font-bold">Ders Analizi</h4>
-                                <p className="text-white/40 text-sm">Video ve ses kayıtlarını ders notuna dönüştürün.</p>
+                            <div className="relative z-10">
+                                <h4 className="text-3xl font-bold mb-4">Çalışma Merkezi & Radyo</h4>
+                                <p className="text-white/60 text-lg max-w-lg">Spaced Repetition (Aralıklı Tekrar) ile flashcard ezberleyin, Pomodoro radyosu ile odaklanarak uzun makaleleri sesli dinleyin.</p>
                             </div>
+                            <div className="absolute bottom-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full" />
                         </div>
                     </div>
                 </div>
@@ -350,36 +349,62 @@ export default function LandingPage() {
 
 
             {/* Footer */}
-            <footer className="py-20 border-t border-white/5 bg-black/40 backdrop-blur-3xl">
-                <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-4 gap-12">
-                    <div className="col-span-2">
-                        <div className="flex items-center space-x-3 mb-8">
-                            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"><BookOpen className="w-5 h-5 text-white" /></div>
-                            <span className="text-xl font-black tracking-tight underline decoration-primary decoration-4">Özet Asistanı</span>
+            <footer className="pt-24 pb-10 border-t border-white/5 bg-[#030014] relative z-20">
+                <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-5 gap-12">
+                    <div className="col-span-1 md:col-span-2">
+                        <div className="flex items-center space-x-3 mb-6">
+                            <div className="w-10 h-10 bg-gradient-to-br from-primary via-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg"><BookOpen className="w-6 h-6 text-white" /></div>
+                            <span className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Özet Asistanı</span>
                         </div>
-                        <p className="max-w-xs text-white/40 text-sm mb-8 leading-relaxed">Akademik araştırma süreçlerini otomatize eden, öğrenci ve akademisyenlere özel akıllı asistan.</p>
-                        <div className="flex gap-4">
-                            {[1, 2, 3, 4].map(i => <div key={i} className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 cursor-pointer transition-colors" />)}
+                        <p className="max-w-xs text-white/50 text-sm mb-8 leading-relaxed">Akademik araştırma süreçlerini otomatize eden, öğrenci ve akademisyenlere özel akıllı üretkenlik yapay zekası.</p>
+                    </div>
+
+                    <div className="col-span-1 md:col-span-2 space-y-4 md:col-start-3">
+                        <h5 className="font-black mb-6 uppercase tracking-widest text-[10px] text-white/40">Uygulama Özellikleri</h5>
+                        <div className="grid grid-cols-2 gap-4">
+                            <ul className="space-y-4 text-sm font-medium text-white/60 relative">
+                                <li className="flex items-center gap-2 hover:text-white transition-colors cursor-default"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Öğrenci Modu</li>
+                                <li className="flex items-center gap-2 hover:text-white transition-colors cursor-default"><div className="w-1.5 h-1.5 rounded-full bg-purple-500" /> Akademik Mod</li>
+                                <li className="flex items-center gap-2 hover:text-white transition-colors cursor-default"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Profesör Modu</li>
+                                <li className="flex items-center gap-2 hover:text-white transition-colors cursor-default"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Çalışma Merkezi</li>
+                            </ul>
+                            <ul className="space-y-4 text-sm font-medium text-white/60 relative">
+                                <li className="flex items-center gap-2 hover:text-white transition-colors cursor-default"><div className="w-1.5 h-1.5 rounded-full bg-orange-500" /> Odak Radyosu</li>
+                                <li className="flex items-center gap-2 hover:text-white transition-colors cursor-default"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Sentez Lab</li>
+                                <li className="flex items-center gap-2 hover:text-white transition-colors cursor-default"><div className="w-1.5 h-1.5 rounded-full bg-cyan-400" /> Zihin Haritaları</li>
+                                <li className="flex items-center gap-2 hover:text-white transition-colors cursor-default"><div className="w-1.5 h-1.5 rounded-full bg-indigo-400" /> Otomatik Sunum</li>
+                            </ul>
                         </div>
                     </div>
+
                     <div>
-                        <h5 className="font-black mb-6 uppercase tracking-widest text-[10px] text-white/60">Ürün</h5>
-                        <ul className="space-y-4 text-sm font-medium text-white/40">
-                            <li><button className="hover:text-primary transition-colors">Özellikler</button></li>
-                            <li><button className="hover:text-primary transition-colors">API</button></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h5 className="font-black mb-6 uppercase tracking-widest text-[10px] text-white/60">Kurumsal</h5>
-                        <ul className="space-y-4 text-sm font-medium text-white/40">
-                            <li><button className="hover:text-primary transition-colors">Hakkımızda</button></li>
-                            <li><button className="hover:text-primary transition-colors">Sözleşmeler</button></li>
-                            <li><button className="hover:text-primary transition-colors">Destek</button></li>
-                        </ul>
+                        <h5 className="font-black mb-6 uppercase tracking-widest text-[10px] text-emerald-400">Geliştirici</h5>
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-emerald-500/30 transition-all group cursor-pointer shadow-lg">
+                            <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center shrink-0">
+                                    <Cpu className="w-5 h-5 text-emerald-400 group-hover:animate-pulse" />
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-sm font-bold text-white truncate">Geliştirici Ekip</p>
+                                    <p className="text-[9px] text-emerald-400/80 uppercase tracking-widest">Özet Asistanı</p>
+                                </div>
+                            </div>
+                            <p className="text-xs text-white/40 leading-relaxed">
+                                Bu proje, yapay zekanın akademik öğrenimi nasıl dönüştüreceğine dair tutkulu bir vizyonun eseridir.
+                            </p>
+                            <Link href="https://github.com/yunusemrekahraman" target="_blank" className="mt-4 inline-flex items-center text-[11px] font-bold text-emerald-400 hover:text-emerald-300">
+                                İletişimde Kalın <ArrowRight className="w-3 h-3 ml-1" />
+                            </Link>
+                        </div>
                     </div>
                 </div>
-                <div className="max-w-7xl mx-auto px-6 md:px-12 mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <p className="text-xs text-white/20 font-bold">© 2026 ÖZET ASISTANI. TÜM HAKLARI SAKLIDIR.</p>
+
+                <div className="max-w-7xl mx-auto px-6 md:px-12 mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <p className="text-xs text-white/30 font-bold tracking-widest uppercase">© 2026 ÖZET ASİSTANI. TÜM HAKLARI SAKLIDIR.</p>
+                    <div className="flex space-x-6 text-white/30">
+                        <Link href="#" className="hover:text-white transition-colors"><Network className="w-4 h-4" /></Link>
+                        <Link href="#" className="hover:text-white transition-colors"><Users className="w-4 h-4" /></Link>
+                    </div>
                 </div>
             </footer>
 

@@ -35,7 +35,7 @@ export default function RootLayout({
           strategy="afterInteractive"
         />
       </head>
-      <body className={cn(inter.className, "bg-background text-foreground antialiased overflow-hidden")}>
+      <body className={cn(inter.className, "bg-background text-foreground antialiased")}>
         <DashboardLayout>{children}</DashboardLayout>
         <Toaster richColors position="top-right" theme="dark" />
       </body>
