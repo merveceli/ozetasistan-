@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { AdSenseScript } from '@/components/AdSenseScript';
 import { cn } from '@/lib/utils';
 import { Toaster } from 'sonner';
 
@@ -113,17 +114,12 @@ export default function RootLayout({
         <DashboardLayout>{children}</DashboardLayout>
         <Toaster richColors position="top-right" theme="dark" />
 
-        {/*
-          AdSense scripti body kapanışından önce, lazyOnload ile yükleniyor.
-          - lazyOnload: sayfa tamamen yüklendikten SONRA başlar → hydration hatası olmaz
-          - <head> içine koymak Next.js'te hydration uyuşmazlığına yol açıyor
+        {/* 
+          Manuel AdSense Script Yükleyici:
+          Next.js Script bileşeni AdSense tarafından reddedilen metadata'lar eklediği için
+          saf bir manuel enjeksiyon yapıyoruz.
         */}
-        <Script
-          id="adsense-init"
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1484212824373758"
-          strategy="lazyOnload"
-          crossOrigin="anonymous"
-        />
+        <AdSenseScript />
       </body>
     </html>
   );

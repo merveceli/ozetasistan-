@@ -79,35 +79,28 @@ function AdSenseUnit({ adSlotId, className }: { adSlotId: string; className?: st
 
         // Script yüklenene kadar bekle, sonra push yap
         const tryPush = () => {
-            attempts++;
             const adsbyg = (window as any).adsbygoogle;
 
-            if (adsbyg !== undefined) {
+            if (adsbyg && adRef.current && !adRef.current.innerHTML) {
                 try {
-                    ((window as any).adsbygoogle = adsbyg || []).push({});
+                    adsbyg.push({});
                 } catch (err) {
                     console.warn('[AdSense] push error:', err);
                     setFailed(true);
                 }
 
-                // 3 saniye sonra reklam yüklenip yüklenmediğini kontrol et
                 const checkTimer = setTimeout(() => {
                     if (!adRef.current) return;
-                    const ins = adRef.current;
-                    const status = ins.getAttribute('data-ad-status');
-                    // "unfilled" veya iframe yoksa fallback göster
-                    if (status === 'unfilled' || !ins.querySelector('iframe')) {
+                    const status = adRef.current.getAttribute('data-ad-status');
+                    if (status === 'unfilled' || !adRef.current.querySelector('iframe')) {
                         setFailed(true);
                     }
-                }, 3000);
+                }, 4000);
 
                 return () => clearTimeout(checkTimer);
             } else if (attempts < maxAttempts) {
-                // Script henüz yüklenmedi, 500ms sonra tekrar dene
+                attempts++;
                 setTimeout(tryPush, 500);
-            } else {
-                console.warn('[AdSense] Script yüklenemedi, fallback gösteriliyor');
-                setFailed(true);
             }
         };
 
@@ -140,7 +133,12 @@ export function BannerAd({ variant = 'horizontal', className, slot = 0, adSlotId
 
     // ─── Gerçek AdSense varyantı ──────────────────────────────────────────────
     if (variant === 'adsense') {
-        const activeSlotId = adSlotId || '1234567890'; // Default test/placeholder slot
+        // Eğer gerçek slot ID'niz yoksa, AdSense 400 hatası verebilir.
+        // Bu yüzden slot ID boşsa reklam kutusunu hiç render etmeyip fallback göstermek daha sağlıklı olabilir.
+        if (!adSlotId) {
+            return <BannerAd variant="horizontal" slot={slot} className={className} />;
+        }
+        const activeSlotId = adSlotId;
         return (
             <div className={cn('relative my-4 bg-white/5 border border-white/10 rounded-2xl overflow-hidden p-2 backdrop-blur-sm', className)}>
                 {/* "Reklam" etiketi */}

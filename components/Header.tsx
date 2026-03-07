@@ -148,7 +148,7 @@ export function Header() {
             <header className="h-16 border-b border-border bg-card/50 backdrop-blur px-4 md:px-6 flex items-center justify-between z-10 shrink-0">
                 {/* Logo (mobile) */}
                 <Link href="/" className="flex items-center space-x-2 md:hidden">
-                    <Image src="/logo.png" alt="Logo" width={28} height={28} className="rounded-md" />
+                    <Image src="/logo.png" alt="Logo" width={28} height={28} className="rounded-md" priority />
                     <span className="font-bold text-sm">Özet Asistanı</span>
                 </Link>
 
