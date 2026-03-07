@@ -5,7 +5,7 @@ import {
     BookOpen, List, GraduationCap, BrainCircuit,
     CheckCircle2, XCircle, Search, Quote, Network, ChevronDown,
     ChevronRight, Presentation, X, ChevronLeft, Sparkles, Mic,
-    Copy, Check, Download, FileText
+    Copy, Check, Download, FileText, RefreshCcw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BannerAd } from './BannerAd';
@@ -47,6 +47,7 @@ interface SummaryViewProps {
     isLoading: boolean;
     currentLevel: UserRole;
     onLevelChange: (level: UserRole) => void;
+    onRefresh?: () => void;
 }
 
 const formatCitation = (meta: any, style: 'APA' | 'MLA' | 'IEEE') => {
@@ -95,7 +96,7 @@ function MindMapTree({ node, depth = 0 }: { node: MindMapNode; depth?: number })
     );
 }
 
-export function SummaryView({ data, isLoading, currentLevel, onLevelChange }: SummaryViewProps) {
+export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRefresh }: SummaryViewProps) {
     const [activeTab, setActiveTab] = useState<'summary' | 'glossary' | 'critique' | 'citation' | 'mind_map' | 'study'>('summary');
 
     const [isSpeaking, setIsSpeaking] = useState(false);
@@ -447,9 +448,18 @@ METODOLOJİ: ${data.critique.methodology}
                                     >
                                         {copiedId === 'summary' ? <><Check className="w-3 h-3" /> Kopyalandı!</> : <><Copy className="w-3 h-3" /> Kopyala</>}
                                     </button>
-                                    <button onClick={() => handleSpeak(data.summary)} className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-lg font-bold hover:bg-primary/20 transition-all">
-                                        {isSpeaking ? 'Durdur' : 'Sesli Dinle'}
+                                    <button onClick={() => handleSpeak(data.summary)} title="Sesli Dinle" className="text-xs bg-primary/10 text-primary p-2 rounded-lg font-bold hover:bg-primary/20 transition-all">
+                                        {isSpeaking ? <X className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                                     </button>
+                                    {onRefresh && (
+                                        <button
+                                            onClick={onRefresh}
+                                            title="Analizi Yenile (Ayarları uygula)"
+                                            className="text-xs bg-secondary text-muted-foreground p-2 rounded-lg font-bold hover:bg-secondary/80 transition-all hover:text-primary"
+                                        >
+                                            <RefreshCcw className="w-4 h-4" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 

@@ -22,7 +22,7 @@ export default function AnalysisPage() {
         }
     }, [documentId, level]);
 
-    const fetchAnalysis = async (targetLevel: UserRole) => {
+    const fetchAnalysis = async (targetLevel: UserRole, force: boolean = false) => {
         setIsLoading(true);
         try {
             // In a real app, we might check if we already have the analysis for this level in DB
@@ -37,7 +37,8 @@ export default function AnalysisPage() {
                 body: JSON.stringify({
                     documentId,
                     level: targetLevel,
-                    settings
+                    settings,
+                    force
                 }),
             });
 
@@ -92,6 +93,7 @@ export default function AnalysisPage() {
                         isLoading={isLoading}
                         currentLevel={level}
                         onLevelChange={setLevel}
+                        onRefresh={() => fetchAnalysis(level, true)}
                     />
                 </div>
             </div>

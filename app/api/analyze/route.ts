@@ -11,9 +11,9 @@ export async function POST(request: Request) {
   let currentDocumentId: string | null = null;
   try {
     console.log('🔍 Analysis request start');
-    const { documentId, level, settings } = await request.json() as { documentId: string, level: string, settings?: UserSettings };
+    const { documentId, level, settings, force } = await request.json() as { documentId: string, level: string, settings?: UserSettings, force?: boolean };
     currentDocumentId = documentId; // Assign documentId to currentDocumentId
-    console.log('📄 Request data:', { documentId, level, settings });
+    console.log('📄 Request data:', { documentId, level, settings, force });
 
     if (!documentId) {
       return NextResponse.json({ error: 'Document ID is required' }, { status: 400 });
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     console.log('📄 Document:', document.name, document.file_type);
 
     // Check if we already have the analysis for this specific level cached
-    if (document.analysis_status === 'completed' && document.metadata && document.metadata[level]) {
+    if (!force && document.analysis_status === 'completed' && document.metadata && document.metadata[level]) {
       console.log(`✅ Found cached analysis for level: ${level}. Skipping AI generation.`);
       return NextResponse.json(document.metadata[level]);
     }
