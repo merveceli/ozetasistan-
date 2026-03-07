@@ -448,8 +448,15 @@ export default function LandingPage() {
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-6 md:px-12 mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <p className="text-xs text-white/30 font-bold tracking-widest uppercase">© 2026 ÖZET ASİSTANI. TÜM HAKLARI SAKLIDIR.</p>
+                <div className="max-w-7xl mx-auto px-6 md:px-12 mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+                    <p className="text-xs text-white/30 font-bold tracking-widest uppercase flex-1">© 2026 ÖZET ASİSTANI. TÜM HAKLARI SAKLIDIR.</p>
+
+                    <div className="flex flex-wrap justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-white/30">
+                        <Link href="/hakkimizda" className="hover:text-primary transition-colors">Hakkımızda</Link>
+                        <Link href="/gizlilik-politikasi" className="hover:text-primary transition-colors">Gizlilik Politikası</Link>
+                        <Link href="/iletisim" className="hover:text-primary transition-colors">İletişim</Link>
+                    </div>
+
                     <div className="flex space-x-6 text-white/30">
                         <Link href="#" className="hover:text-white transition-colors"><Network className="w-4 h-4" /></Link>
                         <Link href="#" className="hover:text-white transition-colors"><Users className="w-4 h-4" /></Link>

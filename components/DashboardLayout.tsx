@@ -6,6 +6,8 @@ import { Sidebar } from '@/components/Sidebar';
 import { cn } from '@/lib/utils';
 import { Menu, X } from 'lucide-react';
 
+import { Footer } from '@/components/Footer';
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -55,7 +57,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                         <Menu className="w-5 h-5" />
                     </button>
                 )}
-                {children}
+                <div className="flex-1">
+                    {children}
+                </div>
+                <Footer />
             </main>
         </div>
     );
