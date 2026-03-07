@@ -21,6 +21,7 @@ import {
     Minus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 const FEATURE_META: Record<string, { label: string; icon: any; color: string }> = {
     summary: { label: 'Özet', icon: FileCheck, color: 'text-emerald-400 bg-emerald-400/10' },
@@ -98,11 +99,25 @@ export default function AdminDashboard() {
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Header */}
-            <div>
-                <h1 className="text-4xl font-black tracking-tight text-white mb-2">
-                    Sistem <span className="text-primary italic">Özeti</span>
-                </h1>
-                <p className="text-gray-500 italic">Platformun anlık performansı ve gerçek zamanlı kullanıcı hareketliliği.</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                    <h1 className="text-4xl font-black tracking-tight text-white mb-2">
+                        Sistem <span className="text-primary italic">Özeti</span>
+                    </h1>
+                    <p className="text-gray-500 italic">Platformun anlık performansı ve gerçek zamanlı kullanıcı hareketliliği.</p>
+                </div>
+                <Link
+                    href="/admin/messages"
+                    className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/20 group"
+                >
+                    <MessageSquare className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                    Mesajları Görüntüle
+                    {stats.unreadMessages > 0 && (
+                        <span className="bg-white text-primary px-2 py-0.5 rounded-full text-[10px] ml-1 animate-pulse">
+                            {stats.unreadMessages} Yeni
+                        </span>
+                    )}
+                </Link>
             </div>
 
             {/* Stats Grid */}
@@ -122,18 +137,18 @@ export default function AdminDashboard() {
                     description="Pro & Akademik"
                 />
                 <StatCard
-                    title="Aylık Gelir"
-                    value={`₺${Number(stats.monthlyRevenue || 0).toLocaleString()}`}
-                    trend={formatTrend(stats.trendRevenue)}
-                    icon={TrendingUp}
-                    description="Son 30 gün"
-                />
-                <StatCard
                     title="Toplam Analiz"
                     value={stats.totalAnalyses.toLocaleString()}
                     trend={formatTrend(stats.trendAnalyses)}
                     icon={FileCheck}
                     description="Son 30 gün"
+                />
+                <StatCard
+                    title="Gelen Mesajlar"
+                    value={stats.totalMessages.toLocaleString()}
+                    trend={{ label: `${stats.unreadMessages} okunmadı`, up: stats.unreadMessages > 0 ? false : null }}
+                    icon={MessageSquare}
+                    description="Destek & İletişim"
                 />
             </div>
 

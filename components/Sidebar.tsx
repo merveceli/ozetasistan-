@@ -134,6 +134,7 @@ export function Sidebar() {
                         </p>
                         <div className="space-y-1">
                             <NavLink item={{ name: 'Admin Paneli', href: '/admin', icon: ShieldCheck, color: 'text-primary' }} />
+                            <NavLink item={{ name: 'Mesajlar', href: '/admin/messages', icon: MessageSquare, color: 'text-primary' }} />
                         </div>
                     </div>
                 )}

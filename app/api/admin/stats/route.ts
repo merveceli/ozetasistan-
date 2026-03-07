@@ -48,10 +48,26 @@ export async function GET(request: Request) {
             console.warn('Activity fetch warning:', activityError.message);
         }
 
+        // Message Stats
+        const { count: totalMessages } = await adminDb
+            .from('contact_messages')
+            .select('*', { count: 'exact', head: true });
+
+        const { count: unreadMessages } = await adminDb
+            .from('contact_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('is_read', false);
+
+        const baseStats = stats || {
+            totalUsers: 0, activeSubscribers: 0, monthlyRevenue: 0, totalAnalyses: 0,
+            trendUsers: 0, trendSubscribers: 0, trendRevenue: 0, trendAnalyses: 0,
+        };
+
         return NextResponse.json({
-            stats: stats || {
-                totalUsers: 0, activeSubscribers: 0, monthlyRevenue: 0, totalAnalyses: 0,
-                trendUsers: 0, trendSubscribers: 0, trendRevenue: 0, trendAnalyses: 0,
+            stats: {
+                ...baseStats,
+                totalMessages: totalMessages || 0,
+                unreadMessages: unreadMessages || 0
             },
             recentUsers: recentUsers || [],
             recentActivity: recentActivity || [],
