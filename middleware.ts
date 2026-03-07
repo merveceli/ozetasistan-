@@ -66,50 +66,36 @@ export async function middleware(request: NextRequest) {
     const publicRoutes = ['/landing', '/auth/login', '/auth/signup', '/auth/callback'];
     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
 
+    // Now check authentication
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Logged-in user hitting /landing → send them to dashboard
+    if (user && pathname.startsWith('/landing')) {
+        return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    // Public routes pass through (for non-logged-in users)
     if (isPublicRoute) {
         return response;
     }
-
-    // Now check authentication for protected routes
-    const { data: { user } } = await supabase.auth.getUser();
 
     // If user is logged in and trying to access auth pages, redirect to home
     if (user && pathname.startsWith('/auth')) {
         return NextResponse.redirect(new URL('/', request.url));
     }
 
-    // If no user and accessing protected route (like '/')
+    // If no user → always redirect to landing page
     if (!user) {
-        // Check if guest trial is COMPLETED
-        const trialCompleted = request.cookies.get('trial_completed');
-
-        // If trying to access dashboard ('/') or other tool pages
-        if (pathname === '/' || pathname.startsWith('/asistan') || pathname.startsWith('/sunum-uret')) {
-            if (trialCompleted?.value === 'true') {
-                // Trial already used (1 action done), force login
-                console.log('Trial completed, redirecting guest to login');
-                return NextResponse.redirect(new URL('/auth/login', request.url));
-            } else {
-                // First visit or 1st action not yet completed, allow access to dashboard
-                console.log('Allowing guest access to dashboard');
-                return response;
-            }
-        }
-
-        // Default: allow access to other pages unless explicitly blocked
-        // But for consistency, let's redirect unknown protected routes to login if trial used
-        if (trialCompleted?.value === 'true') {
-            return NextResponse.redirect(new URL('/auth/login', request.url));
-        }
+        console.log('Unauthenticated user, redirecting to /landing');
+        return NextResponse.redirect(new URL('/landing', request.url));
     }
 
-    // Admin Route Protection
+    // Admin Route Protection — user is already loaded above
     if (pathname.startsWith('/admin')) {
-        const { data: { user } } = await supabase.auth.getUser();
         const isAdmin = user?.app_metadata?.is_admin === true;
 
         if (!isAdmin) {
-            console.log('Access denied for non-admin user');
+            console.log('Access denied for non-admin user, redirecting to /');
             return NextResponse.redirect(new URL('/', request.url));
         }
     }

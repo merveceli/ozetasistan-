@@ -8,9 +8,10 @@ import {
     Copy, Check, Download, FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { UserRole } from '@/types';
+import { BannerAd } from './BannerAd';
 import { toast } from 'sonner';
-import { BannerAd } from '@/components/BannerAd';
+import { UserRole } from '@/types';
+import { getUserSettings, UserSettings } from '@/lib/userSettings';
 
 interface MindMapNode {
     name: string;
@@ -115,6 +116,12 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange }: Su
         "Akademik araştırmalarınızda aktif okuma yapmak başarı oranınızı doğrudan artırır."
     ];
     const [currentFactIndex, setCurrentFactIndex] = useState(0);
+
+    const [settings, setSettings] = useState<UserSettings | null>(null);
+
+    useEffect(() => {
+        setSettings(getUserSettings());
+    }, []);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -423,7 +430,7 @@ METODOLOJİ: ${data.critique.methodology}
                     {activeTab === 'summary' && (
                         <div className="space-y-6 animate-in fade-in duration-300">
                             <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-lg font-bold flex items-center" style={{ color: 'inherit' }}>
+                                <h3 className={cn("text-lg font-bold flex items-center", !settings?.darkMode ? "text-zinc-900" : "text-inherit")}>
                                     {currentLevel === 'student' && <><BookOpen className="w-5 h-5 mr-2 text-emerald-500" /> <span className="text-emerald-500">Öğretmen Anlatımı</span></>}
                                     {currentLevel === 'academic' && <><GraduationCap className="w-5 h-5 mr-2 text-blue-500" /> <span className="text-blue-500">Akademik Değerlendirme</span></>}
                                     {currentLevel === 'professor' && <><BrainCircuit className="w-5 h-5 mr-2 text-purple-500" /> <span className="text-purple-500">Derinlemesine Analiz</span></>}
@@ -447,7 +454,10 @@ METODOLOJİ: ${data.critique.methodology}
                             </div>
 
                             {/* Özet - öğrenci modunda bölüm başlıkları ile render */}
-                            <div className="space-y-1">
+                            <div className={cn(
+                                "space-y-1 p-5 rounded-2xl transition-colors",
+                                !settings?.darkMode && "bg-slate-50 border border-slate-200 shadow-sm"
+                            )}>
                                 {(data.summary || "").split('\n').map((line, i) => {
                                     const trimmed = line.trim();
                                     if (!trimmed) return <div key={i} className="h-3" />;
@@ -475,7 +485,9 @@ METODOLOJİ: ${data.critique.methodology}
                                     }
 
                                     return (
-                                        <p key={i} className="text-sm text-muted-foreground leading-relaxed">{trimmed}</p>
+                                        <p key={i} className={cn("text-sm leading-relaxed",
+                                            !settings?.darkMode ? "text-zinc-800" : "text-muted-foreground"
+                                        )}>{trimmed}</p>
                                     );
                                 })}
                             </div>

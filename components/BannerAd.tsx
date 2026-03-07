@@ -64,29 +64,58 @@ const adContents = [
 function AdSenseUnit({ adSlotId, className }: { adSlotId: string; className?: string }) {
     const adRef = useRef<HTMLModElement>(null);
     const [failed, setFailed] = useState(false);
+    const [isMounted, setIsMounted] = useState(false); // SSR → CSR geçiş koruması
+
+    // SSR'da hiçbir şey render etme, sadece client'ta göster
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     useEffect(() => {
-        try {
-            if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
-                ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        if (!isMounted) return;
+
+        let attempts = 0;
+        const maxAttempts = 20; // 20 × 500ms = 10 saniye max bekleme
+
+        // Script yüklenene kadar bekle, sonra push yap
+        const tryPush = () => {
+            attempts++;
+            const adsbyg = (window as any).adsbygoogle;
+
+            if (adsbyg !== undefined) {
+                try {
+                    ((window as any).adsbygoogle = adsbyg || []).push({});
+                } catch (err) {
+                    console.warn('[AdSense] push error:', err);
+                    setFailed(true);
+                }
+
+                // 3 saniye sonra reklam yüklenip yüklenmediğini kontrol et
+                const checkTimer = setTimeout(() => {
+                    if (!adRef.current) return;
+                    const ins = adRef.current;
+                    const status = ins.getAttribute('data-ad-status');
+                    // "unfilled" veya iframe yoksa fallback göster
+                    if (status === 'unfilled' || !ins.querySelector('iframe')) {
+                        setFailed(true);
+                    }
+                }, 3000);
+
+                return () => clearTimeout(checkTimer);
+            } else if (attempts < maxAttempts) {
+                // Script henüz yüklenmedi, 500ms sonra tekrar dene
+                setTimeout(tryPush, 500);
+            } else {
+                console.warn('[AdSense] Script yüklenemedi, fallback gösteriliyor');
+                setFailed(true);
             }
-        } catch (err) {
-            console.warn('AdSense push error:', err);
-            setFailed(true);
-        }
+        };
 
-        // 3 saniyede reklam yüklenmediyse fallback göster
-        const timer = setTimeout(() => {
-            if (adRef.current) {
-                const iframe = adRef.current.querySelector('iframe');
-                if (!iframe || iframe.offsetWidth === 0) setFailed(true);
-            }
-        }, 3000);
+        tryPush();
+    }, [isMounted, adSlotId]);
 
-        return () => clearTimeout(timer);
-    }, [adSlotId]);
-
-    if (failed) return null; // Üst bileşen fallback gösterecek
+    // SSR veya başarısız → null döndür (üst bileşen fallback gösterir)
+    if (!isMounted || failed) return null;
 
     return (
         <ins
@@ -100,6 +129,7 @@ function AdSenseUnit({ adSlotId, className }: { adSlotId: string; className?: st
         />
     );
 }
+
 
 export function BannerAd({ variant = 'horizontal', className, slot = 0, adSlotId }: BannerAdProps) {
     const [dismissed, setDismissed] = useState(false);

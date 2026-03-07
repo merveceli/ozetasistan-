@@ -7,12 +7,22 @@ export async function GET(request: Request) {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user || user.app_metadata?.is_admin !== true) {
+        if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
-        // Veri çekme — admin client (RLS bypass)
+        // Admin kontrolü: app_metadata VEYA profiles.is_admin
         const adminDb = createAdminClient();
+        const isAppAdmin = user.app_metadata?.is_admin === true;
+        let isProfileAdmin = false;
+        if (!isAppAdmin) {
+            const { data: profile } = await adminDb.from('profiles').select('is_admin').eq('id', user.id).single();
+            isProfileAdmin = profile?.is_admin === true;
+        }
+
+        if (!isAppAdmin && !isProfileAdmin) {
+            return NextResponse.json({ error: 'Forbidden: Admin required' }, { status: 403 });
+        }
 
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get('page') || '1');
@@ -36,7 +46,7 @@ export async function GET(request: Request) {
         const to = from + limit - 1;
 
         const { data: users, count, error } = await query
-            .order('created_at', { ascending: false })
+            .order('updated_at', { ascending: false })
             .range(from, to);
 
         if (error) {
@@ -63,11 +73,18 @@ export async function PATCH(request: Request) {
         const supabase = await createClient();
         const { data: { user: adminUser } } = await supabase.auth.getUser();
 
-        if (!adminUser || adminUser.app_metadata?.is_admin !== true) {
+        if (!adminUser) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
         const adminDb = createAdminClient();
+        const isAppAdmin = adminUser.app_metadata?.is_admin === true;
+        if (!isAppAdmin) {
+            const { data: profile } = await adminDb.from('profiles').select('is_admin').eq('id', adminUser.id).single();
+            if (profile?.is_admin !== true) {
+                return NextResponse.json({ error: 'Forbidden: Admin required' }, { status: 403 });
+            }
+        }
         const body = await request.json();
         const { userId, updates, action } = body;
 
@@ -97,13 +114,17 @@ export async function PATCH(request: Request) {
 
         if (error) throw error;
 
-        // Admin audit log
-        await adminDb.from('admin_audit_logs').insert({
-            admin_id: adminUser.id,
-            action_type: action === 'add_credits' ? 'credit_grant' : 'user_update',
-            target_user_id: userId,
-            details: finalUpdates,
-        });
+        // Admin audit log (non-fatal if table/schema issue)
+        try {
+            await adminDb.from('admin_audit_logs').insert({
+                admin_id: adminUser.id,
+                action_type: action === 'add_credits' ? 'credit_grant' : 'user_update',
+                target_user_id: userId,
+                details: finalUpdates,
+            });
+        } catch (auditErr) {
+            console.warn('Audit log insert failed (non-fatal):', auditErr);
+        }
 
         return NextResponse.json({ user: data });
 

@@ -41,6 +41,21 @@ export default function LandingPage() {
     const router = useRouter();
     const [packages, setPackages] = useState<Package[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [heroIndex, setHeroIndex] = useState(0);
+
+    const heroMessages = [
+        { headline: 'Türkçe içerikleri', emphasis: 'anında özetleyen', tail: 'yapay zeka asistanı' },
+        { headline: 'Akademik makaleleri', emphasis: 'derinlemesine', tail: 'analiz edin' },
+        { headline: 'PDF’lerinizi', emphasis: 'otomatik flashcard', tail: 've quiz’e dönüştürün' },
+        { headline: 'Araştırmalarınızı', emphasis: 'süper hızlı', tail: 'sunuya çevirin' },
+    ];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setHeroIndex(prev => (prev + 1) % heroMessages.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         checkAuthAndRedirect();
@@ -134,25 +149,59 @@ export default function LandingPage() {
                     className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10"
                 >
                     <motion.div variants={itemVariants} className="inline-flex items-center space-x-2 bg-white/5 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-full mb-8">
-                        <Sparkles className="w-4 h-4 text-primary" />
-                        <span className="text-xs font-bold tracking-widest uppercase text-primary-foreground/80">Yeni Nesil Akademik Yapay Zeka</span>
+                        <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+                        <span className="text-xs font-bold tracking-widest uppercase text-white/70">Yeni Nesil Akademik Yapay Zeka</span>
                     </motion.div>
 
-                    <motion.h1 variants={itemVariants} className="text-5xl md:text-8xl font-[1000] tracking-tight mb-8 max-w-5xl leading-[0.9]">
-                        Akademik <span className="bg-clip-text text-transparent bg-gradient-to-b from-primary via-purple-400 to-blue-500 underline decoration-primary/30 decoration-8 underline-offset-8 text-glow">Derinliği</span> Yeniden Keşfedin
-                    </motion.h1>
+                    {/* Animated Hero Headline */}
+                    <div className="text-5xl md:text-8xl font-[1000] tracking-tight mb-8 max-w-5xl leading-[1] min-h-[180px] md:min-h-[240px] flex items-center justify-center">
+                        <AnimatePresence mode="wait">
+                            <motion.h1
+                                key={heroIndex}
+                                initial={{ opacity: 0, y: 24 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -24 }}
+                                transition={{ duration: 0.55, ease: 'easeInOut' }}
+                                className="text-center"
+                            >
+                                {heroMessages[heroIndex].headline}{' '}
+                                <span className="bg-clip-text text-transparent bg-gradient-to-b from-primary via-purple-400 to-blue-500">
+                                    {heroMessages[heroIndex].emphasis}
+                                </span>{' '}
+                                {heroMessages[heroIndex].tail}
+                            </motion.h1>
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Dot indicators */}
+                    <div className="flex gap-2 mb-8">
+                        {heroMessages.map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setHeroIndex(i)}
+                                className={`transition-all duration-300 rounded-full ${i === heroIndex
+                                    ? 'w-6 h-2 bg-primary'
+                                    : 'w-2 h-2 bg-white/20 hover:bg-white/40'
+                                    }`}
+                            />
+                        ))}
+                    </div>
 
                     <motion.p variants={itemVariants} className="text-lg md:text-xl text-white/60 max-w-2xl mb-12 leading-relaxed">
                         Binlerce sayfa makaleyi saniyeler içinde analiz edin, zihin haritaları oluşturun ve sunumlar hazırlayın. Akademik başarınızın akıllı ortağı.
                     </motion.p>
 
-                    <motion.div variants={itemVariants} className="flex gap-5 mb-20">
+                    <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 mb-20">
                         <Link href="/auth/signup" className="group relative px-8 py-4 bg-primary text-white rounded-2xl font-black text-lg transition-all shadow-2xl shadow-primary/40 flex items-center justify-center overflow-hidden">
                             <span className="relative z-10 flex items-center">
-                                Şimdi Dene
+                                Ücretsiz Başla
                                 <MoveRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                             </span>
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                        </Link>
+                        <Link href="/auth/login" className="px-8 py-4 rounded-2xl font-bold text-lg text-white/70 border border-white/10 bg-white/5 hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-2 backdrop-blur-sm">
+                            Giriş Yap
+                            <ArrowRight className="w-5 h-5" />
                         </Link>
                     </motion.div>
 

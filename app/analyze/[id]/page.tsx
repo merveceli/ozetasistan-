@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { SummaryView } from '@/components/SummaryView';
 import { UserRole } from '@/types';
+import { getUserSettings } from '@/lib/userSettings';
 
 export default function AnalysisPage() {
     const params = useParams();
@@ -26,6 +27,8 @@ export default function AnalysisPage() {
         try {
             // In a real app, we might check if we already have the analysis for this level in DB
             // to avoid re-generating expensive AI calls. For now, we call every time.
+            const settings = getUserSettings();
+
             const response = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: {
@@ -33,7 +36,8 @@ export default function AnalysisPage() {
                 },
                 body: JSON.stringify({
                     documentId,
-                    level: targetLevel
+                    level: targetLevel,
+                    settings
                 }),
             });
 

@@ -2,6 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { model } from '@/lib/gemini';
 import { checkQuota, consumeAnalysisCredit, logFeatureUsage } from '@/lib/quota';
+import { getSummaryLengthInstruction, getSummaryLanguageInstruction, UserSettings } from '@/lib/userSettings';
 
 // Vercel Serverless ve Edge fonksiyonları için zaman aşımı (Timeout) süresini maksimuma çıkarır (Hobby: 60s, Pro: 300s)
 export const maxDuration = 60;
@@ -10,9 +11,9 @@ export async function POST(request: Request) {
   let currentDocumentId: string | null = null;
   try {
     console.log('🔍 Analysis request start');
-    const { documentId, level } = await request.json();
+    const { documentId, level, settings } = await request.json() as { documentId: string, level: string, settings?: UserSettings };
     currentDocumentId = documentId; // Assign documentId to currentDocumentId
-    console.log('📄 Request data:', { documentId, level });
+    console.log('📄 Request data:', { documentId, level, settings });
 
     if (!documentId) {
       return NextResponse.json({ error: 'Document ID is required' }, { status: 400 });
@@ -99,6 +100,10 @@ export async function POST(request: Request) {
     }
 
     console.log('📦 File downloaded, size:', fileData.size);
+
+    // ─── User Settings Instructions ───────────────────────────────────────
+    const lengthInstruction = settings?.summaryLength ? getSummaryLengthInstruction(settings.summaryLength) : '';
+    const langInstruction = settings?.summaryLanguage ? getSummaryLanguageInstruction(settings.summaryLanguage) : 'Ciktinin tamami Turkce olmalidir. PDF Ingilizce bile olsa Turkce yaz.';
 
     // ─── Prompt Templates ────────────────────────────────────────────────
     let promptTemplate = '';
@@ -192,13 +197,14 @@ Return ONLY valid JSON (no markdown, no code blocks):
     } else if (level === 'student') {
       // ─── ÖĞRENCİ MODU: Kapsamlı ders notu formatı ───
       promptTemplate = `Sen cok deneyimli, sevecen ve konuyu gercekten anlatan bir ogretmensin.
-Verilen PDF belgesini, konuyu hic bilmeyen bir lise veya universite ogrencisine sifirdan ve kapsamli bicimde anlat.
+Verilen PDF belgesini, konuyu hic bilmeyen bir lise veya universite ogrencisine sifirdan anlat.
 
 MUTLAK KURALLAR:
-1. Ciktinin TAMAMI Turkce olmalidir. PDF Ingilizce bile olsa Turkce yaz.
+1. ${langInstruction}
 2. Sadece gecerli JSON uret. Markdown KULLANMA, kod blogu KULLANMA.
 3. JSON icinde satirbaslari icin sadece \\n kullan.
 4. Ozel karakterleri escape et.
+5. UZUNLUK KURALI: ${lengthInstruction}
 
 OZET YAPISI - summary alani BU SIRAYA GORE yazilmali:
 
@@ -281,9 +287,10 @@ Return ONLY valid JSON (no markdown wrapper, no code fences):
       promptTemplate = `Sen akademik bir danisман ve literatur uzmanisın. Verilen PDF belgesini hem icerik hem de akademik kalite acisindan cok yonlu degerlendir.
 
 MUTLAK KURALLAR:
-1. Ciktinin tamami Turkce olmalidir.
+1. ${langInstruction}
 2. Sadece gecerli JSON uret. Markdown kullanma.
 3. JSON icinde satirbaslari icin sadece \\n kullan.
+4. UZUNLUK KURALI: ${lengthInstruction}
 
 AKADEMIK MOD - PDF KALITE DEGERLENDIRMESI:
 Bu mod belgeyi ozetlemekle kalmaz; akademik kalitesini ve yeterlilgini degerlendirir.
@@ -357,9 +364,10 @@ Return ONLY valid JSON (no markdown, no code blocks):
       promptTemplate = `Sen alaninда uzman, yillarin deneyimine sahip bir profesorsun. Verilen PDF belgesini, meslektasin olan baska bir profesore sunar gibi ileri duzey akademik terminolojiyle analiz et.
 
 MUTLAK KURALLAR:
-1. Ciktinin tamami Turkce olmalidir. Teknik terimler orijinal dilde parantez icinde Turkce karsiligi ile gosterilebilir.
+1. ${langInstruction} Teknik terimler orijinal dilde parantez icinde gosterilebilir.
 2. Sadece gecerli JSON uret. Markdown kullanma.
 3. JSON icinde satirbaslari icin sadece \\n kullan.
+4. UZUNLUK KURALI: ${lengthInstruction}
 
 PROFESOR MODU - İLERI DUZEY ANALIZ:
 - Epistemolojik cerceve ve ontolojik varsayimlari sorgula
