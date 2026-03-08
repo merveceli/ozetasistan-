@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       const userTier = profile?.subscription_tier || 'free';
 
       // Tier-based depth restriction
-      const restrictedLevels = ['academic', 'professor', 'deep_analysis', 'analysis_package'];
+      const restrictedLevels = ['academic', 'professor', 'deep_analysis'];
       if (userTier === 'free' && restrictedLevels.includes(level)) {
         return NextResponse.json({
           error: 'Bu analiz derinliği için üyeliğinizi yükseltmeniz gerekmektedir.',
@@ -53,8 +53,8 @@ export async function POST(request: Request) {
         }, { status: 403 });
       }
     } else {
-      // Guest trial only allows basic level
-      if (level && level !== 'student' && level !== 'metadata') {
+      // Guest trial only allows basic levels and analysis_package for slides
+      if (level && level !== 'student' && level !== 'metadata' && level !== 'analysis_package') {
         return NextResponse.json({
           error: 'Misafir kullanıcılar sadece temel analiz yapabilir.',
           needsUpgrade: true

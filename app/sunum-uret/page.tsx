@@ -62,7 +62,15 @@ export default function PresentationPage() {
                 body: JSON.stringify({ documentId: doc.id, level: 'analysis_package' })
             });
 
-            if (!analyzeRes.ok) throw new Error('Analiz paketi alınamadı');
+            if (!analyzeRes.ok) {
+                const errorData = await analyzeRes.json();
+                if (analyzeRes.status === 403 && errorData.needsUpgrade) {
+                    setSelectedFeature("Gelişmiş Sunum Hazırlama");
+                    setShowUpgradeModal(true);
+                    return;
+                }
+                throw new Error(errorData.error || 'Analiz paketi alınamadı');
+            }
             const { analysis_package } = await analyzeRes.json();
 
             // Then generate slides
@@ -72,11 +80,15 @@ export default function PresentationPage() {
                 body: JSON.stringify({ analysisPackage: analysis_package })
             });
 
-            if (!slideRes.ok) throw new Error('Sunum oluşturulamadı');
+            if (!slideRes.ok) {
+                const errorData = await slideRes.json();
+                throw new Error(errorData.error || 'Sunum oluşturulamadı');
+            }
             const data = await slideRes.json();
             setPresentationData(data);
+            toast.success('Sunum başarıyla oluşturuldu!');
         } catch (error: any) {
-            alert(error.message);
+            toast.error(error.message || 'Bir hata oluştu');
         } finally {
             setIsGenerating(false);
         }
