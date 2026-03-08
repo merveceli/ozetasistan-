@@ -12,8 +12,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-    const isPublicPage = pathname === '/landing' || pathname.startsWith('/auth');
-    const isAdminPage = pathname === '/admin' || pathname.startsWith('/admin/');
+    const isPublicPage = pathname === '/landing' ||
+        pathname.startsWith('/auth') ||
+        pathname === '/hakkimizda' ||
+        pathname === '/gizlilik-politikasi' ||
+        pathname === '/iletisim';
+    const isAdminPage = pathname.startsWith('/admin');
     const hideSidebar = isPublicPage || isAdminPage;
 
     return (

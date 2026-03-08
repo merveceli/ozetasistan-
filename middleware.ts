@@ -84,8 +84,8 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/', request.url));
     }
 
-    // If no user → always redirect to landing page
-    if (!user) {
+    // Unauthenticated user hitting / (root) or other protected routes → redirect to /landing
+    if (!user && (pathname === '/' || !isPublicRoute)) {
         console.log('Unauthenticated user, redirecting to /landing');
         return NextResponse.redirect(new URL('/landing', request.url));
     }
