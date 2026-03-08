@@ -24,45 +24,48 @@ export async function POST(request: Request) {
         const prompt = `Aşağıda bir akademik makaleye ait ANALIZ_PAKETI verilmektedir.
 
 SADECE bu analiz paketindeki bilgileri kullan.
-PDF dosyasını tekrar analiz etmeye çalışma.
-Yeni bilgi ekleme.
+Orijinal makalenin akademik derinliğini koru ama sunum formatına uygun şekilde yapılandır.
 
 Çıktıyı tamamen Türkçe ver.
 
-Bu analiz paketine dayanarak TAM OLARAK 8 slayttan oluşan bir sunum hazırla.
+Aşağıdaki yapıda TAM OLARAK 10 slayttan oluşan bir sunum hazırla:
 
-Her slayt için şu formatı kullan:
+Slayt Akışı:
+1. Başlık Slaytı (Başlık, Kapsam)
+2. Giriş ve Problem Tanımı
+3. Literatür Özeti / Bağlam
+4. Yöntem / Metodoloji (Akış şeması için uygun yapılandır)
+5. Uygulama / Deney Tasarımı
+6. Ana Bulgular (Veri odaklı)
+7. Tartışma ve Katkı
+8. Sınırlılıklar ve Gelecek Çalışmalar
+9. Anahtar Terimler Sözlüğü (Makaledeki en kritik 5-6 terim)
+10. Mini Bilgi Testi (Makale içeriğiyle ilgili 3 adet çoktan seçmeli soru)
 
-Slayt X Başlık:
-- Madde
-- Madde
-- Madde
-
-Her slaytta 3 ile 5 arasında kısa ve net madde olsun.
-
-Slayt sırası:
-
-1. Çalışmanın başlığı ve genel amacı
-2. Problem tanımı
-3. Kısa literatür bağlamı
-4. Kullanılan yöntem / yaklaşım
-5. Veri seti veya deney ortamı
-6. Bulgular
-7. Çalışmanın katkısı
-8. Sınırlılıklar ve gelecek çalışmalar
+Her slayt nesnesi şu alanları içermelidir:
+- title: Slayt başlığı
+- content: 3-5 adet kısa madde (array)
+- speaker_notes: Sunum yapan kişinin bu slaytta söylemesi gereken 2-3 cümlelik açıklama.
+- visual_suggestion: Bu slayt için bir görsel önerisi (örn: "İki yönlü bir ok", "Merkezi bir çekirdekten dağılan kutular", "Bir deney tüpü illüstrasyonu")
+- layout_type: 'title' | 'content' | 'comparison' | 'steps' | 'terms' | 'quiz'
+- image_prompt: Bu slaytı temsil eden AI görseli üretmek için İngilizce bir prompt (örn: "An abstract 3D visualization of neural networks, futuristic style, high quality")
 
 ANALIZ_PAKETI:
 ${analysisPackage}
 
-Return ONLY valid JSON (no markdown, no code blocks):
+Return ONLY valid JSON:
 {
   "slides": [
     {
       "slide_number": 1,
-      "title": "Çalışmanın Başlığı ve Amacı",
-      "content": ["Madde 1", "Madde 2", "Madde 3"]
+      "title": "...",
+      "content": ["...", "..."],
+      "speaker_notes": "...",
+      "visual_suggestion": "...",
+      "layout_type": "...",
+      "image_prompt": "..."
     },
-     // ... total 8 slides
+    // ... total 10 slides
   ]
 }`;
 

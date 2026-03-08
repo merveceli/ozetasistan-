@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
-import { MonitorPlay, Search, ChevronRight, Loader2, AlertCircle, Palette, Lock } from 'lucide-react';
+import { MonitorPlay, Search, ChevronRight, Loader2, AlertCircle, Palette, Lock, Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Document } from '@/types';
 import Link from 'next/link';
 import { UpgradeModal } from '@/components/modals/UpgradeModal';
+import { PresentationView } from '@/components/PresentationView';
+import { Toaster, toast } from 'sonner';
 
 export default function PresentationPage() {
     const [documents, setDocuments] = useState<Document[]>([]);
@@ -19,6 +21,7 @@ export default function PresentationPage() {
     const [selectedTheme, setSelectedTheme] = useState('classic');
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [selectedFeature, setSelectedFeature] = useState('');
+    const [showPresentationMode, setShowPresentationMode] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -266,23 +269,30 @@ export default function PresentationPage() {
                                         </span>
 
                                         <h3 className={cn(
-                                            "text-xl font-bold mb-6 relative z-10",
+                                            "text-xl font-bold mb-4 relative z-10 pr-12",
                                             selectedTheme === 'classic' ? "text-primary" : "text-inherit"
                                         )}>
                                             {slide.title}
                                         </h3>
 
-                                        <ul className="space-y-4 relative z-10 flex-1">
+                                        <ul className="space-y-3 relative z-10 flex-1">
                                             {slide.content.map((point: string, idx: number) => (
                                                 <li key={idx} className="text-sm flex items-start leading-relaxed opacity-90">
-                                                    <span className={cn(
-                                                        "mr-3 mt-1 w-1.5 h-1.5 rounded-full shrink-0",
+                                                    <div className={cn(
+                                                        "mr-3 mt-1.5 w-1.5 h-1.5 rounded-full shrink-0",
                                                         selectedTheme === 'classic' ? "bg-primary" : "bg-current"
                                                     )} />
                                                     {point}
                                                 </li>
                                             ))}
                                         </ul>
+
+                                        {slide.speaker_notes && (
+                                            <div className="mt-4 pt-4 border-t border-white/5 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                <p className="text-[10px] font-bold uppercase tracking-widest mb-1">Notlar</p>
+                                                <p className="text-[11px] italic line-clamp-2">{slide.speaker_notes}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -290,17 +300,18 @@ export default function PresentationPage() {
                             <div className="bg-primary/5 border border-primary/20 rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
                                 <div>
                                     <h4 className="font-bold text-lg">Sunumunuz Hazır!</h4>
-                                    <p className="text-sm text-muted-foreground italic">Bu taslağı kopyalayarak sunum programınıza aktarabilirsiniz.</p>
+                                    <p className="text-sm text-muted-foreground italic">Gelişmiş sunum modunu deneyin veya dışa aktarın.</p>
                                 </div>
                                 <div className="flex items-center space-x-4">
                                     <button
-                                        onClick={() => alert('Sunum yakında kopyalanabilir olacak!')}
-                                        className="px-6 py-3 rounded-xl border border-border hover:bg-secondary/50 transition-colors text-sm font-bold"
+                                        onClick={() => setShowPresentationMode(true)}
+                                        className="px-6 py-3 rounded-xl border border-primary text-primary hover:bg-primary/10 transition-colors text-sm font-bold flex items-center gap-2"
                                     >
-                                        Panoya Kopyala
+                                        <Maximize2 className="w-4 h-4" />
+                                        Tam Ekran Başlat
                                     </button>
                                     <button
-                                        onClick={() => alert('PDF Dışa Aktarma yakında eklenecek!')}
+                                        onClick={() => toast.info('Dışa aktarma özelliği yakında aktif olacak!')}
                                         className="bg-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center space-x-2"
                                     >
                                         <span>Dışa Aktar (.PDF)</span>
@@ -312,11 +323,21 @@ export default function PresentationPage() {
                 </div>
             </div>
 
+            {/* Presentation Mode Modal */}
+            {showPresentationMode && (
+                <PresentationView
+                    data={presentationData}
+                    theme={selectedTheme}
+                    onClose={() => setShowPresentationMode(false)}
+                />
+            )}
+
             <UpgradeModal
                 isOpen={showUpgradeModal}
                 onClose={() => setShowUpgradeModal(false)}
                 feature={selectedFeature}
             />
+            <Toaster richColors position="top-right" theme="dark" />
         </div>
     );
 }
