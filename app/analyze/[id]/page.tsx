@@ -24,9 +24,8 @@ export default function AnalysisPage() {
 
     const fetchAnalysis = async (targetLevel: UserRole, force: boolean = false) => {
         setIsLoading(true);
+        setError(null);
         try {
-            // In a real app, we might check if we already have the analysis for this level in DB
-            // to avoid re-generating expensive AI calls. For now, we call every time.
             const settings = getUserSettings();
 
             const response = await fetch('/api/analyze', {
@@ -42,12 +41,19 @@ export default function AnalysisPage() {
                 }),
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Analiz işlemi başarısız oldu');
+            const text = await response.text();
+            let result;
+            try {
+                result = text ? JSON.parse(text) : null;
+            } catch (e) {
+                console.error('JSON parse error:', text);
+                throw new Error(`Sunucudan hatalı yanıt geldi: ${text.substring(0, 100)}...`);
             }
 
-            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result?.error || 'Analiz işlemi başarısız oldu');
+            }
+
             setData(result);
 
             // Cache for Focus Radio (and other features)

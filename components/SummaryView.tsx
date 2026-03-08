@@ -7,6 +7,7 @@ import {
     ChevronRight, Presentation, X, ChevronLeft, Sparkles, Mic,
     Copy, Check, Download, FileText, RefreshCcw
 } from 'lucide-react';
+import { PresentationView } from './PresentationView';
 import { cn } from '@/lib/utils';
 import { BannerAd } from './BannerAd';
 import { toast } from 'sonner';
@@ -738,24 +739,13 @@ METODOLOJİ: ${data.critique.methodology}
                 </div>
             </div>
 
-            {/* Slide Viewer (Simplified) */}
+            {/* Slide Viewer (Enhanced) */}
             {showSlides && (
-                <div className="fixed inset-0 bg-black/90 z-50 flex flex-col p-8">
-                    <button onClick={() => setShowSlides(false)} className="absolute top-4 right-4 text-white"><X /></button>
-                    <div className="flex-1 flex items-center justify-center p-12">
-                        <div className="bg-white text-black aspect-video w-full max-w-4xl rounded-3xl p-16 shadow-2xl flex flex-col justify-center">
-                            <h2 className="text-4xl font-black mb-8">{slides[currentSlideIndex]?.title}</h2>
-                            <ul className="space-y-4">
-                                {slides[currentSlideIndex]?.content.map((c: string, i: number) => <li key={i} className="text-xl opacity-80">• {c}</li>)}
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="flex justify-between items-center text-white max-w-4xl mx-auto w-full">
-                        <button onClick={() => setCurrentSlideIndex(s => Math.max(0, s - 1))}><ChevronLeft size={48} /></button>
-                        <span className="text-2xl font-black">{currentSlideIndex + 1} / {slides.length}</span>
-                        <button onClick={() => setCurrentSlideIndex(s => Math.min(slides.length - 1, s + 1))}><ChevronRight size={48} /></button>
-                    </div>
-                </div>
+                <PresentationView
+                    data={{ slides }}
+                    theme={settings?.darkMode ? 'modern' : 'academic'}
+                    onClose={() => setShowSlides(false)}
+                />
             )}
 
             <style jsx>{`

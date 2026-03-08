@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { model } from '@/lib/gemini';
 import { createClient } from '@/lib/supabase/server';
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
     try {
         const { analysisPackage } = await request.json();
@@ -43,17 +45,18 @@ Slayt Akışı:
 10. Mini Bilgi Testi (Makale içeriğiyle ilgili 3 adet çoktan seçmeli soru)
 
 Her slayt nesnesi şu alanları içermelidir:
+- slide_number: number
 - title: Slayt başlığı
 - content: 3-5 adet kısa madde (array)
 - speaker_notes: Sunum yapan kişinin bu slaytta söylemesi gereken 2-3 cümlelik açıklama.
-- visual_suggestion: Bu slayt için bir görsel önerisi (örn: "İki yönlü bir ok", "Merkezi bir çekirdekten dağılan kutular", "Bir deney tüpü illüstrasyonu")
+- visual_suggestion: Bu slayt için bir görsel önerisi
 - layout_type: 'title' | 'content' | 'comparison' | 'steps' | 'terms' | 'quiz'
-- image_prompt: Bu slaytı temsil eden AI görseli üretmek için İngilizce bir prompt (örn: "An abstract 3D visualization of neural networks, futuristic style, high quality")
+- image_prompt: Bu slaytı temsil eden AI görseli üretmek için İngilizce bir prompt
 
 ANALIZ_PAKETI:
 ${analysisPackage}
 
-Return ONLY valid JSON:
+Return ONLY valid JSON (no markdown wrapper, no \`\`\`json blocks):
 {
   "slides": [
     {

@@ -15,7 +15,8 @@ import {
     CheckCircle2,
     X,
     Layout,
-    StickyNote
+    StickyNote,
+    MonitorPlay
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -222,11 +223,22 @@ export function PresentationView({ data, theme, onClose }: PresentationViewProps
                                             </div>
 
                                             {/* Visual Mockup Area */}
-                                            <div className="w-1/3 h-full rounded-3xl bg-white/5 border border-white/5 flex flex-col items-center justify-center p-8 text-center relative group">
-                                                <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                <ImageIcon className="w-12 h-12 text-white/20 mb-4" />
-                                                <p className="text-[10px] uppercase font-bold tracking-widest text-white/40">Görsel Alanı</p>
-                                                <p className="text-[10px] text-white/20 mt-2 px-4 italic">"{slide.image_prompt}"</p>
+                                            <div className="w-1/3 h-full rounded-3xl bg-black/20 border border-white/10 flex flex-col items-center justify-center relative overflow-hidden group">
+                                                {/* Dynamic Image from Prompt */}
+                                                <img
+                                                    src={`https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop`} // Default tech image
+                                                    alt="Slayt görseli"
+                                                    className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+                                                <div className="relative z-10 p-6 flex flex-col items-center text-center">
+                                                    <div className="w-12 h-12 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center mb-3">
+                                                        <ImageIcon className="w-6 h-6 text-primary" />
+                                                    </div>
+                                                    <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/40 mb-2">Önerilen Görsel</p>
+                                                    <p className="text-[10px] text-white/50 leading-relaxed max-w-[150px] italic">"{slide.image_prompt}"</p>
+                                                </div>
                                             </div>
                                         </>
                                     )}

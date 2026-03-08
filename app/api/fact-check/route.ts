@@ -6,8 +6,8 @@ const genAI = new GoogleGenerativeAI(apiKey || '');
 
 // Arama aracı ile modeli yapılandır
 const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-    // gemini-2.5-pro generally uses search better, or we can use flash
+    model: "gemini-1.5-flash",
+    // 1.5-flash uses search well
     tools: [
         {
             // @ts-ignore

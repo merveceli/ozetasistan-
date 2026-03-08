@@ -156,30 +156,40 @@ Return ONLY valid JSON (no markdown, no code blocks):
     } else if (level === 'presentation') {
       promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
 
-Sadece bu PDF dosyasinin icerigini kullan.
-Dis bilgi kullanma, tahmin etme.
-Ciktinin tamami Turkce olmalidir.
+Sadece bu PDF dosyasinin icerigini kullan. Dis bilgi kullanma, tahmin etme.
+Ciktinin tamami Turkce olmalidir. PDF Ingilizce bile olsa Turkce yaz.
 
-Bu PDF e dayanarak TAM OLARAK 8 slaytan olusan akademik bir sunum hazirla.
+Bu PDF e dayanarak TAM OLARAK 10 slayttan olusan profesyonel bir akademik sunum hazirla.
 Her slaytta 3-5 kisa madde olsun.
 
-Slayt sirasi:
-1. Calismanin basligi ve genel amaci
-2. Problem tanimi
-3. Literatur baglami
-4. Kullanilan yontem
-5. Deney ortami veya veri seti
-6. Bulgular
-7. Calismanin katkisi
-8. Sinirliliklar ve gelecek calismalar
+Slayt Akışı:
+1. Başlık Slaytı (Tüm detaylar)
+2. Giriş ve Problem Tanımı
+3. Literatür Bağlamı
+4. Metodoloji / Yöntem
+5. Uygulama / Deney Tasarımı
+6. Bulgular ve Veri Analizi
+7. Tartışma ve Katkı
+8. Sınırlılıklar ve Gelecek Çalışmalar
+9. Anahtar Terimler Sözlüğü (Makaledeki 4-5 kritik terim)
+10. Bilgi Testi (İçerikle ilgili 3 çoktan seçmeli soru)
 
-Return ONLY valid JSON (no markdown, no code blocks):
+Her slayt için aşağıdaki JSON yapısını kullan:
 {
   "slides": [
-    { "slide_number": 1, "title": "Baslik", "content": ["Madde 1", "Madde 2", "Madde 3"] },
-    { "slide_number": 2, "title": "Problem", "content": ["Madde 1", "Madde 2"] }
+    {
+      "slide_number": 1,
+      "title": "Slayt Başlığı",
+      "content": ["Madde 1", "Madde 2"],
+      "speaker_notes": "Sunumda söylenecek 2-3 cümlelik not.",
+      "visual_suggestion": "İlgili görsel/diyagram tipi.",
+      "layout_type": "title | content | comparison | steps | terms | quiz",
+      "image_prompt": "İngilizce görsel üretim promptu."
+    }
   ]
-}`;
+}
+
+Return ONLY valid JSON (no markdown, no code blocks):`;
 
     } else if (level === 'analysis_package') {
       promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.

@@ -227,33 +227,21 @@ export default function PresentationPage() {
                                     {[
                                         { id: 'classic', name: 'Klasik Beyaz', class: 'bg-card border-border' },
                                         { id: 'academic', name: 'Akademik Mavi', class: 'bg-gradient-to-br from-blue-900/40 to-slate-900/40 border-blue-500/30' },
-                                        { id: 'modern', name: 'Modern Mor', class: 'bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border-purple-500/30' },
+                                        { id: 'modern', name: 'Modern Mor', class: 'bg-gradient-to-br from-purple-950/40 to-indigo-900/40 border-purple-500/30' },
                                         { id: 'professional', name: 'Profesyonel Siyah', class: 'bg-gradient-to-br from-black to-zinc-900 border-zinc-700' }
-                                    ].map((theme) => {
-                                        const isLocked = (user?.subscription_tier === 'free' || !user) && theme.id !== 'classic';
-                                        return (
-                                            <button
-                                                key={theme.id}
-                                                onClick={() => {
-                                                    if (isLocked) {
-                                                        setSelectedFeature("Sunum Temaları");
-                                                        setShowUpgradeModal(true);
-                                                    } else {
-                                                        setSelectedTheme(theme.id);
-                                                    }
-                                                }}
-                                                className={cn(
-                                                    "p-3 rounded-xl border-2 transition-all text-xs font-medium text-center relative overflow-hidden h-20 flex flex-col items-center justify-center",
-                                                    theme.class,
-                                                    selectedTheme === theme.id ? "ring-2 ring-primary border-primary" : "hover:border-primary/30",
-                                                    isLocked && "opacity-60"
-                                                )}
-                                            >
-                                                {theme.name}
-                                                {isLocked && <Lock className="w-3 h-3 mt-1 text-muted-foreground" />}
-                                            </button>
-                                        );
-                                    })}
+                                    ].map((theme) => (
+                                        <button
+                                            key={theme.id}
+                                            onClick={() => setSelectedTheme(theme.id)}
+                                            className={cn(
+                                                "p-3 rounded-xl border-2 transition-all text-xs font-medium text-center relative overflow-hidden h-20 flex flex-col items-center justify-center",
+                                                theme.class,
+                                                selectedTheme === theme.id ? "ring-2 ring-primary border-primary" : "hover:border-primary/30"
+                                            )}
+                                        >
+                                            {theme.name}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
