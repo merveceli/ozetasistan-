@@ -8,14 +8,12 @@ if (!apiKey) {
 
 const genAI = new GoogleGenerativeAI(apiKey || '');
 
-// @google/generative-ai v0.24+ ile desteklenen model adları:
+// ✅ "gemini-3-flash-preview" → En yeni, hızlı ve gelişmiş önizleme modeli
 // ✅ "gemini-2.0-flash"       → stabil, hızlı, ücretsiz
-// ✅ "gemini-1.5-flash-001"   → eski stabil versiyon
 // ✅ "gemini-1.5-flash-latest"
 // ❌ "gemini-1.5-flash"       → v0.24+ ile 404 hatası veriyor
-// ❌ "gemini-2.5-flash"       → deneysel, çoğu zaman çalışmıyor
 const primaryModel = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash", // Test edildi: Mevcut kotası olan ve en gelişmiş (thinking) model
+    model: "gemini-3-flash-preview", // User requested update to Gemini 3 Flash Preview
     generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 8192,
