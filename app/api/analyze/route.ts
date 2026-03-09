@@ -75,18 +75,27 @@ export async function POST(request: Request) {
 
     console.log('📄 Document:', document.name, document.file_type);
 
-    // Check if we already have the analysis for this specific level cached
-    if (!force && document.analysis_status === 'completed' && document.metadata && document.metadata[level]) {
-      console.log(`✅ Found cached analysis for level: ${level}. Skipping AI generation.`);
+    // 🚀 CACHE KONTROLÜ: Eğer bu level daha önce analiz edilmişse, 
+    // belgenin genel statusü ne olursa olsun (başka bir level processing olsa bile) doğrudan önbelleği dön!
+    if (!force && document.metadata && document.metadata[level]) {
+      console.log(`✅ Found cached analysis for level: ${level}. Skipping AI generation to save quota.`);
       return NextResponse.json(document.metadata[level]);
+    }
+
+    // 🚀 PROCESSING KONTROLÜ: Eğer şu an bu belge tamamen aynı level için işleniyorsa,
+    // (yani kullanıcı art arda sayfayı yeniliyorsa) Gemini'a üst üste 3-4 aynı istek atmasını engelle!
+    if (!force && document.analysis_status === `processing_${level}`) {
+      return NextResponse.json({
+        error: 'Şu anda sistem zaten bu veriyi analiz ediyor. Lütfen birkaç saniye bekleyin...',
+      }, { status: 429 });
     }
 
     const supabaseAdmin = createAdminClient();
 
-    // Update status to processing (using admin client to bypass RLS for guest users)
+    // Update status to processing (kullanıcının hangi seviyeyi process ettiğini bilmek için)
     await supabaseAdmin
       .from('documents')
-      .update({ analysis_status: 'processing' })
+      .update({ analysis_status: `processing_${level}` })
       .eq('id', documentId);
 
     // Download file

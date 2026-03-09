@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { model } from '@/lib/gemini';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { checkQuota, incrementUsage, logFeatureUsage } from '@/lib/quota';
 
 // Sunum üretimi için zaman aşımını artır (Vercel Pro: 300s, Hobby: 60s)
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
     try {
-        const { analysisPackage } = await request.json();
+        const { analysisPackage, documentId } = await request.json();
 
         if (!analysisPackage) {
             return NextResponse.json({ error: 'Analysis package content is required' }, { status: 400 });
@@ -22,6 +23,37 @@ export async function POST(request: Request) {
 
         if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // --- CACHE KONTROLÜ ---
+        const supabaseAdmin = createAdminClient();
+        let document = null;
+
+        if (documentId) {
+            const { data } = await supabaseAdmin
+                .from('documents')
+                .select('*')
+                .eq('id', documentId)
+                .single();
+
+            document = data;
+
+            // Eğer daha önceden cache'lenmiş bir sunum varsa kotadan yemeden direkt dön
+            if (document?.metadata?.presentation_slides) {
+                console.log('✅ Found cached presentation slides. Skipping AI generation.');
+                return NextResponse.json(document.metadata.presentation_slides);
+            }
+        }
+
+        // --- KOTA KONTROLÜ ---
+        if (user) {
+            const quotaCheck = await checkQuota(user.id, 'presentation');
+            if (!quotaCheck.allowed) {
+                return NextResponse.json({
+                    error: quotaCheck.reason || 'Sunum kotanız doldu.',
+                    needsUpgrade: true
+                }, { status: 403 });
+            }
         }
 
         const prompt = `Aşağıda bir akademik makaleye ait ANALIZ_PAKETI verilmektedir.
@@ -87,6 +119,26 @@ Return ONLY valid JSON (no markdown wrapper, no \`\`\`json blocks):
         }
 
         const data = JSON.parse(cleanJson);
+
+        // --- BAŞARILI ÜRETİM SONRASI KOTA DÜŞME VE CACHE'LEME ---
+        if (user) {
+            await incrementUsage(user.id, 'presentation');
+            await logFeatureUsage(user.id, 'presentation', documentId);
+        }
+
+        if (document && documentId) {
+            const existingMetadata = document.metadata || {};
+            await supabaseAdmin
+                .from('documents')
+                .update({
+                    metadata: {
+                        ...existingMetadata,
+                        presentation_slides: data
+                    }
+                })
+                .eq('id', documentId);
+        }
+
         return NextResponse.json(data);
 
     } catch (error: any) {

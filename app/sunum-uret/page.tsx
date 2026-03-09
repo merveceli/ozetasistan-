@@ -87,7 +87,7 @@ export default function PresentationPage() {
             const slideRes = await fetch('/api/generate-slides', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ analysisPackage: analysis_package })
+                body: JSON.stringify({ analysisPackage: analysis_package, documentId: doc.id })
             });
 
             if (!slideRes.ok) {

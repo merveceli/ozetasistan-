@@ -7,6 +7,7 @@ import {
     ChevronRight, Presentation, X, ChevronLeft, Sparkles, Mic,
     Copy, Check, Download, FileText, RefreshCcw
 } from 'lucide-react';
+import { useParams } from 'next/navigation';
 import { PresentationView } from './PresentationView';
 import { cn } from '@/lib/utils';
 import { BannerAd } from './BannerAd';
@@ -98,6 +99,9 @@ function MindMapTree({ node, depth = 0 }: { node: MindMapNode; depth?: number })
 }
 
 export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRefresh }: SummaryViewProps) {
+    const params = useParams();
+    const documentId = params?.id as string | undefined;
+
     const [activeTab, setActiveTab] = useState<'summary' | 'glossary' | 'critique' | 'citation' | 'mind_map' | 'study'>('summary');
 
     const [isSpeaking, setIsSpeaking] = useState(false);
@@ -284,7 +288,7 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
             const response = await fetch('/api/generate-slides', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ analysisPackage })
+                body: JSON.stringify({ analysisPackage, documentId })
             });
 
             if (!response.ok) {
