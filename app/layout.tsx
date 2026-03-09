@@ -88,7 +88,7 @@ export const metadata: Metadata = {
   },
 
   // ─── Manifest (PWA) ──────────────────────────────────────────────────────────
-  manifest: '/site.webmanifest',
+  // manifest: '/site.webmanifest', -> Artık otomatik app/manifest.ts kullanılıyor
 
   // ─── Verification ─────────────────────────────────────────────────────────────
   verification: {
