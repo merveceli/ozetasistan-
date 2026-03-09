@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { model } from '@/lib/gemini';
 import { createClient } from '@/lib/supabase/server';
 
+// Sunum üretimi için zaman aşımını artır (Vercel Pro: 300s, Hobby: 60s)
 export const maxDuration = 60;
 
 export async function POST(request: Request) {

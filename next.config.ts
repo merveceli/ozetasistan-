@@ -100,6 +100,20 @@ worker-src 'self' blob:;
         ],
       },
       {
+        // API rotaları cache'lenmemeli — özellikle telefondaki PWA için kritik
+        source: "/api/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate",
+          },
+          {
+            key: "Pragma",
+            value: "no-cache",
+          },
+        ],
+      },
+      {
         source: "/ads.txt",
         headers: [
           {

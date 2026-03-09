@@ -273,12 +273,13 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
         if (!data) return;
 
         setIsGeneratingSlides(true);
+        toast.loading('Sunum taslağı hazırlanıyor...', { id: 'slide-gen' });
         try {
-            const analysisPackage = `
-ÖZET: ${data.summary}
-ANA NOKTALAR: ${data.key_points.join(', ')}
-METODOLOJİ: ${data.critique.methodology}
-            `.trim();
+            const analysisPackage = [
+                `ÖZET: ${data.summary || ''}`,
+                `ANA NOKTALAR: ${(data.key_points || []).join(', ')}`,
+                `METODOLOJİ: ${data.critique?.methodology || 'Belirtilmemiş'}`,
+            ].join('\n').trim();
 
             const response = await fetch('/api/generate-slides', {
                 method: 'POST',
@@ -286,15 +287,22 @@ METODOLOJİ: ${data.critique.methodology}
                 body: JSON.stringify({ analysisPackage })
             });
 
-            if (!response.ok) throw new Error('Sunum oluşturulamadı');
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error || `Sunucu hatası (${response.status})`);
+            }
 
             const result = await response.json();
-            setSlides(result.slides || []);
+            if (!result.slides || result.slides.length === 0) {
+                throw new Error('Slayt verisi boş geldi. Lütfen tekrar deneyin.');
+            }
+            setSlides(result.slides);
             setCurrentSlideIndex(0);
             setShowSlides(true);
-        } catch (error) {
+            toast.success('Sunum taslağı hazırlandı!', { id: 'slide-gen' });
+        } catch (error: any) {
             console.error('Presentation error:', error);
-            alert('Hata oluştu.');
+            toast.error(error.message || 'Sunum oluşturulamadı. Lütfen tekrar deneyin.', { id: 'slide-gen' });
         } finally {
             setIsGeneratingSlides(false);
         }

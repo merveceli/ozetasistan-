@@ -55,6 +55,8 @@ export default function PresentationPage() {
         setPresentationData(null);
 
         try {
+            toast.loading('Analiz paketi hazırlanıyor...', { id: 'pres-gen' });
+
             // First we need the analysis package
             const analyzeRes = await fetch('/api/analyze', {
                 method: 'POST',
@@ -67,11 +69,19 @@ export default function PresentationPage() {
                 if (analyzeRes.status === 403 && errorData.needsUpgrade) {
                     setSelectedFeature("Gelişmiş Sunum Hazırlama");
                     setShowUpgradeModal(true);
+                    toast.dismiss('pres-gen');
                     return;
                 }
                 throw new Error(errorData.error || 'Analiz paketi alınamadı');
             }
-            const { analysis_package } = await analyzeRes.json();
+            const analyzeData = await analyzeRes.json();
+            const analysis_package = analyzeData?.analysis_package;
+
+            if (!analysis_package) {
+                throw new Error('Analiz paketi boş döndü. Lütfen önce dokümanı analiz edin veya tekrar deneyin.');
+            }
+
+            toast.loading('Slaytlar oluşturuluyor...', { id: 'pres-gen' });
 
             // Then generate slides
             const slideRes = await fetch('/api/generate-slides', {
@@ -85,10 +95,13 @@ export default function PresentationPage() {
                 throw new Error(errorData.error || 'Sunum oluşturulamadı');
             }
             const data = await slideRes.json();
+            if (!data.slides || data.slides.length === 0) {
+                throw new Error('Slayt verisi boş geldi. Lütfen tekrar deneyin.');
+            }
             setPresentationData(data);
-            toast.success('Sunum başarıyla oluşturuldu!');
+            toast.success('Sunum başarıyla oluşturuldu!', { id: 'pres-gen' });
         } catch (error: any) {
-            toast.error(error.message || 'Bir hata oluştu');
+            toast.error(error.message || 'Bir hata oluştu', { id: 'pres-gen' });
         } finally {
             setIsGenerating(false);
         }
