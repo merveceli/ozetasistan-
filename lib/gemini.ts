@@ -8,16 +8,19 @@ if (!apiKey) {
 
 const genAI = new GoogleGenerativeAI(apiKey || '');
 
-// Kararlı ve güçlü model: gemini-1.5-flash
-// NOT: "gemini-2.5-flash" veya "gemini-2.5-flash-preview" gibi deneysel
-// model adları API hatalarına yol açabilir. Sadece aşağıdaki stabil adı kullanın.
+// @google/generative-ai v0.24+ ile desteklenen model adları:
+// ✅ "gemini-2.0-flash"       → stabil, hızlı, ücretsiz
+// ✅ "gemini-1.5-flash-001"   → eski stabil versiyon
+// ✅ "gemini-1.5-flash-latest"
+// ❌ "gemini-1.5-flash"       → v0.24+ ile 404 hatası veriyor
+// ❌ "gemini-2.5-flash"       → deneysel, çoğu zaman çalışmıyor
 export const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 8192,
     }
 });
 
-// Görsel okuma ve analiz için de aynı model kullanılabilir
-export const visionModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// Görsel okuma ve analiz için de aynı model
+export const visionModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
