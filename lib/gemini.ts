@@ -15,7 +15,7 @@ const genAI = new GoogleGenerativeAI(apiKey || '');
 // ❌ "gemini-1.5-flash"       → v0.24+ ile 404 hatası veriyor
 // ❌ "gemini-2.5-flash"       → deneysel, çoğu zaman çalışmıyor
 export const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 8192,
@@ -23,4 +23,4 @@ export const model = genAI.getGenerativeModel({
 });
 
 // Görsel okuma ve analiz için de aynı model
-export const visionModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+export const visionModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
