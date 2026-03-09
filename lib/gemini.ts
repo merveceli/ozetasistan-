@@ -15,7 +15,7 @@ const genAI = new GoogleGenerativeAI(apiKey || '');
 // ❌ "gemini-1.5-flash"       → v0.24+ ile 404 hatası veriyor
 // ❌ "gemini-2.5-flash"       → deneysel, çoğu zaman çalışmıyor
 const primaryModel = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash", // Kullanıcı tercihi doğrultusunda 2.5-flash kullanılıyor
+    model: "gemini-2.5-flash", // Test edildi: Mevcut kotası olan ve en gelişmiş (thinking) model
     generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 8192,
@@ -23,7 +23,7 @@ const primaryModel = genAI.getGenerativeModel({
 });
 
 const fallbackModel = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash", // En stabil ve uyumlu yedek model
+    model: "gemini-2.0-flash-lite", // Lite modeller genellikle daha yüksek kotaya sahiptir
     generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 8192,
