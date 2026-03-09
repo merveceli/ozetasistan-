@@ -15,10 +15,11 @@ const genAI = new GoogleGenerativeAI(apiKey || '');
 // ❌ "gemini-1.5-flash"       → v0.24+ ile 404 hatası veriyor
 // ❌ "gemini-2.5-flash"       → deneysel, çoğu zaman çalışmıyor
 export const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash", // 2.5-flash deneysel olduğu için Production/Vercel'de sık çalışmaz, 2.0-flash tam stabildir.
     generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 8192,
+        responseMimeType: "application/json", // Gemini'ın saçma sapan metin (markdown) vermesini engeller, DİREKT json üretir!
     }
 });
 

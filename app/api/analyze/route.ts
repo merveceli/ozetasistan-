@@ -599,8 +599,9 @@ JSON formatinda don: { "summary": "ozet", "key_points": ["madde 1", "madde 2"], 
         .eq('id', documentId);
 
       return NextResponse.json({
-        error: 'Yapay zeka yaniti isle nemedi. Lutfen tekrar deneyin.',
-        details: parseError.message
+        error: 'Yapay zeka yanıtı işlenemedi. Lütfen tekrar deneyin.',
+        details: parseError.message,
+        aiResponse: textResponse.substring(0, 500) // Hatayı net görebilmemiz için ilk 500 karakter
       }, { status: 500 });
     }
 
