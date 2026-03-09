@@ -499,20 +499,52 @@ JSON formatinda don: { "summary": "ozet", "key_points": ["madde 1", "madde 2"], 
       const urlText = (await fileData.text()).trim();
       console.log('Fetching URL:', urlText);
       try {
-        const urlResponse = await fetch(urlText);
+        // Gerçek tarayıcı gibi davran: bot korumasını atlatmak için User-Agent ekle
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 saniye timeout
+
+        const urlResponse = await fetch(urlText, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+          }
+        });
+        clearTimeout(timeoutId);
+
+        if (!urlResponse.ok) {
+          throw new Error(`Web sayfası ${urlResponse.status} hatası döndürdü. Sayfa herkese açık olmayabilir.`);
+        }
+
         const html = await urlResponse.text();
+
+        // HTML'den temiz metin çıkar
         const bodyMatch = html.match(/<body[^>]*>([\w|\W]*)<\/body>/im);
         let contentText = bodyMatch ? bodyMatch[1] : html;
+        // script, style, nav, header, footer gibi gereksiz elemanları temizle
         contentText = contentText.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ');
         contentText = contentText.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ');
-        contentText = contentText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+        contentText = contentText.replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, ' ');
+        contentText = contentText.replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, ' ');
+        contentText = contentText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+        if (contentText.length < 100) {
+          throw new Error('Web sayfasından yeterli içerik alınamadı. Sayfa JavaScript gerektiriyor veya erişime kapalı olabilir.');
+        }
+
+        console.log('✅ URL content extracted, length:', contentText.length);
 
         result = await model.generateContent(
           promptTemplate + '\n\nDocument content:\n' + contentText.slice(0, 50000)
         );
-      } catch (error) {
+      } catch (error: any) {
         console.error('URL Fetch Error:', error);
-        throw new Error('URL icerigi okunamadi.');
+        if (error.name === 'AbortError') {
+          throw new Error('Web sayfası çok uzun süre yanıt vermedi (15 saniye). Farklı bir URL deneyin.');
+        }
+        throw new Error(error.message || 'URL içeriği okunamadı. URL\'nin herkese açık olduğundan emin olun.');
       }
 
     } else {

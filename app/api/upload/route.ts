@@ -53,7 +53,6 @@ export async function POST(request: Request) {
             console.log('⚠️ No authenticated user, using dummy ID. Checking trial status.');
 
             // SECURITY CHECK: Check if the guest has already completed a trial
-            // In Next.js App Router we read cookies from the incoming request directly
             const cookieHeader = request.headers.get('cookie') || '';
             const hasCompletedTrial = cookieHeader.includes('trial_completed=true');
 
@@ -65,10 +64,10 @@ export async function POST(request: Request) {
                 }, { status: 403 });
             }
 
-            // Guest trial only allows PDF/Doc
-            if (type !== 'pdf') {
+            // Misafirler sadece ses/video yükleyemez; PDF, URL ve metin serbesttir
+            if (type === 'audio' || type === 'video') {
                 return NextResponse.json({
-                    error: 'Misafir kullanıcılar sadece PDF/Döküman yükleyebilir.',
+                    error: 'Ses/video analizi için lütfen giriş yapın.',
                     needsUpgrade: true
                 }, { status: 403 });
             }
