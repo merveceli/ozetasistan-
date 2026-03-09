@@ -19,7 +19,6 @@ export const model = genAI.getGenerativeModel({
     generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 8192,
-        responseMimeType: "application/json", // Gemini'ın saçma sapan metin (markdown) vermesini engeller, DİREKT json üretir!
     }
 });
 
