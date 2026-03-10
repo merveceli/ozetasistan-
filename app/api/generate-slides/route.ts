@@ -30,11 +30,20 @@ export async function POST(request: Request) {
         let document = null;
 
         if (documentId) {
-            const { data } = await supabaseAdmin
+            const { data, error } = await supabaseAdmin
                 .from('documents')
                 .select('*')
                 .eq('id', documentId)
                 .single();
+
+            if (error || !data) {
+                return NextResponse.json({ error: 'Döküman bulunamadı.' }, { status: 404 });
+            }
+
+            // Sahiplik kontrolü: Kullanıcı sadece kendi dökümanına sunum üretebilir (Guest dahil)
+            if (data.user_id !== userId) {
+                return NextResponse.json({ error: 'Bu döküman üzerinde işlem yapma yetkiniz yok.' }, { status: 403 });
+            }
 
             document = data;
 

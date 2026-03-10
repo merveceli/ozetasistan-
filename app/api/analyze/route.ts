@@ -84,7 +84,7 @@ export async function POST(request: Request) {
 
     // 🚀 PROCESSING KONTROLÜ: Eğer şu an bu belge tamamen aynı level için işleniyorsa,
     // (yani kullanıcı art arda sayfayı yeniliyorsa) Gemini'a üst üste 3-4 aynı istek atmasını engelle!
-    if (!force && document.analysis_status === `processing_${level}`) {
+    if (!force && document.analysis_status === 'processing') {
       return NextResponse.json({
         error: 'Şu anda sistem zaten bu veriyi analiz ediyor. Lütfen birkaç saniye bekleyin...',
       }, { status: 429 });
@@ -92,10 +92,10 @@ export async function POST(request: Request) {
 
     const supabaseAdmin = createAdminClient();
 
-    // Update status to processing (kullanıcının hangi seviyeyi process ettiğini bilmek için)
+    // Update status to processing
     await supabaseAdmin
       .from('documents')
-      .update({ analysis_status: `processing_${level}` })
+      .update({ analysis_status: 'processing' })
       .eq('id', documentId);
 
     // Download file

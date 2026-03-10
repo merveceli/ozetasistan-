@@ -23,8 +23,19 @@ import {
     Quote,
     Layers,
     MoveRight,
-    Star
+    Star,
+    HelpCircle,
+    ChevronDown,
+    FileUp,
+    SearchCode,
+    Smartphone,
+    Gavel,
+    Stethoscope,
+    GraduationCap,
+    Briefcase
 } from 'lucide-react';
+
+
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -131,7 +142,9 @@ export default function LandingPage() {
                     </span>
                 </Link>
                 <div className="hidden md:flex items-center space-x-8">
+                    <button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })} className="text-sm font-medium text-white/60 hover:text-white transition-colors">Nasıl Çalışır?</button>
                     <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="text-sm font-medium text-white/60 hover:text-white transition-colors">Özellikler</button>
+                    <button onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })} className="text-sm font-medium text-white/60 hover:text-white transition-colors">SSS</button>
                     <div className="h-4 w-px bg-white/10" />
                     <Link href="/auth/login" className="text-sm font-semibold hover:text-primary transition-colors">Giriş Yap</Link>
                     <Link href="/auth/signup" className="px-6 py-2.5 rounded-full bg-white text-[#030014] text-sm font-bold hover:bg-white/90 transition-all active:scale-95 shadow-xl shadow-white/5">
@@ -323,6 +336,54 @@ export default function LandingPage() {
                     </motion.div>
                 </motion.div>
             </section>
+            {/* How It Works Section */}
+            <section id="how-it-works" className="py-24 px-6 md:px-12 relative overflow-hidden">
+                <div className="max-w-7xl mx-auto relative z-10">
+                    <div className="text-center mb-20">
+                        <h2 className="text-4xl md:text-6xl font-black mb-6">Nasıl Çalışır?</h2>
+                        <p className="text-white/50 text-xl max-w-2xl mx-auto">Akademik iş akışınızı 3 basit adımda geleceğe taşıyın.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                        {/* Connecting Line (Desktop) */}
+                        <div className="hidden md:block absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent -translate-y-24" />
+
+                        {[
+                            {
+                                step: "01",
+                                title: "Dokümanı Yükle",
+                                desc: "PDF, Word veya makale linkini sisteme yükleyin. Dosya boyutu veya sayfa sınırı dert değil.",
+                                icon: <FileUp className="w-8 h-8" />,
+                                color: "from-blue-500 to-cyan-400"
+                            },
+                            {
+                                step: "02",
+                                title: "Yapay Zeka Analizi",
+                                desc: "Gemini 3 Flash altyapısı ile metni saniyeler içinde tarar, kavramsal haritaları ve önemli noktaları çıkarır.",
+                                icon: <SearchCode className="w-8 h-8" />,
+                                color: "from-primary to-purple-500"
+                            },
+                            {
+                                step: "03",
+                                title: "Bilgiye Dönüştür",
+                                desc: "Özetleri oku, flashcardlar ile çalış veya tek tıkla profesyonel sunumun taslağını al.",
+                                icon: <Presentation className="w-8 h-8" />,
+                                color: "from-purple-500 to-pink-500"
+                            }
+                        ].map((item, i) => (
+                            <div key={i} className="relative group">
+                                <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-8 shadow-2xl shadow-primary/20 group-hover:scale-110 transition-transform`}>
+                                    {item.icon}
+                                </div>
+                                <div className="absolute -top-4 -right-4 text-6xl font-black text-white/5 select-none">{item.step}</div>
+                                <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
+                                <p className="text-white/50 leading-relaxed">{item.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
 
             {/* Premium Features Grid */}
             <section id="features" className="py-24 px-6 md:px-12 bg-white/[0.02]">
@@ -395,10 +456,103 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* Who Can Use This Section */}
+            <section id="use-cases" className="py-24 px-6 md:px-12 bg-white/[0.01]">
+                <div className="max-w-7xl mx-auto">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl md:text-5xl font-black mb-6">Kimler Kullanabilir?</h2>
+                        <p className="text-white/50 text-xl max-w-2xl mx-auto">Sadece öğrenciler için değil, bilgiyle uğraşan her profesyonel için.</p>
+                    </div>
 
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[
+                            {
+                                title: "Avukatlar",
+                                desc: "Yüzlerce sayfalık dava dosyalarını, emsal kararları ve hukuki metinleri saniyeler içinde analiz edin, çelişkileri yakalayın.",
+                                icon: <Gavel className="w-6 h-6 text-amber-400" />,
+                                border: "hover:border-amber-400/30"
+                            },
+                            {
+                                title: "Sağlık Çalışanları",
+                                desc: "Güncel tıp makalelerini, araştırma raporlarını ve karmaşık vaka analizlerini hızlıca sentezleyin.",
+                                icon: <Stethoscope className="w-6 h-6 text-rose-400" />,
+                                border: "hover:border-rose-400/30"
+                            },
+                            {
+                                title: "Akademisyenler",
+                                desc: "Literatür taraması yaparken yüzlerce kaynağı karşılaştırın, kaynakçalarınızı düzenleyin ve sentez raporları oluşturun.",
+                                icon: <GraduationCap className="w-6 h-6 text-primary" />,
+                                border: "hover:border-primary/30"
+                            },
+                            {
+                                title: "Kurumsal Ekipler",
+                                desc: "Pazar araştırma raporlarını, rakip analizlerini ve şirket içi dokümanları hızlıca stratejik bilgiye dönüştürün.",
+                                icon: <Briefcase className="w-6 h-6 text-blue-400" />,
+                                border: "hover:border-blue-400/30"
+                            }
+                        ].map((item, i) => (
+                            <div key={i} className={`p-8 rounded-[2rem] bg-white/5 border border-white/10 transition-all ${item.border} group`}>
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                    {item.icon}
+                                </div>
+                                <h3 className="text-xl font-bold mb-3">{item.title}</h3>
+                                <p className="text-white/40 text-sm leading-relaxed">{item.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+
+            {/* FAQ Section */}
+            <section id="faq" className="py-24 px-6 md:px-12 relative">
+                <div className="max-w-4xl mx-auto">
+                    <div className="flex items-center gap-4 mb-16">
+                        <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center">
+                            <HelpCircle className="w-6 h-6 text-primary" />
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black">Merak Edilenler</h2>
+                    </div>
+
+                    <div className="space-y-4">
+                        {[
+                            {
+                                q: "Neden Özet Asistanı? Diğer araçlardan farkı ne?",
+                                a: "Biz sadece bir 'özetleme' aracı değiliz. Akademik metodolojiyi anlayan, Türkçe dil yapısına %100 hakim ve analiz sonrası size sunum, flashcard gibi somut çıktılar üreten tek entegre platformuz. ChatGPT gibi genel araçlar metni kısaltırken, biz metni 'öğrenilebilir' hale getiriyoruz."
+                            },
+                            {
+                                q: "Türkiye'de başka yerli/Türkçe akademik asistan var mı?",
+                                a: "Piyasada basit API entegrasyonları olsa da, bu kadar geniş akademik modül grubunu (Sentez Lab, Zihin Haritaları, Odak Radyosu) tek çatıda toplayan Türkiye'nin ilk ve en gelişmiş yerli akademik AI platformuyuz. Türk akademisyen ve öğrencilerin ihtiyaçlarına göre özel olarak yapılandırıldık."
+                            },
+                            {
+                                q: "Dokümanlarım güvende mi?",
+                                a: "Kesinlikle. Yüklediğiniz dosyalar uçtan uca şifrelenir ve sadece sizin erişiminize açıktır. Verileriniz asla model eğitimi için kullanılmaz ve istediğiniz an sistemden kalıcı olarak silebilirsiniz."
+                            },
+                            {
+                                q: "Gemini 3 Flash teknolojisi ne sağlıyor?",
+                                a: "Dünyanın en yeni ve en hızlı multimodel yapay zeka altyapısını kullanıyoruz. Bu sayede 1 milyon tokenlik (yaklaşık 2000 sayfa) bir veriyi bile saniyeler içinde analiz edip çelişkileri bulabiliyoruz. Hızımız global rakiplerimizin 5 katı."
+                            },
+                        ].map((item, i) => (
+                            <div key={i} className="group bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:bg-white/10 transition-all cursor-pointer text-left">
+                                <div className="flex justify-between items-center gap-4">
+                                    <h4 className="text-xl font-bold">{item.q}</h4>
+                                    <ChevronDown className="w-5 h-5 text-white/40 group-hover:text-primary transition-colors shrink-0" />
+                                </div>
+                                <div className="mt-4 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500 ease-in-out">
+                                    <p className="text-white/60 leading-relaxed pt-2 border-t border-white/10">
+                                        {item.a}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                </div>
+            </section>
 
             {/* Footer */}
             <footer className="pt-24 pb-10 border-t border-white/5 bg-[#030014] relative z-20">
+
                 <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-5 gap-12">
                     <div className="col-span-1 md:col-span-2">
                         <div className="flex items-center space-x-3 mb-6">
@@ -462,7 +616,7 @@ export default function LandingPage() {
                         <Link href="#" className="hover:text-white transition-colors"><Users className="w-4 h-4" /></Link>
                     </div>
                 </div>
-            </footer>
+            </footer >
 
             <style jsx>{`
                 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
@@ -478,6 +632,6 @@ export default function LandingPage() {
                         linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
                 }
             `}</style>
-        </div>
+        </div >
     );
 }

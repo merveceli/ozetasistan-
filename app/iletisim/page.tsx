@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
-import { Mail, MessageSquare, Send, Loader2 } from 'lucide-center'; // Fix: lucide-react
 import { Mail as MailIcon, MessageSquare as MessageIcon, Send as SendIcon, Loader2 as LoaderIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
