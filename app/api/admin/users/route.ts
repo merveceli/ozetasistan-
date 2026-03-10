@@ -29,6 +29,7 @@ export async function GET(request: Request) {
         const limit = parseInt(searchParams.get('limit') || '10');
         const search = searchParams.get('search') || '';
         const tier = searchParams.get('tier');
+        const provider = searchParams.get('provider');
 
         let query = adminDb
             .from('profiles')
@@ -42,11 +43,15 @@ export async function GET(request: Request) {
             query = query.eq('subscription_tier', tier);
         }
 
+        if (provider && provider !== 'all') {
+            query = query.eq('provider', provider);
+        }
+
         const from = (page - 1) * limit;
         const to = from + limit - 1;
 
         const { data: users, count, error } = await query
-            .order('updated_at', { ascending: false })
+            .order('created_at', { ascending: false })
             .range(from, to);
 
         if (error) {
