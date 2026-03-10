@@ -30,8 +30,14 @@ export function Header() {
         { id: 2, text: "Görsel ekleme özelliği aktif edildi!", read: false, type: 'success', time: '5 dk önce' },
     ]);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [showSearchResults, setShowSearchResults] = useState(false);
+
     const notifRef = useRef<HTMLDivElement>(null);
     const userMenuRef = useRef<HTMLDivElement>(null);
+    const searchRef = useRef<HTMLDivElement>(null);
     const adIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
@@ -60,10 +66,39 @@ export function Header() {
             if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
                 setShowUserMenu(false);
             }
+            if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+                setShowSearchResults(false);
+            }
         };
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
+
+    // Search logic
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(async () => {
+            if (searchQuery.length >= 2) {
+                setSearchLoading(true);
+                setShowSearchResults(true);
+                try {
+                    const response = await fetch(`/api/documents?q=${encodeURIComponent(searchQuery)}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setSearchResults(data.documents || []);
+                    }
+                } catch (error) {
+                    console.error('Search error:', error);
+                } finally {
+                    setSearchLoading(false);
+                }
+            } else {
+                setSearchResults([]);
+                setShowSearchResults(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchQuery]);
 
     const fetchUser = async () => {
         try {
@@ -153,13 +188,60 @@ export function Header() {
                 </Link>
 
                 {/* Search */}
-                <div className="relative hidden md:block w-56">
+                <div className="relative hidden md:block w-72" ref={searchRef}>
                     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
                         type="text"
-                        placeholder="Ara..."
-                        className="w-full bg-secondary/50 border border-border rounded-full pl-10 pr-4 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                        placeholder="Dokümanlarında ara..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
+                        className="w-full bg-secondary/50 border border-border rounded-full pl-10 pr-10 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
                     />
+                    {searchLoading && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    )}
+
+                    {/* Search Results Dropdown */}
+                    {showSearchResults && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+                            <div className="max-h-80 overflow-y-auto">
+                                {searchResults.length > 0 ? (
+                                    <div className="p-2 space-y-1">
+                                        <p className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b border-border/50 mb-1">
+                                            Eşleşen Dokümanlar
+                                        </p>
+                                        {searchResults.map((doc) => (
+                                            <button
+                                                key={doc.id}
+                                                onClick={() => {
+                                                    router.push(`/analyze/${doc.id}`);
+                                                    setShowSearchResults(false);
+                                                    setSearchQuery('');
+                                                }}
+                                                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-left group"
+                                            >
+                                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
+                                                    <FileText className="w-4 h-4" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-bold truncate group-hover:text-primary transition-colors">{doc.title}</p>
+                                                    <p className="text-[10px] text-muted-foreground uppercase">{doc.file_type} • {new Date(doc.created_at).toLocaleDateString('tr-TR')}</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="p-8 text-center">
+                                        <Search className="w-8 h-8 mx-auto mb-2 text-muted-foreground opacity-20" />
+                                        <p className="text-sm text-muted-foreground italic">Sonuç bulunamadı.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Side Actions */}

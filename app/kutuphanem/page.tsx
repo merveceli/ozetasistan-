@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
-import { FileText, Mic, Video, MoreVertical, CheckSquare, Square, ArrowRight, GitCompare, CheckCircle2 } from 'lucide-react';
+import { FileText, Mic, Video, MoreVertical, CheckSquare, Square, ArrowRight, GitCompare, CheckCircle2, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Document } from '@/types';
 import Link from 'next/link';
@@ -13,6 +13,7 @@ export default function LibraryPage() {
     const [documents, setDocuments] = useState<Document[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [localSearch, setLocalSearch] = useState('');
 
     useEffect(() => {
         fetchDocuments();
@@ -46,6 +47,10 @@ export default function LibraryPage() {
         router.push(`/compare?ids=${query}`);
     };
 
+    const filteredDocuments = documents.filter(doc =>
+        doc.title.toLowerCase().includes(localSearch.toLowerCase())
+    );
+
     return (
         <div className="flex flex-col h-screen overflow-hidden bg-background">
             <Header />
@@ -67,7 +72,26 @@ export default function LibraryPage() {
                         </Link>
                     </div>
 
-                    {/* Filters / Toolbar TODO */}
+                    {/* Filters / Toolbar */}
+                    <div className="flex flex-col md:flex-row gap-4 mb-8">
+                        <div className="relative flex-1">
+                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                            <input
+                                type="text"
+                                placeholder="Kütüphanende ara..."
+                                value={localSearch}
+                                onChange={(e) => setLocalSearch(e.target.value)}
+                                className="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <select className="bg-card border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary outline-none">
+                                <option>En Yeni</option>
+                                <option>En Eski</option>
+                                <option>İsim (A-Z)</option>
+                            </select>
+                        </div>
+                    </div>
 
                     {isLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -75,16 +99,15 @@ export default function LibraryPage() {
                                 <div key={i} className="h-48 bg-secondary/30 rounded-xl animate-pulse" />
                             ))}
                         </div>
-                    ) : documents.length === 0 ? (
+                    ) : filteredDocuments.length === 0 ? (
                         <div className="text-center py-20 bg-secondary/10 rounded-2xl border border-dashed border-border">
-                            <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-medium">Henüz doküman yok</h3>
-                            <p className="text-muted-foreground mb-4">Analiz etmek için ilk dokümanınızı yükleyin.</p>
-                            <Link href="/" className="text-primary hover:underline">Yükleme ekranına git</Link>
+                            <Search className="w-12 h-12 mx-auto text-muted-foreground mb-4 opacity-20" />
+                            <h3 className="text-lg font-medium">Aramanızla eşleşen sonuç yok</h3>
+                            <p className="text-muted-foreground mb-4">Farklı bir anahtar kelime deneyin veya yeni bir doküman yükleyin.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-24">
-                            {documents.map((doc) => (
+                            {filteredDocuments.map((doc) => (
                                 <div
                                     key={doc.id}
                                     className={cn(
