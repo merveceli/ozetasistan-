@@ -532,19 +532,35 @@ export default function LandingPage() {
                                 q: "Gemini 3 Flash teknolojisi ne sağlıyor?",
                                 a: "Dünyanın en yeni ve en hızlı multimodel yapay zeka altyapısını kullanıyoruz. Bu sayede 1 milyon tokenlik (yaklaşık 2000 sayfa) bir veriyi bile saniyeler içinde analiz edip çelişkileri bulabiliyoruz. Hızımız global rakiplerimizin 5 katı."
                             },
-                        ].map((item, i) => (
-                            <div key={i} className="group bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:bg-white/10 transition-all cursor-pointer text-left">
-                                <div className="flex justify-between items-center gap-4">
-                                    <h4 className="text-xl font-bold">{item.q}</h4>
-                                    <ChevronDown className="w-5 h-5 text-white/40 group-hover:text-primary transition-colors shrink-0" />
+                        ].map((item, i) => {
+                            const [isOpen, setIsOpen] = useState(false);
+                            return (
+                                <div
+                                    key={i}
+                                    onClick={() => setIsOpen(!isOpen)}
+                                    className={cn(
+                                        "group bg-white/5 border border-white/10 rounded-[2rem] p-8 transition-all cursor-pointer text-left",
+                                        isOpen ? "bg-white/10 ring-1 ring-primary/20" : "hover:bg-white/10"
+                                    )}
+                                >
+                                    <div className="flex justify-between items-center gap-4">
+                                        <h4 className="text-xl font-bold">{item.q}</h4>
+                                        <ChevronDown className={cn(
+                                            "w-5 h-5 text-white/40 transition-all shrink-0",
+                                            isOpen ? "rotate-180 text-primary" : "group-hover:text-primary"
+                                        )} />
+                                    </div>
+                                    <div className={cn(
+                                        "overflow-hidden transition-all duration-500 ease-in-out",
+                                        isOpen ? "max-h-80 mt-6" : "max-h-0"
+                                    )}>
+                                        <p className="text-white/60 leading-relaxed pt-6 border-t border-white/10">
+                                            {item.a}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="mt-4 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500 ease-in-out">
-                                    <p className="text-white/60 leading-relaxed pt-2 border-t border-white/10">
-                                        {item.a}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                 </div>

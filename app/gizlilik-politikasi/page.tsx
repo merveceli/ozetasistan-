@@ -22,51 +22,70 @@ export default function PrivacyPolicy() {
                         <p className="text-muted-foreground">Son güncelleme: {new Date().toLocaleDateString('tr-TR')}</p>
                     </div>
 
-                    <div className="prose prose-invert max-w-none space-y-6 text-foreground/80 leading-relaxed">
-                        <section className="space-y-4 bg-card/50 p-6 rounded-2xl border border-border/50">
-                            <h2 className="text-xl font-semibold text-foreground">1. Giriş</h2>
+                    <div className="prose prose-invert max-w-none space-y-8 text-foreground/80 leading-relaxed">
+                        <section className="space-y-4 bg-card/50 p-8 rounded-3xl border border-border/50 shadow-sm">
+                            <h2 className="text-2xl font-bold text-foreground">1. Veri Sorumlusu ve Giriş</h2>
                             <p>
-                                Özet Asistanı olarak gizliliğinize önem veriyoruz. Bu Gizlilik Politikası, web sitemizi kullandığınızda hangi bilgilerin toplandığını, bunların nasıl kullanıldığını ve güvenliğinin nasıl sağlandığını açıklar.
+                                6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, Özet Asistanı ("Platform") olarak, kişisel verilerinizin güvenliğine ve gizliliğine en üst düzeyde önem veriyoruz. Bu politika, platformumuzu kullandığınızda hangi verilerin işlendiğini, hukuki sebeplerini ve haklarınızı detaylandırmaktadır.
                             </p>
                         </section>
 
-                        <section className="space-y-4 bg-card/50 p-6 rounded-2xl border border-border/50">
-                            <h2 className="text-xl font-semibold text-foreground">2. Toplanan Bilgiler</h2>
+                        <section className="space-y-4 bg-card/50 p-8 rounded-3xl border border-border/50">
+                            <h2 className="text-2xl font-bold text-foreground">2. İşlenen Veri Kategorileri ve Amaçları</h2>
                             <p>
-                                Hizmetlerimizi sunabilmek için aşağıdaki veri türlerini toplayabiliriz:
+                                Platformumuz tarafından işlenen veriler, "Veri Minimizasyonu" ilkesine uygun olarak sadece hizmetin sunulması için gerekli olanlarla sınırlıdır:
                             </p>
-                            <ul className="list-disc pl-6 space-y-2">
-                                <li><strong>Kullanıcı Bilgileri:</strong> Kayıt sırasında paylaştığınız e-posta adresi ve isim.</li>
-                                <li><strong>Log Dosyaları:</strong> Birçok standart web sunucusu gibi Özet Asistanı da istatistiksel amaçlı log dosyaları tutmaktadır. Bu dosyalar; IP adresiniz, servis sağlayıcınız, tarayıcınızın özellikleri, işletim sisteminiz ve siteye giriş-çıkış sayfalarınız gibi standart bilgileri içermektedir.</li>
+                            <ul className="list-disc pl-6 space-y-4">
+                                <li>
+                                    <strong className="text-foreground">Kimlik ve İletişim Bilgileri:</strong>
+                                    Hesap oluşturma, kimlik doğrulama ve kullanıcıya özel çalışma alanının (Kütüphanem) oluşturulması amacıyla e-posta adresiniz ve ad-soyad bilgileriniz işlenmektedir.
+                                </li>
+                                <li>
+                                    <strong className="text-foreground">Kullanım Verileri ve Analiz İçerikleri:</strong>
+                                    Yüklediğiniz dökümanlar, yapay zeka tarafından sadece talep ettiğiniz analizlerin (özet, sunum, zihin haritası vb.) üretilmesi amacıyla anlık olarak işlenir. <strong>İçerikleriniz asla yapay zeka modellerinin eğitimi için kullanılmaz.</strong>
+                                </li>
+                                <li>
+                                    <strong className="text-foreground">Teknik İşlem Bilgileri:</strong>
+                                    IP adresi, log kayıtları ve tarayıcı bilgileri, 5651 sayılı kanun kapsamındaki yükümlülüklerimizin yerine getirilmesi ve sistem güvenliğinin sağlanması amacıyla işlenir.
+                                </li>
                             </ul>
                         </section>
 
-                        <section className="space-y-4 bg-card/50 p-6 rounded-2xl border border-border/50">
-                            <h2 className="text-xl font-semibold text-foreground">3. Çerezler ve Reklamcılık (Google AdSense)</h2>
+                        <section className="space-y-4 bg-card/50 p-8 rounded-3xl border border-border/50">
+                            <h2 className="text-2xl font-bold text-foreground">3. Çerezler ve Reklamcılık</h2>
                             <p>
-                                Özet Asistanı, kullanıcı deneyimini iyileştirmek için çerezler (cookies) kullanmaktadır. Ayrıca sitemizde reklam yayınlamak için üçüncü taraf reklam şirketlerini (özellikle Google) kullanmaktayız.
+                                Kullanıcı deneyimini optimize etmek ve sürdürülebilir bir hizmet sunabilmek amacıyla Google AdSense üzerinden reklam gösterimi yapılmaktadır:
                             </p>
-                            <div className="bg-primary/5 border-l-4 border-primary p-4 my-4 italic">
-                                <p className="font-medium text-foreground mb-2">Google AdSense ve Çerez Bilgilendirmesi:</p>
-                                <ul className="list-disc pl-6 space-y-2 text-sm">
-                                    <li>Google dahil üçüncü taraf satıcılar, kullanıcının web sitemize veya diğer web sitelerine yaptığı önceki ziyaretlere dayalı olarak reklam yayınlamak için çerez kullanmaktadır.</li>
-                                    <li>Google'ın reklam çerezlerini kullanması, Google ve ortaklarının sitemizi ve/veya internetteki diğer siteleri ziyaret eden kullanıcılarımıza reklam sunmasına olanak tanır.</li>
-                                    <li>Kullanıcılar, <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Reklam Ayarları</a> sayfasını ziyaret ederek kişiselleştirilmiş reklamcılığı devre dışı bırakabilirler.</li>
-                                </ul>
+                            <div className="bg-primary/5 border-l-4 border-primary p-6 my-4 italic rounded-r-2xl text-sm space-y-3">
+                                <p className="font-bold text-foreground">Google Reklam Çerezleri Hakkında:</p>
+                                <p>Google, kullanıcıların sitemizi ve internetteki diğer siteleri ziyaretlerine dayalı olarak reklam sunmak için çerezlerden yararlanır. Kullanıcılar, kişiselleştirilmiş reklamcılığı devre dışı bırakmak için <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold">Google Reklam Ayarlarını</a> kullanabilirler.</p>
                             </div>
                         </section>
 
-                        <section className="space-y-4 bg-card/50 p-6 rounded-2xl border border-border/50">
-                            <h2 className="text-xl font-semibold text-foreground">4. Veri Güvenliği</h2>
+                        <section className="space-y-4 bg-card/50 p-8 rounded-3xl border border-border/50">
+                            <h2 className="text-2xl font-bold text-foreground">4. Veri Saklama ve İmha</h2>
                             <p>
-                                Verilerinizin güvenliğini sağlamak için endüstri standardı güvenlik önlemlerini uygulamaktayız. Ancak, internet üzerinden iletilen hiçbir yöntemin %100 güvenli olmadığını hatırlatmak isteriz.
+                                Kişisel verileriniz, işleme amacının gerektirdiği süre boyunca veya ilgili mevzuatta öngörülen kanuni süreler (Genellikle kullanıcı hesabı aktif olduğu sürece) saklanır. Kullanıcı hesabını sildiğinde veya talep ettiğinde, tüm döküman ve analiz verileri sistemimizden <strong>geri döndürülemez şekilde</strong> silinir.
                             </p>
                         </section>
 
-                        <section className="space-y-4 bg-card/50 p-6 rounded-2xl border border-border/50">
-                            <h2 className="text-xl font-semibold text-foreground">5. İletişim</h2>
+                        <section className="space-y-4 bg-card/50 p-8 rounded-3xl border border-border/50">
+                            <h2 className="text-2xl font-bold text-foreground">5. Kullanıcı Hakları (KVKK Madde 11)</h2>
+                            <p>Veri sahibi olarak KVKK kapsamında aşağıdaki haklara sahipsiniz:</p>
+                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm italic">
+                                <li>• Verilerinizin işlenip işlenmediğini öğrenme</li>
+                                <li>• İşleme amacını ve kullanımını denetleme</li>
+                                <li>• Eksik verilerin düzeltilmesini isteme</li>
+                                <li>• Verilerin silinmesini veya yok edilmesini talep etme</li>
+                                <li>• Veri aktarılan taraflar hakkında bilgi alma</li>
+                                <li>• Zararın giderilmesini talep etme</li>
+                            </ul>
+                        </section>
+
+                        <section className="space-y-4 bg-card/50 p-8 rounded-3xl border border-border/50 text-center">
+                            <h2 className="text-2xl font-bold text-foreground">6. Yürürlük ve İletişim</h2>
                             <p>
-                                Gizlilik politikamız ile ilgili her türlü soru, görüş ve önerinizi İletişim sayfamız üzerinden bize iletebilirsiniz.
+                                Bu politika platformda yayınlandığı tarihte yürürlüğe girer. Sorularınız için "İletişim" sayfamızdaki kanallar üzerinden veri sorumlusuna ulaşabilirsiniz.
                             </p>
                         </section>
                     </div>
