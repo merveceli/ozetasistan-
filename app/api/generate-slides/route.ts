@@ -65,54 +65,24 @@ export async function POST(request: Request) {
             }
         }
 
-        const prompt = `Aşağıda bir akademik makaleye ait ANALIZ_PAKETI verilmektedir.
-
-SADECE bu analiz paketindeki bilgileri kullan.
-Orijinal makalenin akademik derinliğini koru ama sunum formatına uygun şekilde yapılandır.
-
-Çıktıyı tamamen Türkçe ver.
-
-Aşağıdaki yapıda TAM OLARAK 10 slayttan oluşan bir sunum hazırla:
-
-Slayt Akışı:
-1. Başlık Slaytı (Başlık, Kapsam)
-2. Giriş ve Problem Tanımı
-3. Literatür Özeti / Bağlam
-4. Yöntem / Metodoloji (Akış şeması için uygun yapılandır)
-5. Uygulama / Deney Tasarımı
-6. Ana Bulgular (Veri odaklı)
-7. Tartışma ve Katkı
-8. Sınırlılıklar ve Gelecek Çalışmalar
-9. Anahtar Terimler Sözlüğü (Makaledeki en kritik 5-6 terim)
-10. Mini Bilgi Testi (Makale içeriğiyle ilgili 3 adet çoktan seçmeli soru)
-
-Her slayt nesnesi şu alanları içermelidir:
-- slide_number: number
-- title: Slayt başlığı
-- content: 3-5 adet kısa madde (array)
-- speaker_notes: Sunum yapan kişinin bu slaytta söylemesi gereken 2-3 cümlelik açıklama.
-- visual_suggestion: Bu slayt için bir görsel önerisi
-- layout_type: 'title' | 'content' | 'comparison' | 'steps' | 'terms' | 'quiz'
-- image_prompt: Bu slaytı temsil eden AI görseli üretmek için İngilizce bir prompt
-
-ANALIZ_PAKETI:
-${analysisPackage}
-
-Return ONLY valid JSON (no markdown wrapper, no \`\`\`json blocks):
+        const prompt = `Akademik ANALIZ_PAKETI'ne dayalı 7 slaytlık hızlı Türkçe sunum hazırla. Sadece bu bilgileri kullan.
+JSON Yapısı:
 {
   "slides": [
     {
-      "slide_number": 1,
-      "title": "...",
-      "content": ["...", "..."],
-      "speaker_notes": "...",
-      "visual_suggestion": "...",
-      "layout_type": "...",
-      "image_prompt": "..."
-    },
-    // ... total 10 slides
+      "slide_number": number,
+      "title": "Kısa Başlık (max 50 kr)",
+      "content": ["Madde 1 (max 70 kr)", "Madde 2", "Madde 3"],
+      "speaker_notes": "1 kısa cümle",
+      "visual_suggestion": "Kısa öneri",
+      "layout_type": "title|content|steps|quiz|terms",
+      "image_prompt": "English short prompt"
+    }
   ]
-}`;
+}
+Not: layout_type 'terms' ise content dizisi "Terim: Açıklama" formatında olmalı.
+ANALIZ_PAKETI: ${analysisPackage.substring(0, 4000)}
+Return ONLY valid JSON:`;
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
