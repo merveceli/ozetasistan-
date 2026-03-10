@@ -33,22 +33,6 @@ export async function POST(request: Request) {
         if (user) {
             console.log('✅ Authenticated user found:', user.id);
             userId = user.id;
-
-            // Tier-based file type restriction
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('subscription_tier')
-                .eq('id', userId)
-                .single();
-
-            const userTier = profile?.subscription_tier || 'free';
-
-            if (userTier === 'free' && (type === 'audio' || type === 'video')) {
-                return NextResponse.json({
-                    error: 'Bu dosya tipi için üyeliğinizi yükseltmeniz gerekmektedir.',
-                    needsUpgrade: true
-                }, { status: 403 });
-            }
         } else {
             console.log('⚠️ No authenticated user, using dummy ID. Checking trial status.');
 

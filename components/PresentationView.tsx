@@ -122,7 +122,14 @@ export function PresentationView({ data, theme, onClose }: PresentationViewProps
                     </button>
                     <div className="w-px h-6 bg-white/10 mx-2" />
                     <button
-                        onClick={() => toast.info('PDF/PPTX dışa aktarma özelliği Pro sürümünde yakında aktif olacak!')}
+                        onClick={async () => {
+                            const { exportToPPTX } = await import('@/lib/pptx-export');
+                            toast.promise(exportToPPTX(slides, "Sunum"), {
+                                loading: 'PowerPoint dosyası hazırlanıyor...',
+                                success: 'Sunum başarıyla indirildi!',
+                                error: 'Dışa aktarma sırasında bir hata oluştu.'
+                            });
+                        }}
                         className="bg-primary hover:bg-primary/90 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
                     >
                         <Download className="w-4 h-4" />

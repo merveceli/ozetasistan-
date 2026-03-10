@@ -385,13 +385,13 @@ export default function LandingPage() {
             </section>
 
 
-            {/* Premium Features Grid */}
+            {/* Advanced Features Grid */}
             <section id="features" className="py-24 px-6 md:px-12 bg-white/[0.02]">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                         <div className="max-w-2xl">
-                            <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight">Limitleri <span className="text-primary italic">Zorlayan</span> Özellikler.</h2>
-                            <p className="text-white/50 text-lg">Yapay zeka teknolojisinin en ileri noktasını akademik ihtiyaçlarınızla birleştirdik.</p>
+                            <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight">Yapay Zekanın <span className="text-primary italic">Zirvesi</span>.</h2>
+                            <p className="text-white/50 text-lg">En ileri akademik analiz araçları ve sunum özellikleri artık tüm paketlerimizde aktif. Kullanım kotanız dahilinde tüm özellikleri sınırsızca deneyimleyin.</p>
                         </div>
                         <button className="flex items-center space-x-2 text-primary font-black uppercase text-sm tracking-widest hover:translate-x-2 transition-transform">
                             <span>Tümünü Keşfet</span>

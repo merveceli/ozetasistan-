@@ -27,23 +27,6 @@ export async function POST(request: Request) {
 
     // Check quota and tier for authenticated users
     if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('subscription_tier')
-        .eq('id', user.id)
-        .single();
-
-      const userTier = profile?.subscription_tier || 'free';
-
-      // Tier-based depth restriction
-      const restrictedLevels = ['academic', 'professor', 'deep_analysis'];
-      if (userTier === 'free' && restrictedLevels.includes(level)) {
-        return NextResponse.json({
-          error: 'Bu analiz derinliği için üyeliğinizi yükseltmeniz gerekmektedir.',
-          needsUpgrade: true
-        }, { status: 403 });
-      }
-
       const quotaCheck = await checkQuota(user.id, 'analyze');
       if (!quotaCheck.allowed) {
         return NextResponse.json({
@@ -53,10 +36,10 @@ export async function POST(request: Request) {
         }, { status: 403 });
       }
     } else {
-      // Guest trial only allows basic levels and analysis_package for slides
+      // Guest trial limits
       if (level && level !== 'student' && level !== 'metadata' && level !== 'analysis_package') {
         return NextResponse.json({
-          error: 'Misafir kullanıcılar sadece temel analiz yapabilir.',
+          error: 'Misafir kullanıcılar sadece temel analiz yapabilir. Lütfen gelişmiş analizler için giriş yapın.',
           needsUpgrade: true
         }, { status: 403 });
       }

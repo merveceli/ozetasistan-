@@ -222,17 +222,9 @@ export default function PresentationPage() {
                                     <div className="flex items-center space-x-2">
                                         <Palette className="w-5 h-5 text-primary" />
                                         <h3 className="font-bold">Sunum Teması</h3>
-                                        <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                                            Özel
+                                        <span className="text-[10px] bg-emerald-500/20 text-emerald-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                            Açık
                                         </span>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        {(user?.subscription_tier === 'free' || !user) && (
-                                            <div className="flex items-center space-x-1 text-xs text-orange-500 font-medium">
-                                                <Lock className="w-3 h-3" />
-                                                <span>Yükselt</span>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
 
@@ -324,10 +316,17 @@ export default function PresentationPage() {
                                         Tam Ekran Başlat
                                     </button>
                                     <button
-                                        onClick={() => toast.info('Dışa aktarma özelliği yakında aktif olacak!')}
+                                        onClick={async () => {
+                                            const { exportToPPTX } = await import('@/lib/pptx-export');
+                                            toast.promise(exportToPPTX(presentationData.slides, "Sunum"), {
+                                                loading: 'PowerPoint dosyası hazırlanıyor...',
+                                                success: 'Sunum başarıyla indirildi!',
+                                                error: 'Dışa aktarma sırasında bir hata oluştu.'
+                                            });
+                                        }}
                                         className="bg-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center space-x-2"
                                     >
-                                        <span>Dışa Aktar (.PDF)</span>
+                                        <span>Dışa Aktar (.PPTX)</span>
                                     </button>
                                 </div>
                             </div>
