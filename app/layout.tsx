@@ -74,17 +74,14 @@ export const metadata: Metadata = {
     creator: '@ozetasistani',
   },
 
-  // ─── Favicon & İkonlar ───────────────────────────────────────────────────────
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon-32.png', type: 'image/png', sizes: '32x32' },
-      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/logo.png', type: 'image/png' },
     ],
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/logo.png', type: 'image/png' },
     ],
-    shortcut: '/favicon.ico',
+    shortcut: '/logo.png',
   },
 
   // ─── Manifest (PWA) ──────────────────────────────────────────────────────────
