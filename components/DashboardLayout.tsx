@@ -16,7 +16,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         pathname.startsWith('/auth') ||
         pathname === '/hakkimizda' ||
         pathname === '/gizlilik-politikasi' ||
-        pathname === '/iletisim';
+        pathname === '/iletisim' ||
+        pathname.startsWith('/blog');
     const isAdminPage = pathname.startsWith('/admin');
     const hideSidebar = isPublicPage || isAdminPage;
 

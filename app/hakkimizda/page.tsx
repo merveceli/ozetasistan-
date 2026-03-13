@@ -2,9 +2,20 @@ import React from 'react';
 import { Header } from '@/components/Header';
 import { Info, Sparkles, Target, Zap } from 'lucide-react';
 
-export const metadata = {
-    title: 'Hakkımızda',
-    description: 'Özet Asistanı vizyonu, misyonu ve arkasındaki teknolojiler.',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Hakkımızda — Özet Asistanı Kimdir?',
+    description:
+        'Özet Asistanı, Türk öğrenci ve akademisyenlerin akademik makaleleri, tezleri ve PDF\'leri saniyeler içinde anlamasını sağlayan yapay zeka platformudur. Misyonumuz, vizyonumuz ve teknolojimiz hakkında.',
+    openGraph: {
+        title: 'Özet Asistanı Hakkında — AI Destekli Akademik Çalışma Platformu',
+        description:
+            'Türkiye\'nin en gelişmiş akademik AI asistanı: Gemini AI ile PDF özetleme, flashcard ve sunum üretimi. Misyonumuz ve ekibimiz hakkında bilgi edinin.',
+    },
+    alternates: {
+        canonical: 'https://ozetasistani.com/hakkimizda',
+    },
 };
 
 export default function AboutUs() {

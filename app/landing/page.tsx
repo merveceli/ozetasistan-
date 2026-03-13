@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FAQStructuredData } from '@/components/StructuredData';
 import {
     BookOpen,
     Sparkles,
@@ -580,6 +581,14 @@ export default function LandingPage() {
                         linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
                 }
             `}</style>
-        </div >
+
+            {/* FAQ Structured Data — Google Zengin Sonuçları */}
+            <FAQStructuredData faqs={[
+                { question: 'Neden Özet Asistanı? Diğer araçlardan farkı ne?', answer: 'Biz sadece bir özetleme aracı değiliz. Akademik metodolojiyi anlayan, Türkçe dil yapısına %100 hakim ve analiz sonrası size sunum, flashcard gibi somut çıktılar üreten tek entegre platformuz.' },
+                { question: 'Türkiye’de başka yerli/Türkçe akademik asistan var mı?', answer: 'Piyasada basit API entegrasyonları olsa da, bu kadar geniş akademik modül grubunu tek çatıda toplayan Türkiye’nin ilk ve en gelişmiş yerli akademik AI platformuyuz.' },
+                { question: 'Dokümanlarım güvende mi?', answer: 'Kesinlikle. Yüklediğiniz dosyalar uçtan uca şifrelenir ve sadece sizin erişiminize açıktır. Verileriniz asla model eğitimi için kullanılmaz.' },
+                { question: 'Gemini 3 Flash teknolojisi ne sağlıyor?', answer: 'Dünyanın en yeni ve en hızlı multimodel yapay zeka altyapısını kullanıyoruz. 1 milyon tokenlik (yaklaşık 2000 sayfa) bir veriyi bile saniyeler içinde analiz edebiliyoruz.' },
+            ]} />
+        </div>
     );
 }

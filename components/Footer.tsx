@@ -82,6 +82,7 @@ export function Footer() {
                 </p>
 
                 <div className="flex flex-wrap justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
                     <Link href="/hakkimizda" className="hover:text-primary transition-colors">Hakkımızda</Link>
                     <Link href="/gizlilik-politikasi" className="hover:text-primary transition-colors">Gizlilik Politikası</Link>
                     <Link href="/iletisim" className="hover:text-primary transition-colors">İletişim</Link>
