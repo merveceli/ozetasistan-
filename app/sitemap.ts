@@ -68,6 +68,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         { url: `${SITE_URL}/blog/pomodoro-teknigi-ile-ders-calisma`, changeFrequency: 'monthly' as const, priority: 0.75 },
         { url: `${SITE_URL}/blog/ingilizce-akademik-metin-cevirisi`, changeFrequency: 'monthly' as const, priority: 0.8 },
         { url: `${SITE_URL}/blog/sinav-kaygisi-nasil-yenilir`, changeFrequency: 'monthly' as const, priority: 0.75 },
+        { url: `${SITE_URL}/blog/kurucunun-hikayesi`, changeFrequency: 'monthly' as const, priority: 0.85 },
     ].map(p => ({ ...p, lastModified: now }));
 
     return [...staticPages, ...featurePages, ...blogPages];

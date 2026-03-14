@@ -24,6 +24,16 @@ export const metadata: Metadata = {
 
 const blogPosts = [
     {
+        slug: 'kurucunun-hikayesi',
+        title: 'Neden Özet Asistanı\'nı Kurdum? Öğrencilikten Girişimciliğe',
+        excerpt: 'Yüzlerce sayfalık öğrenci dertlerinden doğan bir yapay zeka girişimi. İstanbul Üniversitesi bilgisayar programcılığı öğrencisi Merve Çelik\'in ağzından uygulamanın hikayesi.',
+        category: 'Duyuru',
+        readTime: '5 dk',
+        date: '2025-03-14',
+        tags: ['merve çelik', 'girişimcilik', 'hikaye'],
+        icon: '💌',
+    },
+    {
         slug: 'yapay-zeka-ile-literatur-taramasi',
         title: 'Yapay Zeka ile Literatür Taraması Nasıl Yapılır? Akademik Rehber',
         excerpt: 'Akademik literatür taramasını haftalar yerine saatler içinde tamamlayın. AI araçları ile akademik kaynak bulma ve sentezleme teknikleri.',
@@ -129,6 +139,7 @@ const categoryColors: Record<string, string> = {
     'Üretkenlik': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
     'Dil Gelişimi': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
     'Psikoloji': 'bg-red-500/20 text-red-300 border-red-500/30',
+    'Duyuru': 'bg-amber-500/20 text-amber-500 border-amber-500/30',
 };
 
 export default function BlogPage() {
