@@ -21,6 +21,30 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Dosya boyutu çok büyük (Maksimum 10MB).' }, { status: 400 });
         }
 
+        // 🛡️ SECURITY CHECK: Sıkı Dosya Tipi ve MIME Doğrulaması (TÜBİTAK Seviyesi)
+        const allowedMimeTypes = [
+            'application/pdf',
+            'text/plain',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        
+        const fileExt = file.name.split('.').pop()?.toLowerCase();
+        const allowedExtensions = ['pdf', 'txt', 'doc', 'docx'];
+
+        // Sadece URL değilse (fiziksel dosya ise) doğrula
+        if (type !== 'url') {
+            if (!allowedMimeTypes.includes(file.type)) {
+                console.warn(`🚨 Güvenlik Uyarısı: Geçersiz MIME tipi algılandı (${file.type}). Dosya: ${file.name}`);
+                return NextResponse.json({ error: 'Güvenlik ihlali: Sadece PDF, Word veya TXT formatındaki belgelere izin verilmektedir. Zararlı yazılım koruması aktif.' }, { status: 415 });
+            }
+
+            if (!fileExt || !allowedExtensions.includes(fileExt)) {
+                console.warn(`🚨 Güvenlik Uyarısı: Geçersiz dosya uzantısı algılandı (.${fileExt}). Dosya: ${file.name}`);
+                return NextResponse.json({ error: 'Güvenlik ihlali: Kabul edilmeyen dosya formatı tespit edildi.' }, { status: 415 });
+            }
+        }
+
         console.log('🔐 Creating Supabase client...');
         const supabase = await createClient();
 
