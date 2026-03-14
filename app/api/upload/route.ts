@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 
         console.log('✅ Using user ID:', userId);
 
-        const fileExt = file.name.split('.').pop();
+        // fileExt zaten güvenlik bloğunda tanımlandı (yeniden atama yapılmıyor)
         // Sanitize filename to avoid issues
         const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
         const storageFileName = `${userId}/${Date.now()}-${sanitizedFileName}`;

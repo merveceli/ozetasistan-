@@ -68,6 +68,11 @@ export async function POST(request: Request) {
         // Build message parts (text + optional image)
         const messageParts: any[] = [{ text: message }];
         if (imageBase64 && imageMimeType) {
+            // 🛡️ Güvenlik: Sadece gerçek görsel MIME türlerine izin ver
+            const allowedImageMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedImageMimeTypes.includes(imageMimeType)) {
+                return NextResponse.json({ error: 'Güvenlik ihlali: Desteklenmeyen görsel formatı.' }, { status: 415 });
+            }
             messageParts.push({
                 inlineData: {
                     mimeType: imageMimeType,
