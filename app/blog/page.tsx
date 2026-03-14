@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BookOpen, Clock, ArrowRight, Tag } from 'lucide-react';
+import { BlogCTAButton } from '@/components/BlogCTAButton';
 
 export const metadata: Metadata = {
     title: 'Blog — Akademik Çalışma ve AI İpuçları',
@@ -244,13 +245,10 @@ export default function BlogPage() {
                     <p className="text-muted-foreground mb-6">
                         PDF&apos;lerini yükle, saniyeler içinde özet, flashcard ve sunum al.
                     </p>
-                    <Link
-                        href="/auth/signup"
-                        id="blog-cta-signup"
-                        className="inline-flex items-center gap-2 bg-primary text-white px-8 py-3.5 rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-xl shadow-primary/20"
-                    >
-                        Ücretsiz Başla <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    <BlogCTAButton 
+                        defaultText="Ücretsiz Başla" 
+                        className="shadow-xl shadow-primary/20" 
+                    />
                 </div>
             </section>
         </main>

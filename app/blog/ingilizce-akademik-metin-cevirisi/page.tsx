@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Clock, Languages, Lightbulb, BookOpen } from 'lucide-react';
 import { ArticleStructuredData } from '@/components/StructuredData';
+import { BlogCTAButton } from '@/components/BlogCTAButton';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ozetasistani.com';
 
@@ -116,12 +117,7 @@ export default function IngilizceMetinCevirisi() {
                     <BookOpen className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold mb-2">Dil Engelini Aşın</h2>
                     <p className="text-muted-foreground mb-6">İngilizce belgelerinizi yükleyin, Türkçe detaylı özetlere ve flashcardlara anında ulaşın.</p>
-                    <Link
-                        href="/auth/signup"
-                        className="inline-flex items-center gap-2 bg-emerald-500 text-white px-8 py-3.5 rounded-2xl font-bold hover:bg-emerald-600 transition-all"
-                    >
-                        Denemeye Başla <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    <BlogCTAButton defaultText="Denemeye Başla" className="bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" />
                 </div>
 
                 {/* Navigation */}

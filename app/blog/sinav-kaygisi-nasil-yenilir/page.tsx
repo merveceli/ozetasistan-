@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Clock, HeartPulse, Brain, Coffee, Activity } from 'lucide-react';
 import { ArticleStructuredData } from '@/components/StructuredData';
+import { BlogCTAButton } from '@/components/BlogCTAButton';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ozetasistani.com';
 
@@ -125,12 +126,7 @@ export default function SinavKaygisi() {
                     <Activity className="w-12 h-12 text-red-500 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold mb-2">Stres Yapma, Otomatize Et</h2>
                     <p className="text-muted-foreground mb-6">Sınav notlarını kendi başına özetlemekle vakit kaybetme, bırak asistan yapsın.</p>
-                    <Link
-                        href="/auth/signup"
-                        className="inline-flex items-center gap-2 bg-red-500 text-white px-8 py-3.5 rounded-2xl font-bold hover:bg-red-600 transition-all"
-                    >
-                        Asistanı Dene <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    <BlogCTAButton defaultText="Asistanı Dene" className="bg-red-500 hover:bg-red-600 shadow-red-500/20" />
                 </div>
 
                 {/* Navigation */}

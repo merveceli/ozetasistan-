@@ -56,6 +56,12 @@ export async function middleware(request: NextRequest) {
 
     // Auth status
     const { data: { user } } = await supabase.auth.getUser()
+    const pathname = request.nextUrl.pathname;
+
+    // Kullanıcı zaten giriş yaptıysa ve login/signup sayfalarına girmeye çalışıyorsa Panel'e yönlendir
+    if (user && pathname.startsWith('/auth')) {
+        return NextResponse.redirect(new URL('/', request.url))
+    }
 
     // ADMIN PROTECTION
     if (request.nextUrl.pathname.startsWith('/admin')) {

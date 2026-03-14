@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Clock, CheckCircle2, BookOpen } from 'lucide-react';
 import { ArticleStructuredData } from '@/components/StructuredData';
+import { BlogCTAButton } from '@/components/BlogCTAButton';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ozetasistani.com';
 
@@ -188,13 +189,7 @@ export default function AkademikMakaleNasilOzetlenir() {
                     <BookOpen className="w-12 h-12 text-primary mx-auto mb-4" />
                     <h2 className="text-2xl font-bold mb-2">Hemen Ücretsiz Dene</h2>
                     <p className="text-muted-foreground mb-6">İlk analizini ücretsiz yap. Kredi kartı gerekmez.</p>
-                    <Link
-                        href="/auth/signup"
-                        id="blog-article-cta-ozetleme"
-                        className="inline-flex items-center gap-2 bg-primary text-white px-8 py-3.5 rounded-2xl font-bold hover:bg-primary/90 transition-all"
-                    >
-                        Ücretsiz Başla <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    <BlogCTAButton defaultText="Ücretsiz Başla" />
                 </div>
 
                 {/* Navigation */}

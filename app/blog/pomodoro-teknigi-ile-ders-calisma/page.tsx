@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Clock, Timer, CheckCircle2, Zap, Brain, Mic } from 'lucide-react';
 import { ArticleStructuredData } from '@/components/StructuredData';
+import { BlogCTAButton } from '@/components/BlogCTAButton';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ozetasistani.com';
 
@@ -139,12 +140,7 @@ export default function PomodoroTeknigi() {
                     <Zap className="w-12 h-12 text-pink-500 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold mb-2">Çalışma Merkeziniz Hazır</h2>
                     <p className="text-muted-foreground mb-6">Odak radyosu dinleyerek belgelerinizi özetleyin ve Pomodoro sayacınızı başlatın.</p>
-                    <Link
-                        href="/auth/signup"
-                        className="inline-flex items-center gap-2 bg-pink-500 text-white px-8 py-3.5 rounded-2xl font-bold hover:bg-pink-600 transition-all"
-                    >
-                        Ücretsiz Kayıt Ol <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    <BlogCTAButton defaultText="Ücretsiz Kayıt Ol" className="bg-pink-500 hover:bg-pink-600 shadow-pink-500/20" />
                 </div>
 
                 {/* Navigation */}
