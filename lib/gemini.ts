@@ -35,13 +35,16 @@ export const model = {
         try {
             return await primaryModel.generateContent(request);
         } catch (error: any) {
-            // Eğer hata kodu 503 veya 500 vb. ise otomatik olarak yedek modele geçiş yap
             console.warn(`⚠️ [Gemini 2.5 Error]: ${error.message}`);
             console.warn(`🔄 Sistemsel yoğunluk/hata sebebiyle Yedek Modele (2.0-flash) geçiliyor...`);
-
             return await fallbackModel.generateContent(request);
         }
-    }
+    },
+    startChat: (params?: any) => {
+        // startChat doğrudan primary model üzerinden çalışır
+        // (Fallback mod, streaming ile uyumsuz olduğu için chat için primary kullanılır)
+        return primaryModel.startChat(params);
+    },
 };
 
 // Görsel okuma ve analiz için de aynı wrapper'ın basitleştirilmiş hali

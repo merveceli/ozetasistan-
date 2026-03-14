@@ -1,12 +1,16 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**",
-      },
+      // Supabase Storage (kullanıcı dosyaları ve avatarlar)
+      { protocol: "https", hostname: "*.supabase.co" },
+      // Google APIs (Gemini görselleri vb.)
+      { protocol: "https", hostname: "*.googleapis.com" },
+      { protocol: "https", hostname: "*.gstatic.com" },
+      // Google AdSense / Analytics görselleri
+      { protocol: "https", hostname: "*.googlesyndication.com" },
+      { protocol: "https", hostname: "*.doubleclick.net" },
     ],
   },
 
@@ -16,13 +20,13 @@ const nextConfig: NextConfig = {
     },
   },
 
-  // @ts-ignore
+  // @ts-ignore — Next.js 15 tipinde yok ama runtime'da çalışıyor, false yaparak build hatalarını görmeye başlarız
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   // @ts-ignore
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   async headers() {
@@ -130,4 +134,4 @@ worker-src 'self' blob:;
   },
 };
 
-export default nextConfig;
+export default nextConfig as NextConfig;
