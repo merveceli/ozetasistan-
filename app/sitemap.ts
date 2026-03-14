@@ -64,6 +64,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
         { url: `${SITE_URL}/blog/flashcard-ile-hizli-ogrenme`, changeFrequency: 'monthly' as const, priority: 0.75 },
         { url: `${SITE_URL}/blog/zihin-haritasi-nedir`, changeFrequency: 'monthly' as const, priority: 0.75 },
         { url: `${SITE_URL}/blog/tez-okuma-teknikleri`, changeFrequency: 'monthly' as const, priority: 0.75 },
+        { url: `${SITE_URL}/blog/yapay-zeka-ile-literatur-taramasi`, changeFrequency: 'monthly' as const, priority: 0.8 },
+        { url: `${SITE_URL}/blog/pomodoro-teknigi-ile-ders-calisma`, changeFrequency: 'monthly' as const, priority: 0.75 },
+        { url: `${SITE_URL}/blog/ingilizce-akademik-metin-cevirisi`, changeFrequency: 'monthly' as const, priority: 0.8 },
+        { url: `${SITE_URL}/blog/sinav-kaygisi-nasil-yenilir`, changeFrequency: 'monthly' as const, priority: 0.75 },
     ].map(p => ({ ...p, lastModified: now }));
 
     return [...staticPages, ...featurePages, ...blogPages];

@@ -23,6 +23,46 @@ export const metadata: Metadata = {
 
 const blogPosts = [
     {
+        slug: 'yapay-zeka-ile-literatur-taramasi',
+        title: 'Yapay Zeka ile Literatür Taraması Nasıl Yapılır? Akademik Rehber',
+        excerpt: 'Akademik literatür taramasını haftalar yerine saatler içinde tamamlayın. AI araçları ile akademik kaynak bulma ve sentezleme teknikleri.',
+        category: 'Araştırma',
+        readTime: '10 dk',
+        date: '2025-03-14',
+        tags: ['literatür taraması', 'araştırma', 'yapay zeka'],
+        icon: '📚',
+    },
+    {
+        slug: 'pomodoro-teknigi-ile-ders-calisma',
+        title: 'Pomodoro Tekniği: Tükenmişlik Yaşamadan Odaklanın',
+        excerpt: 'Saatlerce masada oturmanıza rağmen verim alamıyor musunuz? Pomodoro Tekniği ve odak radyosu kullanarak ders çalışma veriminizi artırın.',
+        category: 'Üretkenlik',
+        readTime: '6 dk',
+        date: '2025-03-14',
+        tags: ['pomodoro', 'üretkenlik', 'ders çalışma'],
+        icon: '⏱️',
+    },
+    {
+        slug: 'ingilizce-akademik-metin-cevirisi',
+        title: 'Akademik İngilizce Metinleri Çevirmeden Anlama Rehberi',
+        excerpt: 'Google Translate kullanmayı bırakın. İngilizce orijinal makaleleri doğrudan kavrayarak okuma hızı kazanmanın yolları.',
+        category: 'Dil Gelişimi',
+        readTime: '9 dk',
+        date: '2025-03-14',
+        tags: ['ingilizce makale', 'çeviri', 'akademik okuma'],
+        icon: '🌐',
+    },
+    {
+        slug: 'sinav-kaygisi-nasil-yenilir',
+        title: 'Sınav Kaygısı ve Stresi Nasıl Yenilir? Başa Çıkma Taktikleri',
+        excerpt: 'Sınav gecesi uykusuzluğa ve unutkanlığa son! Sınav stresini azaltıp performansınızı yükseltecek bilimsel stratejiler.',
+        category: 'Psikoloji',
+        readTime: '7 dk',
+        date: '2025-03-14',
+        tags: ['sınav stresi', 'kaygı', 'öğrenci psikolojisi'],
+        icon: '🧘',
+    },
+    {
         slug: 'akademik-makale-nasil-ozetlenir',
         title: 'Akademik Makale Nasıl Özetlenir? Yapay Zeka ile Hızlı Analiz Rehberi',
         excerpt:
@@ -84,6 +124,10 @@ const categoryColors: Record<string, string> = {
     'Teknoloji': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
     'Öğrenme Teknikleri': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     'Akademik Başarı': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+    'Araştırma': 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+    'Üretkenlik': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
+    'Dil Gelişimi': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+    'Psikoloji': 'bg-red-500/20 text-red-300 border-red-500/30',
 };
 
 export default function BlogPage() {
