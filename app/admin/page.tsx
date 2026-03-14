@@ -18,7 +18,8 @@ import {
     Layers,
     AlertCircle,
     Loader2,
-    Minus
+    Minus,
+    MessageSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';

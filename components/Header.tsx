@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
-import { Bell, Search, LogOut, Zap, TrendingUp, ShieldCheck, X, Play, CheckCircle2 } from 'lucide-react';
+import { Bell, Search, LogOut, Zap, TrendingUp, ShieldCheck, X, Play, CheckCircle2, FileText } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
