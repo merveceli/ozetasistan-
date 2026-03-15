@@ -88,16 +88,18 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
         setCurrentLineIndex(index);
 
         try {
-            // İnsansı sesleri backend'den getir (Microsoft Edge Neural API)
+            // 1. ADIM: Yüksek Kaliteli API (Microsoft Edge Neural)
             const res = await fetch('/api/synthesize-podcast', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: line.text, speaker: line.speaker }),
             });
 
-            if (!res.ok) throw new Error('Ses sentezleme hatası');
+            if (!res.ok) throw new Error('API hatası');
 
             const audioBlob = await res.blob();
+            if (audioBlob.size < 1000) throw new Error('Geçersiz ses verisi');
+            
             const audioUrl = URL.createObjectURL(audioBlob);
 
             if (audioRef.current) {
@@ -110,24 +112,48 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
             audio.onended = () => {
                 URL.revokeObjectURL(audioUrl);
                 if (isPlayingRef.current) {
-                    setTimeout(() => speakLine(index + 1), 600); // Doğal duraklama
+                    setTimeout(() => speakLine(index + 1), 600);
                 }
             };
 
-            audio.onerror = (e) => {
-                console.error("Ses çalma hatası:", e);
-                isPlayingRef.current = false;
-                setIsPlaying(false);
-                toast.error("Ses çalınamadı.");
+            audio.onerror = () => {
+                console.warn("API Sesi çalınamadı, fallback'e geçiliyor...");
+                playFallback(line.text, line.speaker, index);
             };
 
             await audio.play();
         } catch (error) {
-            console.error("SpeakLine Error:", error);
-            setIsPlaying(false);
-            isPlayingRef.current = false;
+            console.error("Neural TTS Error, using fallback:", error);
+            // 2. ADIM: FALLBACK - Tarayıcı Sesi (Her zaman çalışır)
+            playFallback(line.text, line.speaker, index);
         }
     }, []);
+
+    // Tarayıcının kendi sesi (SpeechSynthesis) - API bozulursa devreye girer
+    const playFallback = (text: string, speaker: 'SUNUCU' | 'UZMAN', index: number) => {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'tr-TR';
+        utterance.rate = 1.0;
+        utterance.pitch = speaker === 'SUNUCU' ? 1.1 : 0.9;
+        
+        // Türkçe ses bulmaya çalış
+        const voices = window.speechSynthesis.getVoices();
+        const trVoice = voices.find(v => v.lang.startsWith('tr'));
+        if (trVoice) utterance.voice = trVoice;
+
+        utterance.onend = () => {
+            if (isPlayingRef.current) {
+                setTimeout(() => speakLine(index + 1), 600);
+            }
+        };
+        
+        utterance.onerror = () => {
+            if (isPlayingRef.current) speakLine(index + 1);
+        };
+
+        window.speechSynthesis.speak(utterance);
+    };
 
     const handlePlay = () => {
         if (!podcastData) return;
