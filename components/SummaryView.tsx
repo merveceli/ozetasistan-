@@ -5,7 +5,7 @@ import {
     BookOpen, List, GraduationCap, BrainCircuit,
     CheckCircle2, XCircle, Search, Quote, Network, ChevronDown,
     ChevronRight, Presentation, X, ChevronLeft, Sparkles, Mic,
-    Copy, Check, Download, FileText, RefreshCcw, Radio
+    Copy, Check, Download, FileText, RefreshCcw, Radio, Share
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { PresentationView } from './PresentationView';
@@ -116,6 +116,10 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
     // Study Mode States
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
+
+    // Share Link State
+    const [isSharing, setIsSharing] = useState(false);
+    const [shareUrl, setShareUrl] = useState<string | null>(null);
 
     const loadingFacts = [
         "Biliyor muydunuz? Yapay zeka ile karmaşık makaleleri saniyeler içinde anlayabilirsiniz.",
@@ -311,6 +315,42 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
             toast.error(error.message || 'Sunum oluşturulamadı. Lütfen tekrar deneyin.', { id: 'slide-gen' });
         } finally {
             setIsGeneratingSlides(false);
+        }
+    };
+
+    const handleShare = async () => {
+        if (!documentId) return;
+        
+        if (shareUrl) {
+            handleCopy(shareUrl, 'share-link');
+            return;
+        }
+
+        setIsSharing(true);
+        const loadingToast = toast.loading('Paylaşım linki oluşturuluyor...', { id: 'share-toast' });
+        
+        try {
+            const response = await fetch('/api/share', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ documentId })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || 'Link oluşturulamadı');
+            }
+
+            const data = await response.json();
+            setShareUrl(data.shareUrl);
+            handleCopy(data.shareUrl, 'share-link');
+            toast.success('Link panoya kopyalandı! Herkesle paylaşabilirsiniz.', { id: 'share-toast' });
+
+        } catch (error: any) {
+            console.error('Share Error:', error);
+            toast.error(error.message || 'Hata oluştu. Sadece kendi analizlerinizi paylaşabilirsiniz.', { id: 'share-toast' });
+        } finally {
+            setIsSharing(false);
         }
     };
 
@@ -673,6 +713,25 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
                         <button onClick={generatePresentation} disabled={isGeneratingSlides} className="w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold">
                             <Presentation className="w-5 h-5 text-purple-500" />
                             {isGeneratingSlides ? 'Üretiliyor...' : 'Sunum Taslağı'}
+                        </button>
+                        <button
+                            onClick={handleShare}
+                            disabled={isSharing}
+                            className={cn(
+                                "w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold group",
+                                copiedId === 'share-link' && "bg-emerald-500/10 text-emerald-500"
+                            )}
+                        >
+                            <div className={cn(
+                                "w-9 h-9 rounded-xl flex items-center justify-center transition-colors",
+                                copiedId === 'share-link' ? "bg-emerald-500/20" : "bg-orange-500/10 group-hover:bg-orange-500/20"
+                            )}>
+                                {copiedId === 'share-link' ? <Check className="w-4 h-4 text-emerald-500" /> : <Share className="w-4 h-4 text-orange-500" />}
+                            </div>
+                            <div className="text-left">
+                                <p className="text-sm font-bold">{copiedId === 'share-link' ? 'Link Kopyalandı' : 'Analizi Paylaş'}</p>
+                                <p className="text-[10px] text-muted-foreground">{shareUrl ? 'Link Panoda' : 'Herkese açık link'}</p>
+                            </div>
                         </button>
                         <button
                             onClick={() => setShowPodcast(true)}
