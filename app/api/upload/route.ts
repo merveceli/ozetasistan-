@@ -51,35 +51,12 @@ export async function POST(request: Request) {
         // Check authentication
         const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-        const dummyUserId = '00000000-0000-0000-0000-000000000000';
-        let userId = dummyUserId;
-
-        if (user) {
-            console.log('✅ Authenticated user found:', user.id);
-            userId = user.id;
-        } else {
-            console.log('⚠️ No authenticated user, using dummy ID. Checking trial status.');
-
-            // SECURITY CHECK: Check if the guest has already completed a trial
-            const cookieHeader = request.headers.get('cookie') || '';
-            const hasCompletedTrial = cookieHeader.includes('trial_completed=true');
-
-            if (hasCompletedTrial) {
-                return NextResponse.json({
-                    error: 'Ücretsiz deneme hakkınızı doldurdunuz. Lütfen analiz yapmaya devam etmek için giriş yapın veya kayıt olun.',
-                    needsUpgrade: true,
-                    needsLogin: true
-                }, { status: 403 });
-            }
-
-            // Misafirler sadece ses/video yükleyemez; PDF, URL ve metin serbesttir
-            if (type === 'audio' || type === 'video') {
-                return NextResponse.json({
-                    error: 'Ses/video analizi için lütfen giriş yapın.',
-                    needsUpgrade: true
-                }, { status: 403 });
-            }
+        if (!user) {
+            return NextResponse.json({ error: 'Dosya yüklemek için oturum açmanız gerekmektedir.' }, { status: 401 });
         }
+
+        const userId = user.id;
+        console.log('✅ Authenticated user found:', userId);
 
         console.log('✅ Using user ID:', userId);
 

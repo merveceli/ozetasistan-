@@ -17,13 +17,11 @@ export async function POST(request: Request) {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Use authenticated user ID or dummy ID for local testing/demo
-        const dummyUserId = '00000000-0000-0000-0000-000000000000';
-        const userId = user?.id || dummyUserId;
-
-        if (!userId) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!user) {
+            return NextResponse.json({ error: 'Bu işlem için oturum açmanız gerekmektedir.' }, { status: 401 });
         }
+
+        const userId = user.id;
 
         // --- CACHE KONTROLÜ ---
         const supabaseAdmin = createAdminClient();

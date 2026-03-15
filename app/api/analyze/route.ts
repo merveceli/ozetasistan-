@@ -23,33 +23,30 @@ export async function POST(request: Request) {
 
     // Auth check
     const { data: { user } } = await supabase.auth.getUser();
-    console.log(user ? `✅ User: ${user.id}` : '⚠️ No user');
 
-    // Check quota and tier for authenticated users
-    if (user) {
-      const quotaCheck = await checkQuota(user.id, 'analyze');
-      if (!quotaCheck.allowed) {
-        return NextResponse.json({
-          error: 'Kullanım kotası aşıldı',
-          message: quotaCheck.reason,
-          needsUpgrade: true
-        }, { status: 403 });
-      }
-    } else {
-      // Guest trial limits
-      if (level && level !== 'student' && level !== 'metadata' && level !== 'analysis_package') {
-        return NextResponse.json({
-          error: 'Misafir kullanıcılar sadece temel analiz yapabilir. Lütfen gelişmiş analizler için giriş yapın.',
-          needsUpgrade: true
-        }, { status: 403 });
-      }
+    if (!user) {
+      return NextResponse.json({ error: 'Analiz yapmak için oturum açmanız gerekmektedir.' }, { status: 401 });
+    }
+
+    console.log(`✅ User: ${user.id}`);
+
+    // Check quota and tier
+    const quotaCheck = await checkQuota(user.id, 'analyze');
+    if (!quotaCheck.allowed) {
+      return NextResponse.json({
+        error: 'Kullanım kotası aşıldı',
+        message: quotaCheck.reason,
+        needsUpgrade: true
+      }, { status: 403 });
     }
 
     // Fetch document
-    let query = supabase.from('documents').select('*').eq('id', documentId);
-    if (user) query = query.eq('user_id', user.id);
-
-    const { data: document, error: dbError } = await query.single();
+    const { data: document, error: dbError } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('id', documentId)
+      .eq('user_id', user.id)
+      .single();
 
     if (dbError || !document) {
       console.error('❌ Document not found:', dbError);

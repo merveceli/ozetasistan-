@@ -10,9 +10,11 @@ export async function GET(request: Request) {
         // Auth check
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Use authenticated user ID or dummy ID for local testing/demo
-        const dummyUserId = '00000000-0000-0000-0000-000000000000';
-        const userId = user?.id || dummyUserId;
+        if (!user) {
+            return NextResponse.json({ error: 'Oturum açmanız gerekmektedir.' }, { status: 401 });
+        }
+
+        const userId = user.id;
 
         // Fetch documents
         let dbQuery = supabase
