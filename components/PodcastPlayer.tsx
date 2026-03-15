@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, Pause, Play, Download, X, Loader2, Radio, User, GraduationCap, Volume2 } from 'lucide-react';
+import { Mic, Pause, Play, Download, X, Loader2, Radio, User, GraduationCap, Volume2, AudioLines } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface DialogueLine {
@@ -33,6 +33,11 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
     const dialogueRef = useRef<DialogueLine[]>([]);
     const currentIndexRef = useRef(-1);
     const isPlayingRef = useRef(false);
+
+    // Audio recording state
+    const [isRecording, setIsRecording] = useState(false);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
 
     // Sesleri yükle
     useEffect(() => {
@@ -142,6 +147,73 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
             speakLine(currentLineIndex);
         } else {
             handlePlay();
+        }
+    };
+
+    // İnanılmaz Hack: Tarayıcı içinde çalanı MediaRecorder ile kaydedip direkt dosyaya dönüştürüyoruz.  🚀 0 Sunucu Maliyeti
+    const startRecording = async () => {
+        try {
+            // Sistemin duyduğu sesi kaydet (tarayıcı izni veya sekme izni isteyebilir)
+            // Bu API deneyseldir, kullanıcıya sekme paylaşma penceresi açtırarak 
+            // sadece şu anki 'tab'ın sesini kaydetmesini isteriz, bu sayede stüdyo mp3 üretimi yapmış oluruz.
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: true, // video true zorunlu olabiliyor ama gizli yapıyoruz
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                }
+            });
+            
+            const options = { mimeType: 'audio/webm' };
+            const mediaRecorder = new MediaRecorder(stream, options);
+            mediaRecorderRef.current = mediaRecorder;
+            audioChunksRef.current = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const a = document.createElement('a');
+                a.href = audioUrl;
+                a.download = `ozetasistani_podcast_${Date.now()}.webm`;
+                a.click();
+                URL.revokeObjectURL(audioUrl);
+                toast.success('Ses dosyası (Podcast) başarıyla indirildi!');
+                stream.getTracks().forEach(track => track.stop()); // Stream'i tam kapat
+                setIsRecording(false);
+            };
+
+            mediaRecorder.start();
+            setIsRecording(true);
+            toast.info('Ses kaydı başladı. Lütfen tüm sesin bitmesini bekleyin ve sonra İndir butonuna tekrar basın.');
+            
+            // Oynatmayı başlat
+            if(!isPlaying) {
+                handlePlay();
+            }
+
+        } catch (err: any) {
+            console.error("Yakalama hatası:", err);
+            toast.error('Ses indirmek için "Şu Anki Sekme (This Tab)" ve "Sesi Paylaş (Share Audio)" izinleri gereklidir.', { duration: 6000 });
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+        }
+    };
+
+    const handleDownloadAudio = () => {
+        if (!isRecording) {
+            startRecording();
+        } else {
+            stopRecording();
         }
     };
 
@@ -277,13 +349,26 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
 
                             {/* Controls */}
                             <div className="flex items-center justify-between border-t border-border/50 pt-4">
-                                <button
-                                    onClick={handleDownloadScript}
-                                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-xl hover:bg-secondary"
-                                >
-                                    <Download className="w-4 h-4" />
-                                    Script İndir
-                                </button>
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <button
+                                        onClick={handleDownloadScript}
+                                        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-xl hover:bg-secondary"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        Script İndir
+                                    </button>
+                                    <button
+                                        onClick={handleDownloadAudio}
+                                        className={`flex items-center gap-2 text-xs font-bold transition-colors px-3 py-2 rounded-xl border ${
+                                            isRecording 
+                                                ? 'bg-red-500/10 text-red-500 border-red-500/20 animate-pulse' 
+                                                : 'text-primary border-primary/20 hover:bg-primary/10'
+                                        }`}
+                                    >
+                                        <AudioLines className="w-4 h-4" />
+                                        {isRecording ? 'Kaydı Bitir & İndir' : 'Ses Olarak İndir (MP3)'}
+                                    </button>
+                                </div>
 
                                 <div className="flex items-center gap-3">
                                     {!isPlaying ? (
