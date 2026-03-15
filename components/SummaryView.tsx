@@ -5,10 +5,11 @@ import {
     BookOpen, List, GraduationCap, BrainCircuit,
     CheckCircle2, XCircle, Search, Quote, Network, ChevronDown,
     ChevronRight, Presentation, X, ChevronLeft, Sparkles, Mic,
-    Copy, Check, Download, FileText, RefreshCcw
+    Copy, Check, Download, FileText, RefreshCcw, Radio
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { PresentationView } from './PresentationView';
+import { PodcastPlayer } from './PodcastPlayer';
 import { cn } from '@/lib/utils';
 import { BannerAd } from './BannerAd';
 import { toast } from 'sonner';
@@ -106,6 +107,7 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
 
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [showSlides, setShowSlides] = useState(false);
+    const [showPodcast, setShowPodcast] = useState(false);
     const [slides, setSlides] = useState<any[]>([]);
     const [isGeneratingSlides, setIsGeneratingSlides] = useState(false);
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -673,6 +675,18 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
                             {isGeneratingSlides ? 'Üretiliyor...' : 'Sunum Taslağı'}
                         </button>
                         <button
+                            onClick={() => setShowPodcast(true)}
+                            className="w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold group"
+                        >
+                            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                <Radio className="w-4 h-4 text-primary" />
+                            </div>
+                            <div className="text-left">
+                                <p className="text-sm font-bold">AI Podcast</p>
+                                <p className="text-[10px] text-muted-foreground">İki sesli diyalog</p>
+                            </div>
+                        </button>
+                        <button
                             onClick={() => handleDownload('pdf')}
                             className="w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold group"
                         >
@@ -750,6 +764,16 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
                     </button>
                 </div>
             </div>
+
+            {/* Podcast Player */}
+            {showPodcast && data && (
+                <PodcastPlayer
+                    summary={data.summary}
+                    keyPoints={data.key_points || []}
+                    title={data.citation_metadata?.title}
+                    onClose={() => setShowPodcast(false)}
+                />
+            )}
 
             {/* Slide Viewer (Enhanced) */}
             {showSlides && (
