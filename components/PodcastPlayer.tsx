@@ -27,9 +27,9 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
     const [podcastData, setPodcastData] = useState<PodcastData | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentLineIndex, setCurrentLineIndex] = useState(-1);
-    const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-
-    const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+    
+    // Ses çalma referansları
+    const audioRef = useRef<HTMLAudioElement | null>(null);
     const dialogueRef = useRef<DialogueLine[]>([]);
     const currentIndexRef = useRef(-1);
     const isPlayingRef = useRef(false);
@@ -39,25 +39,17 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
 
-    // Sesleri yükle
+    // Ses motorunu temizle
     useEffect(() => {
-        const loadVoices = () => {
-            const availableVoices = window.speechSynthesis.getVoices();
-            setVoices(availableVoices);
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
         };
-        loadVoices();
-        window.speechSynthesis.onvoiceschanged = loadVoices;
-        return () => { window.speechSynthesis.cancel(); };
     }, []);
 
-    const getTurkishVoice = useCallback((gender: 'male' | 'female') => {
-        // Türkçe sesler önce
-        const trVoices = voices.filter(v => v.lang.startsWith('tr'));
-        if (trVoices.length >= 2) return gender === 'female' ? trVoices[0] : trVoices[1];
-        if (trVoices.length === 1) return trVoices[0];
-        // Fallback: herhangi bir ses
-        return voices[gender === 'female' ? 0 : Math.min(1, voices.length - 1)] || null;
-    }, [voices]);
+
 
     const generatePodcast = async () => {
         setIsGenerating(true);
@@ -83,7 +75,7 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
         }
     };
 
-    const speakLine = useCallback((index: number) => {
+    const speakLine = useCallback(async (index: number) => {
         if (!isPlayingRef.current || index >= dialogueRef.current.length) {
             setIsPlaying(false);
             setCurrentLineIndex(-1);
@@ -95,37 +87,47 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
         currentIndexRef.current = index;
         setCurrentLineIndex(index);
 
-        const utterance = new SpeechSynthesisUtterance(line.text);
-        utterance.lang = 'tr-TR';
-        utterance.rate = 0.95;
+        try {
+            // İnsansı sesleri backend'den getir (Microsoft Edge Neural API)
+            const res = await fetch('/api/synthesize-podcast', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: line.text, speaker: line.speaker }),
+            });
 
-        // SUNUCU = kadın sesi (daha yüksek pitch), UZMAN = erkek sesi (daha düşük)
-        if (line.speaker === 'SUNUCU') {
-            utterance.pitch = 1.2;
-            utterance.rate = 1.0;
-            const voice = getTurkishVoice('female');
-            if (voice) utterance.voice = voice;
-        } else {
-            utterance.pitch = 0.85;
-            utterance.rate = 0.9;
-            const voice = getTurkishVoice('male');
-            if (voice) utterance.voice = voice;
-        }
+            if (!res.ok) throw new Error('Ses sentezleme hatası');
 
-        utterance.onend = () => {
-            if (isPlayingRef.current) {
-                setTimeout(() => speakLine(index + 1), 400); // satırlar arası kısa duraklama
+            const audioBlob = await res.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+
+            if (audioRef.current) {
+                audioRef.current.pause();
             }
-        };
-        utterance.onerror = () => {
-            isPlayingRef.current = false;
-            setIsPlaying(false);
-        };
 
-        utteranceRef.current = utterance;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-    }, [getTurkishVoice]);
+            const audio = new Audio(audioUrl);
+            audioRef.current = audio;
+            
+            audio.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+                if (isPlayingRef.current) {
+                    setTimeout(() => speakLine(index + 1), 600); // Doğal duraklama
+                }
+            };
+
+            audio.onerror = (e) => {
+                console.error("Ses çalma hatası:", e);
+                isPlayingRef.current = false;
+                setIsPlaying(false);
+                toast.error("Ses çalınamadı.");
+            };
+
+            await audio.play();
+        } catch (error) {
+            console.error("SpeakLine Error:", error);
+            setIsPlaying(false);
+            isPlayingRef.current = false;
+        }
+    }, []);
 
     const handlePlay = () => {
         if (!podcastData) return;
@@ -137,14 +139,20 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
     const handlePause = () => {
         isPlayingRef.current = false;
         setIsPlaying(false);
-        window.speechSynthesis.cancel();
+        if (audioRef.current) {
+            audioRef.current.pause();
+        }
     };
 
     const handleResume = () => {
         if (currentLineIndex >= 0) {
             isPlayingRef.current = true;
             setIsPlaying(true);
-            speakLine(currentLineIndex);
+            if (audioRef.current) {
+                audioRef.current.play();
+            } else {
+                speakLine(currentLineIndex);
+            }
         } else {
             handlePlay();
         }

@@ -19,20 +19,18 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Özet verisi eksik.' }, { status: 400 });
         }
 
-        const podcastPrompt = `Sen bir Türk akademik podcast yapımcısısın. Aşağıdaki akademik özet ve ana noktalar için 2 kişilik bir podcast diyaloğu yaz.
+        const podcastPrompt = `Sen bir Türk akademik podcast yapımcısısın. Aşağıdaki akademik özet ve ana noktalar için 2 kişilik bir podcast diyaloğu yaz. NotebookLM'in "Audio Overview" tarzında, çok samimi, sürükleyici ve öğretici olsun.
 
 KONUŞMACULAR:
-- "SUNUCU": Konuya yeni başlayan meraklı bir öğrenci (S harfi ile başla)
-- "UZMAN": Alanında uzman akademisyen (U harfi ile başla)
+- "SUNUCU": Meraklı, enerjik, konuya yeni başlayan bir öğrenci. Arada "Vay canına!", "Gerçekten mi?", "Anlıyorum" gibi tepkiler verir.
+- "UZMAN": Bilgili ama ukala olmayan, konuyu örneklendirerek anlatan samimi bir profesör.
 
 KURALLAR:
-1. Tamamen Türkçe yaz.
-2. Doğal, akıcı ve sohbet dili kullan (teknik ama anlaşılır)
-3. Tam olarak 12-16 konuşma satırı olsun (ikisi de yaklaşık eşit konuşsun)
-4. Her satır kısa ve net olsun (max 2 cümle)
-5. Sunucu sorular sorar, Uzman açıklar
-6. Sonunda Uzman dinleyicilere bir tavsiye verir
-7. Konuya göre gerçekçi ve bilgilendirici İÇERİK üret (uydurma)
+1. Dil: Tamamen Türkçe, çok doğal sohbet dili. 
+2. Akış: Konuşmacılar birbirini onaylamalı ("Kesinlikle", "Harika bir noktaya değindin", "Hımm, şöyle ki...").
+3. Yapı: Tam olarak 15-20 konuşma satırı olsun. Statik bir soru-cevap değil, dinamik bir fikir alışverişi olsun.
+4. İçerik: Belgedeki teknik bilgiyi hikayeleştirerek veya günlük hayat örneği vererek anlatın.
+5. Bitiriş: Dinleyiciye ilham veren veya düşündüren bir kapanış cümlesi.
 
 BELGE BAŞLIĞI: ${title || 'Akademik Belge'}
 
@@ -42,13 +40,13 @@ ${summary.slice(0, 2000)}
 ANA NOKTALAR:
 ${(keyPoints || []).slice(0, 6).map((p: string, i: number) => `${i + 1}. ${p}`).join('\n')}
 
-ÇIKTI FORMATI - Sadece geçerli JSON döndür, başka hiçbir şey yazma:
+ÇIKTI FORMATI - Sadece geçerli JSON döndür:
 {
-  "podcast_title": "Kısa başlık (maks 8 kelime)",
-  "duration_estimate": "~X dakika",
+  "podcast_title": "Dinamik Başlık (örn: Geleceğin Şifrelerini Çözüyoruz)",
+  "duration_estimate": "~3 dakika",
   "dialogue": [
-    { "speaker": "SUNUCU", "text": "Konuşma metni..." },
-    { "speaker": "UZMAN", "text": "Konuşma metni..." }
+    { "speaker": "SUNUCU", "text": "Selam millet! Bugün masamızda gerçekten heyecan verici bir çalışma var..." },
+    { "speaker": "UZMAN", "text": "Merhabalar, evet gerçekten de bu çalışma akademik dünyada kartları yeniden dağıtacak gibi..." }
   ]
 }`;
 
