@@ -2,8 +2,10 @@ import { NextResponse } from 'next/server';
 
 /**
  * NotebookLM Style High-Quality TTS Engine
- * Supports ElevenLabs (Premium) and Microsoft Edge Neural (Free/Robust)
+ * Supports ElevenLabs (Premium) and Microsoft Edge Neural via edge-tts (Free/Robust)
  */
+export const maxDuration = 30;
+
 export async function POST(request: Request) {
     try {
         const { text, speaker, usePremiumTTS = true } = await request.json();
@@ -17,8 +19,7 @@ export async function POST(request: Request) {
         if (ELEVENLABS_API_KEY && usePremiumTTS) {
             try {
                 // Sunucu: Rachel (Daha enerjik), Uzman: Adam (Daha otoriter)
-                // Bu sesler ElevenLabs'in en popüler ve insansı sesleridir.
-                const voiceId = speaker === 'SUNUCU' 
+                const voiceId = speaker === 'SUNUCU'
                     ? '21m00Tcm4lJC8rq7d593' // Rachel
                     : 'pNInz6obpg8n9HB4tNoL'; // Adam
 
@@ -46,44 +47,43 @@ export async function POST(request: Request) {
                         headers: { 'Content-Type': 'audio/mpeg' },
                     });
                 }
-                console.warn('ElevenLabs API failed, falling back to Edge:', await response.text());
+                console.warn('ElevenLabs API failed, falling back to Edge TTS:', await response.text());
             } catch (err) {
                 console.error('ElevenLabs Error:', err);
             }
         }
 
-        // --- OPTION 2: Microsoft Edge Neural (High Quality - Free) ---
-        // Farklı bir bridge ve daha spesifik ses ayarları kullanıyoruz.
-        // Sunucu: Emel (Kadın), Uzman: Ahmet (Erkek)
-        const edgeVoice = speaker === 'SUNUCU' ? 'tr-TR-EmelNeural' : 'tr-TR-AhmetNeural';
-        
-        // Bu bridge daha stabil ve parametreleri doğru işliyor
-        const ttsUrl = `https://api.ttsmaker.com/v1/get-audio`; 
-        // Not: TTSMaker API anahtarı gerektirebilir, ancak Edge TTS ücretsizdir.
-        // Ücretsiz stabil bir Edge TTS bridge'i deniyoruz:
-        const freeBridgeUrl = `https://edge-tts.vercel.app/api/tts?text=${encodeURIComponent(text)}&voice=${edgeVoice}`;
+        // --- OPTION 2: Microsoft Edge Neural via edge-tts NPM (High Quality - Free) ---
+        // SUNUCU: Emel (Kadın, enerjik), UZMAN: Ahmet (Erkek, sakin)
+        try {
+            const edgeTTS = await import('edge-tts');
+            const voice = speaker === 'SUNUCU' ? 'tr-TR-EmelNeural' : 'tr-TR-AhmetNeural';
 
-        const response = await fetch(freeBridgeUrl);
-        
-        if (response.ok) {
-            const audioBuffer = await response.arrayBuffer();
-            if (audioBuffer.byteLength > 1000) {
-                return new Response(audioBuffer, {
+            const audioBuffer = await edgeTTS.tts(text, {
+                voice,
+                rate: speaker === 'SUNUCU' ? '+5%' : '+0%',
+                pitch: speaker === 'SUNUCU' ? '+5Hz' : '-5Hz',
+            });
+
+            if (audioBuffer && audioBuffer.length > 1000) {
+                return new Response(new Uint8Array(audioBuffer), {
                     headers: {
                         'Content-Type': 'audio/mpeg',
                         'Cache-Control': 'public, max-age=3600',
                     },
                 });
             }
+        } catch (edgeErr) {
+            console.error('Edge TTS Error:', edgeErr);
         }
 
         throw new Error('All TTS engines failed');
 
     } catch (error: any) {
         console.error('Synthesize API error:', error);
-        return NextResponse.json({ 
-            error: 'Ses sentezleme başarısız oldu.', 
-            details: error.message 
+        return NextResponse.json({
+            error: 'Ses sentezleme başarısız oldu.',
+            details: error.message
         }, { status: 500 });
     }
 }

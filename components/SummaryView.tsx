@@ -10,6 +10,7 @@ import {
 import { useParams } from 'next/navigation';
 import { PresentationView } from './PresentationView';
 import { PodcastPlayer } from './PodcastPlayer';
+import { ExamModePanel } from './ExamModePanel';
 import { cn } from '@/lib/utils';
 import { BannerAd } from './BannerAd';
 import { toast } from 'sonner';
@@ -108,6 +109,7 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [showSlides, setShowSlides] = useState(false);
     const [showPodcast, setShowPodcast] = useState(false);
+    const [showExam, setShowExam] = useState(false);
     const [slides, setSlides] = useState<any[]>([]);
     const [isGeneratingSlides, setIsGeneratingSlides] = useState(false);
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -746,6 +748,18 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
                             </div>
                         </button>
                         <button
+                            onClick={() => setShowExam(true)}
+                            className="w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold group"
+                        >
+                            <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
+                                <GraduationCap className="w-4 h-4 text-amber-500" />
+                            </div>
+                            <div className="text-left">
+                                <p className="text-sm font-bold">Sınav Modu</p>
+                                <p className="text-[10px] text-muted-foreground">YKS · KPSS · ALES · TUS</p>
+                            </div>
+                        </button>
+                        <button
                             onClick={() => handleDownload('pdf')}
                             className="w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold group"
                         >
@@ -831,6 +845,15 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
                     keyPoints={data.key_points || []}
                     title={data.citation_metadata?.title}
                     onClose={() => setShowPodcast(false)}
+                />
+            )}
+
+            {/* Exam Mode Panel */}
+            {showExam && data && (
+                <ExamModePanel
+                    summary={data.summary}
+                    keyPoints={data.key_points || []}
+                    onClose={() => setShowExam(false)}
                 />
             )}
 
