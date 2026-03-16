@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, Pause, Play, Download, X, Loader2, Radio, User, GraduationCap, Volume2, AudioLines } from 'lucide-react';
+import { Mic, Pause, Play, Download, X, Loader2, Radio, User, GraduationCap, Volume2, AudioLines, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface DialogueLine {
@@ -27,12 +27,14 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
     const [podcastData, setPodcastData] = useState<PodcastData | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentLineIndex, setCurrentLineIndex] = useState(-1);
+    const [usePremiumTTS, setUsePremiumTTS] = useState(true);
     
     // Ses çalma referansları
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const dialogueRef = useRef<DialogueLine[]>([]);
     const currentIndexRef = useRef(-1);
     const isPlayingRef = useRef(false);
+    const audioCacheRef = useRef<Record<number, string>>({});
 
     // Audio recording state
     const [isRecording, setIsRecording] = useState(false);
@@ -46,8 +48,16 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
                 audioRef.current.pause();
                 audioRef.current = null;
             }
+            // Tüm önbelleğe alınmış URL'leri temizle
+            Object.values(audioCacheRef.current).forEach(url => URL.revokeObjectURL(url));
         };
     }, []);
+
+    // Kalite değişince önbelleği temizle
+    useEffect(() => {
+        Object.values(audioCacheRef.current).forEach(url => URL.revokeObjectURL(url));
+        audioCacheRef.current = {};
+    }, [usePremiumTTS]);
 
 
 
@@ -75,11 +85,36 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
         }
     };
 
+    // Sıradaki sesi önceden yükle
+    const prefetchNext = useCallback(async (index: number) => {
+        if (index >= dialogueRef.current.length || audioCacheRef.current[index]) return;
+        
+        try {
+            const line = dialogueRef.current[index];
+            const res = await fetch('/api/synthesize-podcast', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: line.text, speaker: line.speaker, usePremiumTTS }),
+            });
+            if (res.ok) {
+                const audioBlob = await res.blob();
+                if (audioBlob.size > 1000) {
+                    audioCacheRef.current[index] = URL.createObjectURL(audioBlob);
+                }
+            }
+        } catch (e) {
+            console.warn("Prefetch error:", e);
+        }
+    }, [usePremiumTTS]);
+
     const speakLine = useCallback(async (index: number) => {
         if (!isPlayingRef.current || index >= dialogueRef.current.length) {
             setIsPlaying(false);
             setCurrentLineIndex(-1);
             isPlayingRef.current = false;
+            // Temizlik
+            Object.values(audioCacheRef.current).forEach(url => URL.revokeObjectURL(url));
+            audioCacheRef.current = {};
             return;
         }
 
@@ -87,20 +122,24 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
         currentIndexRef.current = index;
         setCurrentLineIndex(index);
 
+        // Birrakindeki satırı önceden çekmeye başla
+        prefetchNext(index + 1);
+
         try {
-            // 1. ADIM: Yüksek Kaliteli API (Microsoft Edge Neural)
-            const res = await fetch('/api/synthesize-podcast', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: line.text, speaker: line.speaker }),
-            });
-
-            if (!res.ok) throw new Error('API hatası');
-
-            const audioBlob = await res.blob();
-            if (audioBlob.size < 1000) throw new Error('Geçersiz ses verisi');
+            let audioUrl = audioCacheRef.current[index];
             
-            const audioUrl = URL.createObjectURL(audioBlob);
+            if (!audioUrl) {
+                const res = await fetch('/api/synthesize-podcast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: line.text, speaker: line.speaker, usePremiumTTS }),
+                });
+
+                if (!res.ok) throw new Error('API hatası');
+                const audioBlob = await res.blob();
+                if (audioBlob.size < 1000) throw new Error('Geçersiz ses verisi');
+                audioUrl = URL.createObjectURL(audioBlob);
+            }
 
             if (audioRef.current) {
                 audioRef.current.pause();
@@ -110,9 +149,21 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
             audioRef.current = audio;
             
             audio.onended = () => {
-                URL.revokeObjectURL(audioUrl);
                 if (isPlayingRef.current) {
-                    setTimeout(() => speakLine(index + 1), 600);
+                    // Dinamik gecikme: Eğer kısa bir tepkiyse ("Aynen", "Vay canına") daha hızlı geç
+                    const nextLine = dialogueRef.current[index + 1];
+                    let delay = 600;
+                    
+                    if (nextLine) {
+                        const text = nextLine.text.toLowerCase();
+                        if (text.length < 20 || text.includes('aynen') || text.includes('vaun') || text.includes('hadi')) {
+                            delay = 150; // Neredeyse anında
+                        } else if (text.includes('aslında') || text.includes('yani')) {
+                            delay = 300; // Düşünme arası
+                        }
+                    }
+                    
+                    setTimeout(() => speakLine(index + 1), delay);
                 }
             };
 
@@ -124,10 +175,9 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
             await audio.play();
         } catch (error) {
             console.error("Neural TTS Error, using fallback:", error);
-            // 2. ADIM: FALLBACK - Tarayıcı Sesi (Her zaman çalışır)
             playFallback(line.text, line.speaker, index);
         }
-    }, []);
+    }, [prefetchNext, usePremiumTTS]);
 
     // Tarayıcının kendi sesi (SpeechSynthesis) - API bozulursa devreye girer
     const playFallback = (text: string, speaker: 'SUNUCU' | 'UZMAN', index: number) => {
@@ -330,6 +380,27 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
                     ) : (
                         /* Player State */
                         <div>
+                            {/* Premium Toggle */}
+                            <div className="flex justify-center mb-6">
+                                <label className="flex items-center gap-2 text-xs font-medium cursor-pointer bg-secondary/50 px-4 py-2 rounded-2xl border border-border/50 hover:bg-secondary/80 transition-colors">
+                                    <input 
+                                        type="checkbox" 
+                                        className="hidden" 
+                                        checked={usePremiumTTS} 
+                                        onChange={(e) => setUsePremiumTTS(e.target.checked)} 
+                                    />
+                                    <div className={`relative w-8 h-4 rounded-full transition-colors ${usePremiumTTS ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
+                                        <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform duration-300 ${usePremiumTTS ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                    <span className="flex items-center gap-1.5">
+                                        <Sparkles className={`w-3.5 h-3.5 ${usePremiumTTS ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                                        <span className={usePremiumTTS ? 'text-foreground' : 'text-muted-foreground'}>
+                                            Ultra Gerçekçi Ses {usePremiumTTS ? '(Aktif)' : '(Kapalı)'}
+                                        </span>
+                                    </span>
+                                </label>
+                            </div>
+
                             {/* Waveform Animation */}
                             <div className="flex items-center justify-center gap-1 h-12 mb-6">
                                 {Array.from({ length: 20 }).map((_, i) => (

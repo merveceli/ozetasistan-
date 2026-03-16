@@ -22,15 +22,15 @@ export async function POST(request: Request) {
         const podcastPrompt = `Sen bir Türk akademik podcast yapımcısısın. Aşağıdaki akademik özet ve ana noktalar için 2 kişilik bir podcast diyaloğu yaz. NotebookLM'in "Audio Overview" tarzında, çok samimi, sürükleyici ve öğretici olsun.
 
 KONUŞMACULAR:
-- "SUNUCU": Meraklı, enerjik, konuya yeni başlayan bir öğrenci. Arada "Vay canına!", "Gerçekten mi?", "Anlıyorum" gibi tepkiler verir.
-- "UZMAN": Bilgili ama ukala olmayan, konuyu örneklendirerek anlatan samimi bir profesör.
+- "SUNUCU": Meraklı, enerjik, konuya yeni başlayan bir öğrenci. Arada "Vay canına!", "Gerçekten mi?", "Hadi canım!", "Hımm, anlıyorum" gibi tepkiler verir. Çok samimi ve heyecanlıdır.
+- "UZMAN": Bilgili ama ukala olmayan, konuyu örneklendirerek anlatan samimi bir profesör. Konuşurken "yani", "aslında", "şöyle düşün", "bak şimdi" gibi ifadeler kullanır.
 
-KURALLAR:
-1. Dil: Tamamen Türkçe, çok doğal sohbet dili. 
-2. Akış: Konuşmacılar birbirini onaylamalı ("Kesinlikle", "Harika bir noktaya değindin", "Hımm, şöyle ki...").
-3. Yapı: Tam olarak 15-20 konuşma satırı olsun. Statik bir soru-cevap değil, dinamik bir fikir alışverişi olsun.
-4. İçerik: Belgedeki teknik bilgiyi hikayeleştirerek veya günlük hayat örneği vererek anlatın.
-5. Bitiriş: Dinleyiciye ilham veren veya düşündüren bir kapanış cümlesi.
+ÖZEL TALİMATLAR:
+1. İNSANSIZLAŞTIRMA: Konuşma metnine doğal duraklamalar ve dolgu kelimeleri ekle (eee, yani, hani, aslında, bak şimdi). 
+2. DUYGUSAL TEPKİLER: Sunucu bazen Uzman'ın cümlesine bitirmeden heyecanla girmeli ("Kesinlikle!", "Aynen!").
+3. TÜRKÇE DOĞALLIĞI: Kitap dili yerine konuşma dili ("yapıyor", "ediyor", "yapmışlar resmen") kullan.
+4. ÖRNEKLENDİRME: Teknik kavramları günlük hayat benzetmeleriyle açıkla.
+5. SÜRE VE KARAKTER LİMİTİ: (ÇOK ÖNEMLİ): API maliyetlerini düşürmek için diyalog ÇOK KISA VE ÖZ olmalıdır. Toplam metin 1500 karakteri (yaklaşık 1-1.5 dakika) KESİNLİKLE GEÇMEMELİDİR. Hızlıca konuya girip etkili bir şekilde sonlandırın.
 
 BELGE BAŞLIĞI: ${title || 'Akademik Belge'}
 
@@ -42,11 +42,11 @@ ${(keyPoints || []).slice(0, 6).map((p: string, i: number) => `${i + 1}. ${p}`).
 
 ÇIKTI FORMATI - Sadece geçerli JSON döndür:
 {
-  "podcast_title": "Dinamik Başlık (örn: Geleceğin Şifrelerini Çözüyoruz)",
-  "duration_estimate": "~3 dakika",
+  "podcast_title": "Dinamik ve Havalı Bir Başlık",
+  "duration_estimate": "~1-1.5 dakika",
   "dialogue": [
-    { "speaker": "SUNUCU", "text": "Selam millet! Bugün masamızda gerçekten heyecan verici bir çalışma var..." },
-    { "speaker": "UZMAN", "text": "Merhabalar, evet gerçekten de bu çalışma akademik dünyada kartları yeniden dağıtacak gibi..." }
+    { "speaker": "SUNUCU", "text": "Selamlar! Bugün yine masamızda zihin açan bir konu var. Hocam, şu başlığa bir baksanıza, inanılmaz değil mi?" },
+    { "speaker": "UZMAN", "text": "Merhabalar... Evet, yani aslında ilk bakışta karmaşık gibi duruyor ama özünde o kadar temel bir soruya cevap veriyor ki..." }
   ]
 }`;
 
