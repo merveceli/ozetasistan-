@@ -222,19 +222,19 @@ export function ExamModePanel({ summary, keyPoints, onClose }: ExamModePanelProp
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-8 scrollbar-hide">
                     {!questions && !isLoading && (
-                        <div className="text-center py-10">
-                            <div className="w-20 h-20 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="text-center py-10 sm:py-16 animate-in fade-in zoom-in duration-500">
+                            <div className="w-24 h-24 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 rotate-3 hover:rotate-0 transition-transform duration-300 shadow-inner">
                                 {activeTab === 'generate'
-                                    ? <Sparkles className="w-10 h-10 text-amber-500" />
-                                    : <BookOpen className="w-10 h-10 text-orange-500" />
+                                    ? <Sparkles className="w-12 h-12 text-amber-500" />
+                                    : <BookOpen className="w-12 h-12 text-orange-500" />
                                 }
                             </div>
-                            <h4 className="font-bold text-xl mb-2">
-                                {activeTab === 'generate' ? 'AI Soru Üretici' : 'Çıkmış Soru Stili'}
+                            <h4 className="font-black text-2xl sm:text-3xl mb-3 tracking-tight">
+                                {activeTab === 'generate' ? 'AI Özgün Sorular' : 'Çıkmış Soru Stili'}
                             </h4>
-                            <p className="text-muted-foreground text-sm mb-8 max-w-sm mx-auto">
+                            <p className="text-muted-foreground text-sm sm:text-base mb-10 max-w-sm mx-auto leading-relaxed">
                                 {activeTab === 'generate'
                                     ? <>Belgenizin içeriğinden <strong>{EXAM_OPTIONS.find(e => e.id === selectedExam)?.label}</strong> formatında 10 ÖSYM tarzı özgün soru üretilir.</>
                                     : <>Belge konusuna uygun, geçmiş yıl sınavlarında çıkmış sorulara benzer <strong>{EXAM_OPTIONS.find(e => e.id === selectedExam)?.label}</strong> tarzı 10 soru hazırlanır.</>
@@ -243,66 +243,118 @@ export function ExamModePanel({ summary, keyPoints, onClose }: ExamModePanelProp
                             <button
                                 onClick={() => fetchQuestions(activeTab)}
                                 className={cn(
-                                    "inline-flex items-center gap-2 text-white px-8 py-3.5 rounded-2xl font-bold transition-all shadow-xl",
+                                    "group relative inline-flex items-center gap-3 text-white px-10 py-4.5 rounded-2xl font-black transition-all shadow-2xl hover:scale-[1.03] active:scale-[0.98]",
                                     activeTab === 'generate'
-                                        ? "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20"
-                                        : "bg-orange-500 hover:bg-orange-600 shadow-orange-500/20"
+                                        ? "bg-amber-500 hover:bg-amber-600 shadow-amber-500/30"
+                                        : "bg-orange-500 hover:bg-orange-600 shadow-orange-500/30"
                                 )}
                             >
-                                {activeTab === 'generate' ? <Sparkles className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
-                                Soruları Üret
+                                <span className="relative z-10 flex items-center gap-2">
+                                    {activeTab === 'generate' ? <Sparkles className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
+                                    Sınavı Başlat
+                                </span>
                             </button>
                         </div>
                     )}
 
                     {isLoading && (
-                        <div className="flex flex-col items-center justify-center py-16 gap-4">
-                            <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
-                            <p className="text-sm text-muted-foreground animate-pulse">
-                                {activeTab === 'past' ? 'Sınav arşivleri taranıyor...' : 'Sorular hazırlanıyor...'}
-                            </p>
+                        <div className="flex flex-col items-center justify-center py-20 gap-6 animate-in fade-in duration-500">
+                            <div className="relative">
+                                <Loader2 className="w-16 h-16 text-amber-500 animate-spin" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-8 h-8 bg-amber-500/20 rounded-full animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="text-center">
+                                <p className="font-bold text-lg mb-1">Soru Kağıdı Hazırlanıyor</p>
+                                <p className="text-sm text-muted-foreground animate-pulse">
+                                    {activeTab === 'past' ? 'Sınav arşivleri taranıyor...' : 'AI soruları dökümandan türetiyor...'}
+                                </p>
+                            </div>
                         </div>
                     )}
 
                     {questions && questions.length > 0 && (
-                        <div className="space-y-6">
-                            {/* Score Bar */}
+                        <div className="space-y-8 pb-10">
+                            {/* Score Hero Section */}
                             {allAnswered && score !== null && (
                                 <div className={cn(
-                                    "p-4 rounded-2xl text-center font-bold animate-in fade-in slide-in-from-top-4",
-                                    score >= 7 ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" :
-                                    score >= 5 ? "bg-amber-500/20 text-amber-600 dark:text-amber-400" :
-                                    "bg-red-500/20 text-red-600 dark:text-red-400"
+                                    "p-8 rounded-[2.5rem] text-center border-2 animate-in fade-in zoom-in slide-in-from-top-8 duration-700 shadow-2xl relative overflow-hidden",
+                                    score >= 8 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400" :
+                                    score >= 5 ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400" :
+                                    "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
                                 )}>
-                                    <Trophy className="w-6 h-6 inline mr-2" />
-                                    {score}/{totalCount} doğru —{' '}
-                                    {score >= 7 ? 'Harika! 🎉' : score >= 5 ? 'İyi! Biraz daha çalışabilirsin.' : 'Daha fazla çalışman gerekiyor.'}
+                                    <div className="absolute top-0 left-0 w-full h-1 opacity-20 bg-gradient-to-r from-transparent via-current to-transparent" />
+                                    
+                                    <div className="mb-4 inline-flex items-center justify-center w-20 h-20 rounded-full bg-background/50 backdrop-blur-sm shadow-xl">
+                                        <Trophy className={cn("w-10 h-10", score >= 7 ? "text-amber-500" : "text-muted-foreground")} />
+                                    </div>
+                                    
+                                    <h5 className="font-black text-4xl mb-2">{score}/{totalCount}</h5>
+                                    <p className="text-lg font-bold mb-6 italic opacity-90">
+                                        {score === totalCount ? 'Kusursuz! Sen bir dahisin! 🏆' :
+                                         score >= 8 ? 'Harika! Başarıya ramak kaldı. 🎉' : 
+                                         score >= 5 ? 'İyi gidiyorsun! Biraz daha odaklanmalısın. 📈' : 
+                                         'Görünüşe göre biraz daha tekrar gerekiyor. 💪'}
+                                    </p>
+                                    
+                                    <div className="flex gap-3 justify-center">
+                                        <button
+                                            onClick={() => fetchQuestions(activeTab)}
+                                            className="px-6 py-3 bg-foreground text-background rounded-xl font-black text-sm hover:scale-105 transition-all shadow-lg"
+                                        >
+                                            Yeniden Dene
+                                        </button>
+                                        <button
+                                            onClick={onClose}
+                                            className="px-6 py-3 bg-secondary text-foreground rounded-xl font-black text-sm hover:scale-105 transition-all"
+                                        >
+                                            Kapat
+                                        </button>
+                                    </div>
                                 </div>
                             )}
 
                             {!allAnswered && (
-                                <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-                                    <span>Cevaplandı: <strong className="text-foreground">{answeredCount}/{totalCount}</strong></span>
-                                    <span className="text-[10px]">{EXAM_OPTIONS.find(e => e.id === selectedExam)?.label} · {activeTab === 'past' ? 'Çıkmış Stili' : 'AI Üretim'}</span>
+                                <div className="sticky top-0 z-20 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 bg-card/80 backdrop-blur-md border-b border-border/50 flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-32 h-2 bg-secondary rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-primary transition-all duration-500" 
+                                                style={{ width: `${(answeredCount / totalCount) * 100}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">
+                                            {answeredCount}/{totalCount} Tamamlandı
+                                        </span>
+                                    </div>
+                                    <span className="text-[10px] font-black px-2 py-1 rounded-md bg-secondary text-muted-foreground uppercase">
+                                        {EXAM_OPTIONS.find(e => e.id === selectedExam)?.label}
+                                    </span>
                                 </div>
                             )}
 
-                            {questions.map((q, i) => (
-                                <QuizCard
-                                    key={i}
-                                    q={q}
-                                    index={i}
-                                    onAnswer={handleAnswer}
-                                    selected={answers[i] ?? null}
-                                />
-                            ))}
+                            <div className="space-y-6">
+                                {questions.map((q, i) => (
+                                    <div key={i} className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${i * 100}ms` }}>
+                                        <QuizCard
+                                            q={q}
+                                            index={i}
+                                            onAnswer={handleAnswer}
+                                            selected={answers[i] ?? null}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
 
-                            <button
-                                onClick={() => fetchQuestions(activeTab)}
-                                className="w-full py-3 rounded-2xl border border-dashed border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors font-medium"
-                            >
-                                Yeni Sorular Üret
-                            </button>
+                            {!allAnswered && (
+                                <button
+                                    onClick={() => fetchQuestions(activeTab)}
+                                    className="w-full py-5 rounded-2xl border-2 border-dashed border-border/50 text-sm text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all font-black uppercase tracking-widest"
+                                >
+                                    Farklı Sorular Getir
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

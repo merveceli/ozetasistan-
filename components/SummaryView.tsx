@@ -432,10 +432,10 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
     const cfg = modeConfig[currentLevel as keyof typeof modeConfig] ?? modeConfig.student;
 
     return (
-        <div className="flex flex-col h-full space-y-6">
+        <div className="flex flex-col min-h-full space-y-4 sm:space-y-6">
             {/* Level Selector */}
-            <div className="flex flex-col items-center gap-2 mb-4">
-                <div className="bg-secondary/50 p-1 rounded-2xl border border-border flex space-x-1">
+            <div className="flex flex-col items-center gap-2 mb-2 sm:mb-4 px-1">
+                <div className="bg-secondary/50 p-1 rounded-2xl border border-border flex flex-wrap justify-center sm:space-x-1">
                     {(['student', 'academic', 'professor'] as Array<keyof typeof modeConfig>).map((level) => {
                         const mc = modeConfig[level];
                         return (
@@ -443,57 +443,59 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
                                 key={level}
                                 onClick={() => onLevelChange(level)}
                                 className={cn(
-                                    "px-4 py-2 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-0.5",
+                                    "px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex flex-col items-center gap-0.5",
                                     currentLevel === level ? mc.activeClass : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                                 )}
                             >
-                                <span className="flex items-center gap-1.5">{mc.icon}{mc.label}</span>
-                                <span className={cn("text-[9px] font-normal opacity-80", currentLevel === level ? "text-white/80" : "text-muted-foreground")}>{mc.sublabel}</span>
+                                <span className="flex items-center gap-1 sm:gap-1.5">{mc.icon}{mc.label}</span>
+                                <span className={cn("text-[8px] sm:text-[9px] font-normal opacity-80", currentLevel === level ? "text-white/80" : "text-muted-foreground")}>{mc.sublabel}</span>
                             </button>
                         );
                     })}
                 </div>
-                <div className={cn("text-[11px] font-semibold px-3 py-1 rounded-full border", cfg.badgeClass)}>
+                <div className={cn("text-[10px] sm:text-[11px] font-semibold px-3 py-1 rounded-full border text-center", cfg.badgeClass)}>
                     {currentLevel === 'student' && '🎒 Öğrenci Modu: Konuyu öğretmen gibi açıklıyoruz'}
                     {currentLevel === 'academic' && '🔬 Akademik Mod: PDF kalitesi ve kaynak yeterliliği değerlendiriliyor'}
                     {currentLevel === 'professor' && '🎓 Profesör Modu: Epistemolojik ve metodolojik derinlemesine analiz'}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Content Area */}
-                <div className="lg:col-span-2 bg-card border border-border rounded-xl p-6 glass-card overflow-y-auto max-h-[80vh]">
-                    <div className="flex space-x-4 border-b border-border mb-6 overflow-x-auto scrollbar-hide">
-                        {[
-                            { id: 'summary', name: 'Özet' },
-                            { id: 'study', name: 'Sınav 🔥' },
-                            { id: 'mind_map', name: 'Zihin Haritası' },
-                            { id: 'critique', name: 'Kritik' },
-                            { id: 'glossary', name: 'Terimler' },
-                            { id: 'citation', name: 'Kaynakça' }
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
-                                className={cn(
-                                    "pb-3 border-b-2 font-medium transition-colors whitespace-nowrap px-2",
-                                    activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                {tab.name}
-                            </button>
-                        ))}
+                <div className="lg:col-span-2 bg-card border border-border rounded-2xl p-4 sm:p-6 glass-card">
+                    <div className="sticky top-0 bg-card/80 backdrop-blur-md z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 mb-6 border-b border-border">
+                        <div className="flex space-x-2 sm:space-x-4 overflow-x-auto scrollbar-hide py-1">
+                            {[
+                                { id: 'summary', name: 'Özet' },
+                                { id: 'study', name: 'Öğrenme 🔥' },
+                                { id: 'mind_map', name: 'Harita' },
+                                { id: 'critique', name: 'Kritik' },
+                                { id: 'glossary', name: 'Sözlük' },
+                                { id: 'citation', name: 'Kaynak' }
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as any)}
+                                    className={cn(
+                                        "pb-2.5 pt-1 border-b-2 font-bold text-xs sm:text-sm transition-all whitespace-nowrap px-1 sm:px-2",
+                                        activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+                                    )}
+                                >
+                                    {tab.name}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {activeTab === 'summary' && (
                         <div className="space-y-6 animate-in fade-in duration-300">
-                            <div className="flex items-center justify-between mb-2">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                                 <h3 className={cn("text-lg font-bold flex items-center", !settings?.darkMode ? "text-zinc-900" : "text-inherit")}>
                                     {currentLevel === 'student' && <><BookOpen className="w-5 h-5 mr-2 text-emerald-500" /> <span className="text-emerald-500">Öğretmen Anlatımı</span></>}
                                     {currentLevel === 'academic' && <><GraduationCap className="w-5 h-5 mr-2 text-blue-500" /> <span className="text-blue-500">Akademik Değerlendirme</span></>}
                                     {currentLevel === 'professor' && <><BrainCircuit className="w-5 h-5 mr-2 text-purple-500" /> <span className="text-purple-500">Derinlemesine Analiz</span></>}
                                 </h3>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => handleCopy(data.summary, 'summary')}
                                         className={cn(
@@ -522,8 +524,8 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
 
                             {/* Özet - öğrenci modunda bölüm başlıkları ile render */}
                             <div className={cn(
-                                "space-y-1 p-5 rounded-2xl transition-colors",
-                                !settings?.darkMode && "bg-slate-50 border border-slate-200 shadow-sm"
+                                "space-y-1 p-4 sm:p-5 rounded-3xl transition-colors mb-6",
+                                !settings?.darkMode ? "bg-slate-50 border border-slate-200 shadow-sm" : "bg-white/5 border border-white/5"
                             )}>
                                 {(data.summary || "").split('\n').map((line, i) => {
                                     const trimmed = line.trim();
@@ -563,7 +565,7 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
                             <BannerAd variant="horizontal" slot={0} className="my-2" />
 
                             {/* Level-specific insight - moda göre renkli kutu */}
-                            <div className={cn("p-5 rounded-2xl border", cfg.insightClass)}>
+                            <div className={cn("p-4 sm:p-5 rounded-3xl border mb-6", cfg.insightClass)}>
                                 <h4 className={cn("font-bold mb-3 flex items-center text-sm", cfg.insightTitleClass)}>
                                     <Sparkles className="w-4 h-4 mr-2" />
                                     {cfg.insightTitle}
@@ -577,7 +579,7 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
                                         return isHeading ? (
                                             <p key={i} className={cn("font-bold text-xs mt-3 first:mt-0 uppercase tracking-wide", cfg.insightTitleClass)}>{trimmed}</p>
                                         ) : (
-                                            <p key={i} className="text-xs text-muted-foreground pl-2 leading-relaxed">{trimmed}</p>
+                                            <p key={i} className="text-sm text-muted-foreground pl-2 leading-relaxed">{trimmed}</p>
                                         );
                                     })}
                                 </div>
@@ -710,96 +712,107 @@ export function SummaryView({ data, isLoading, currentLevel, onLevelChange, onRe
 
                 {/* Sidebar Actions */}
                 <div className="space-y-4">
-                    <div className="bg-card border border-border rounded-2xl p-6">
-                        <h4 className="text-xs font-black uppercase text-muted-foreground mb-4 tracking-widest">Panel Araçları</h4>
-                        <button onClick={generatePresentation} disabled={isGeneratingSlides} className="w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold">
-                            <Presentation className="w-5 h-5 text-purple-500" />
-                            {isGeneratingSlides ? 'Üretiliyor...' : 'Sunum Taslağı'}
-                        </button>
-                        <button
-                            onClick={handleShare}
-                            disabled={isSharing}
-                            className={cn(
-                                "w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold group",
-                                copiedId === 'share-link' && "bg-emerald-500/10 text-emerald-500"
-                            )}
-                        >
-                            <div className={cn(
-                                "w-9 h-9 rounded-xl flex items-center justify-center transition-colors",
-                                copiedId === 'share-link' ? "bg-emerald-500/20" : "bg-orange-500/10 group-hover:bg-orange-500/20"
-                            )}>
-                                {copiedId === 'share-link' ? <Check className="w-4 h-4 text-emerald-500" /> : <Share className="w-4 h-4 text-orange-500" />}
-                            </div>
-                            <div className="text-left">
-                                <p className="text-sm font-bold">{copiedId === 'share-link' ? 'Link Kopyalandı' : 'Analizi Paylaş'}</p>
-                                <p className="text-[10px] text-muted-foreground">{shareUrl ? 'Link Panoda' : 'Herkese açık link'}</p>
-                            </div>
-                        </button>
-                        <button
-                            onClick={() => setShowPodcast(true)}
-                            className="w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold group"
-                        >
-                            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                                <Radio className="w-4 h-4 text-primary" />
-                            </div>
-                            <div className="text-left">
-                                <p className="text-sm font-bold">AI Podcast</p>
-                                <p className="text-[10px] text-muted-foreground">İki sesli diyalog</p>
-                            </div>
-                        </button>
-                        <button
-                            onClick={() => setShowExam(true)}
-                            className="w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold group"
-                        >
-                            <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
-                                <GraduationCap className="w-4 h-4 text-amber-500" />
-                            </div>
-                            <div className="text-left">
-                                <p className="text-sm font-bold">Sınav Modu</p>
-                                <p className="text-[10px] text-muted-foreground">YKS · KPSS · ALES · TUS</p>
-                            </div>
-                        </button>
-                        <button
-                            onClick={() => handleDownload('pdf')}
-                            className="w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold group"
-                        >
-                            <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
-                                <Download className="w-4 h-4 text-red-500" />
-                            </div>
-                            <div className="text-left">
-                                <p className="text-sm font-bold">PDF İndir</p>
-                                <p className="text-[10px] text-muted-foreground">Yazdırılabilir format</p>
-                            </div>
-                        </button>
-                        <button
-                            onClick={() => handleDownload('word')}
-                            className="w-full flex items-center gap-3 p-3 hover:bg-secondary rounded-xl transition-all text-sm font-bold group"
-                        >
-                            <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                                <FileText className="w-4 h-4 text-blue-500" />
-                            </div>
-                            <div className="text-left">
-                                <p className="text-sm font-bold">Word İndir</p>
-                                <p className="text-[10px] text-muted-foreground">Düzenlenebilir metin</p>
-                            </div>
-                        </button>
-                        <div className="mt-3 pt-3 border-t border-border">
+                    <div className="bg-card border border-border rounded-[2rem] p-6 glass-card shadow-sm">
+                        <h4 className="text-[10px] font-black uppercase text-muted-foreground mb-6 tracking-[0.2em]">Panel Araçları</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                            <button 
+                                onClick={generatePresentation} 
+                                disabled={isGeneratingSlides} 
+                                className="flex items-center gap-3 p-3.5 hover:bg-secondary rounded-2xl transition-all text-sm font-bold border border-transparent hover:border-border group"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
+                                    <Presentation className="w-5 h-5 text-purple-500" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-bold">{isGeneratingSlides ? 'Üretiliyor...' : 'Sunum Taslağı'}</p>
+                                    <p className="text-[10px] text-muted-foreground">Akademik slayt seti</p>
+                                </div>
+                            </button>
                             <button
-                                onClick={() => handleCopy(data.summary + '\n\n' + data.key_points.join('\n'), 'all-content')}
+                                onClick={handleShare}
+                                disabled={isSharing}
                                 className={cn(
-                                    "w-full flex items-center gap-3 p-3 rounded-xl transition-all text-sm font-bold group",
-                                    copiedId === 'all-content' ? "bg-emerald-500/10" : "hover:bg-secondary"
+                                    "flex items-center gap-3 p-3.5 hover:bg-secondary rounded-2xl transition-all text-sm font-bold border border-transparent hover:border-border group",
+                                    copiedId === 'share-link' && "bg-emerald-500/10 border-emerald-500/20"
                                 )}
                             >
                                 <div className={cn(
-                                    "w-9 h-9 rounded-xl flex items-center justify-center transition-colors",
-                                    copiedId === 'all-content' ? "bg-emerald-500/20" : "bg-secondary group-hover:bg-secondary/80"
+                                    "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                                    copiedId === 'share-link' ? "bg-emerald-500/20" : "bg-orange-500/10 group-hover:bg-orange-500/20"
                                 )}>
-                                    {copiedId === 'all-content' ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
+                                    {copiedId === 'share-link' ? <Check className="w-5 h-5 text-emerald-500" /> : <Share className="w-5 h-5 text-orange-500" />}
                                 </div>
                                 <div className="text-left">
-                                    <p className={cn("text-sm font-bold", copiedId === 'all-content' && "text-emerald-500")}>Tümünü Kopyala</p>
-                                    <p className="text-[10px] text-muted-foreground">Özet + Ana noktalar</p>
+                                    <p className="text-sm font-bold">{copiedId === 'share-link' ? 'Link Kopyalandı' : 'Analizi Paylaş'}</p>
+                                    <p className="text-[10px] text-muted-foreground">{shareUrl ? 'Link Panoda' : 'Herkese açık link'}</p>
+                                </div>
+                            </button>
+                            <button
+                                onClick={() => setShowPodcast(true)}
+                                className="flex items-center gap-3 p-3.5 hover:bg-secondary rounded-2xl transition-all text-sm font-bold border border-transparent hover:border-border group"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                    <Radio className="w-5 h-5 text-primary" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-bold">AI Podcast</p>
+                                    <p className="text-[10px] text-muted-foreground">İki sesli diyalog</p>
+                                </div>
+                            </button>
+                            <button
+                                onClick={() => setShowExam(true)}
+                                className="flex items-center gap-3 p-3.5 hover:bg-secondary rounded-2xl transition-all text-sm font-bold border border-transparent hover:border-border group"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
+                                    <GraduationCap className="w-5 h-5 text-amber-500" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-bold">Sınav Modu</p>
+                                    <p className="text-[10px] text-muted-foreground">ÖSYM Tarzı Sorular</p>
+                                </div>
+                            </button>
+                            <button
+                                onClick={() => handleDownload('pdf')}
+                                className="flex items-center gap-3 p-3.5 hover:bg-secondary rounded-2xl transition-all text-sm font-bold border border-transparent hover:border-border group"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
+                                    <Download className="w-5 h-5 text-red-500" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-bold">PDF İndir</p>
+                                    <p className="text-[10px] text-muted-foreground">Yazdırılabilir rapor</p>
+                                </div>
+                            </button>
+                            <button
+                                onClick={() => handleDownload('word')}
+                                className="flex items-center gap-3 p-3.5 hover:bg-secondary rounded-2xl transition-all text-sm font-bold border border-transparent hover:border-border group"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                                    <FileText className="w-5 h-5 text-blue-500" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-bold">Word İndir</p>
+                                    <p className="text-[10px] text-muted-foreground">Metin belgesi</p>
+                                </div>
+                            </button>
+                        </div>
+                        <div className="mt-6 pt-6 border-t border-border">
+                            <button
+                                onClick={() => handleCopy(data.summary + '\n\n' + (data.key_points || []).join('\n'), 'all-content')}
+                                className={cn(
+                                    "w-full flex items-center gap-4 p-4 rounded-2xl transition-all text-sm font-bold group",
+                                    copiedId === 'all-content' ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-secondary/50 hover:bg-secondary border border-transparent"
+                                )}
+                            >
+                                <div className={cn(
+                                    "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                                    copiedId === 'all-content' ? "bg-emerald-500/20" : "bg-background shadow-sm"
+                                )}>
+                                    {copiedId === 'all-content' ? <Check className="w-5 h-5 text-emerald-500" /> : <Copy className="w-5 h-5 text-muted-foreground" />}
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-black">{copiedId === 'all-content' ? 'Kopyalandı!' : 'Hızlı Kopyala'}</p>
+                                    <p className="text-[10px] text-muted-foreground">Özet + Tüm Ana Noktalar</p>
                                 </div>
                             </button>
                         </div>

@@ -59,8 +59,6 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
         audioCacheRef.current = {};
     }, [usePremiumTTS]);
 
-
-
     const generatePodcast = async () => {
         setIsGenerating(true);
         toast.loading('Podcast scripti hazırlanıyor...', { id: 'podcast-gen' });
@@ -225,7 +223,10 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
             isPlayingRef.current = true;
             setIsPlaying(true);
             if (audioRef.current) {
-                audioRef.current.play();
+                audioRef.current.play().catch(err => {
+                    console.error("Playback failed:", err);
+                    speakLine(currentLineIndex);
+                });
             } else {
                 speakLine(currentLineIndex);
             }
@@ -238,10 +239,8 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
     const startRecording = async () => {
         try {
             // Sistemin duyduğu sesi kaydet (tarayıcı izni veya sekme izni isteyebilir)
-            // Bu API deneyseldir, kullanıcıya sekme paylaşma penceresi açtırarak 
-            // sadece şu anki 'tab'ın sesini kaydetmesini isteriz, bu sayede stüdyo mp3 üretimi yapmış oluruz.
             const stream = await navigator.mediaDevices.getDisplayMedia({
-                video: true, // video true zorunlu olabiliyor ama gizli yapıyoruz
+                video: true,
                 audio: {
                     echoCancellation: false,
                     noiseSuppression: false,
@@ -321,59 +320,62 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
         a.download = `podcast-script-${Date.now()}.txt`;
         a.click();
         URL.revokeObjectURL(url);
-        toast.success('Script indirildi! Spotify\'a yüklemek için ses kayıt programıyla dinleyip kayıt alabilirsin.');
+        toast.success('Script indirildi!');
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <div className="bg-card border border-border rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-card border-t sm:border border-border rounded-t-[2.5rem] sm:rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-primary/20 to-purple-500/20 p-6 border-b border-border/50">
+                <div className="bg-gradient-to-r from-primary/20 via-purple-500/10 to-primary/20 p-5 sm:p-6 border-b border-border/50 shrink-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center">
-                                <Radio className="w-6 h-6 text-white" />
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
+                                <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                             </div>
                             <div>
-                                <h3 className="font-black text-lg">
+                                <h3 className="font-black text-sm sm:text-lg leading-tight">
                                     {podcastData ? podcastData.podcast_title : 'AI Podcast Üretici'}
                                 </h3>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-[10px] sm:text-xs text-muted-foreground">
                                     {podcastData
                                         ? `${podcastData.duration_estimate} • ${podcastData.dialogue.length} konuşma`
                                         : 'Belgenizden otomatik podcast oluşturur'}
                                 </p>
                             </div>
                         </div>
-                        <button onClick={() => { handlePause(); onClose(); }} className="p-2 hover:bg-secondary rounded-xl transition-colors">
+                        <button 
+                            onClick={() => { handlePause(); onClose(); }} 
+                            className="p-2 hover:bg-secondary rounded-xl transition-all hover:rotate-90"
+                        >
                             <X className="w-5 h-5 text-muted-foreground" />
                         </button>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-6 flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
                     {!podcastData ? (
                         /* Generate State */
-                        <div className="text-center py-8">
-                            <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="text-center py-8 sm:py-12 flex flex-col items-center">
+                            <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
                                 <Mic className="w-10 h-10 text-primary" />
                             </div>
-                            <h4 className="font-bold text-xl mb-2">Türkçe AI Podcast</h4>
-                            <p className="text-muted-foreground text-sm mb-2 max-w-sm mx-auto">
+                            <h4 className="font-black text-2xl mb-2">Türkçe AI Podcast</h4>
+                            <p className="text-muted-foreground text-sm mb-4 max-w-xs mx-auto">
                                 Belgenizi <strong>Sunucu</strong> ve <strong>Uzman Akademisyen</strong> arasındaki sohbet formatında seslendirir.
                             </p>
-                            <p className="text-xs text-muted-foreground/60 mb-8">
-                                NotebookLM'in Audio Overview özelliğinin Türkçe versiyonu 🎧
-                            </p>
+                            <div className="bg-secondary/30 rounded-2xl p-3 text-[10px] text-muted-foreground mb-8">
+                                NotebookLM tarzı ultra gerçekçi Türkçe seslendirme 🎧
+                            </div>
                             <button
                                 onClick={generatePodcast}
                                 disabled={isGenerating}
-                                className="inline-flex items-center gap-2 bg-primary text-white px-8 py-3.5 rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 disabled:opacity-60"
+                                className="inline-flex items-center gap-2 bg-primary text-white px-10 py-4 rounded-2xl font-black hover:bg-primary/90 transition-all shadow-xl shadow-primary/30 disabled:opacity-60 group"
                             >
                                 {isGenerating
                                     ? <><Loader2 className="w-5 h-5 animate-spin" /> Script Hazırlanıyor...</>
-                                    : <><Mic className="w-5 h-5" /> Podcast Oluştur</>
+                                    : <><Mic className="w-5 h-5 group-hover:scale-110 transition-transform" /> Podcast Oluştur</>
                                 }
                             </button>
                         </div>
@@ -419,86 +421,93 @@ export function PodcastPlayer({ summary, keyPoints, title, onClose }: PodcastPla
                             </div>
 
                             {/* Dialogue Script */}
-                            <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1 mb-6 scrollbar-hide">
+                            <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1 mb-8 scrollbar-hide px-1">
                                 {podcastData.dialogue.map((line, i) => (
                                     <div
                                         key={i}
-                                        className={`flex gap-3 p-3 rounded-2xl transition-all duration-300 ${
+                                        className={`flex gap-3 p-4 rounded-2xl transition-all duration-500 ${
                                             currentLineIndex === i
-                                                ? 'bg-primary/15 border border-primary/30 scale-[1.01]'
+                                                ? 'bg-primary/10 border border-primary/20 shadow-sm scale-[1.02]'
                                                 : i < currentLineIndex
-                                                    ? 'opacity-40'
-                                                    : 'opacity-80'
+                                                    ? 'opacity-40 grayscale-[0.5]'
+                                                    : 'opacity-70'
                                         }`}
                                     >
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white font-bold text-xs ${
+                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-white font-bold text-sm shadow-md ${
                                             line.speaker === 'SUNUCU' ? 'bg-emerald-500' : 'bg-purple-500'
                                         }`}>
                                             {line.speaker === 'SUNUCU'
-                                                ? <User className="w-4 h-4" />
-                                                : <GraduationCap className="w-4 h-4" />
+                                                ? <User className="w-5 h-5" />
+                                                : <GraduationCap className="w-5 h-5" />
                                             }
                                         </div>
                                         <div className="flex-1">
-                                            <span className={`text-[10px] font-black uppercase tracking-widest block mb-0.5 ${
+                                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] block mb-1 ${
                                                 line.speaker === 'SUNUCU' ? 'text-emerald-500' : 'text-purple-500'
                                             }`}>{line.speaker}</span>
-                                            <p className="text-sm leading-relaxed">{line.text}</p>
+                                            <p className="text-sm sm:text-base leading-relaxed font-medium">{line.text}</p>
                                         </div>
                                         {currentLineIndex === i && isPlaying && (
-                                            <Volume2 className="w-4 h-4 text-primary animate-pulse shrink-0 mt-1" />
+                                            <div className="flex items-center self-start mt-4">
+                                                <div className="flex gap-0.5">
+                                                    <div className="w-0.5 h-3 bg-primary animate-[bounce_0.6s_infinite]" />
+                                                    <div className="w-0.5 h-3 bg-primary animate-[bounce_0.8s_infinite_0.1s]" />
+                                                    <div className="w-0.5 h-3 bg-primary animate-[bounce_0.7s_infinite_0.2s]" />
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                 ))}
                             </div>
 
                             {/* Controls */}
-                            <div className="flex items-center justify-between border-t border-border/50 pt-4">
-                                <div className="flex flex-col sm:flex-row gap-2">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-border/50 pt-6 mt-auto">
+                                <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar pb-1 sm:pb-0">
                                     <button
                                         onClick={handleDownloadScript}
-                                        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-xl hover:bg-secondary"
+                                        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-all px-4 py-2.5 rounded-xl hover:bg-secondary border border-transparent hover:border-border whitespace-nowrap"
                                     >
                                         <Download className="w-4 h-4" />
-                                        Script İndir
+                                        Script
                                     </button>
                                     <button
                                         onClick={handleDownloadAudio}
-                                        className={`flex items-center gap-2 text-xs font-bold transition-colors px-3 py-2 rounded-xl border ${
+                                        className={`flex items-center gap-2 text-xs font-bold transition-all px-4 py-2.5 rounded-xl border whitespace-nowrap ${
                                             isRecording 
                                                 ? 'bg-red-500/10 text-red-500 border-red-500/20 animate-pulse' 
-                                                : 'text-primary border-primary/20 hover:bg-primary/10'
+                                                : 'text-primary border-primary/10 hover:bg-primary/10 hover:border-primary/20'
                                         }`}
                                     >
                                         <AudioLines className="w-4 h-4" />
-                                        {isRecording ? 'Kaydı Bitir & İndir' : 'Ses Olarak İndir (MP3)'}
+                                        {isRecording ? 'Kaydı Bitir' : 'Ses İndir'}
                                     </button>
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                                    <button
+                                        onClick={() => { handlePause(); setPodcastData(null); setCurrentLineIndex(-1); }}
+                                        className="text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground px-4 py-2.5 rounded-xl hover:bg-secondary transition-all"
+                                    >
+                                        Sıfırla
+                                    </button>
+                                    
                                     {!isPlaying ? (
                                         <button
                                             onClick={currentLineIndex >= 0 ? handleResume : handlePlay}
-                                            className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                                            className="flex-1 sm:flex-none flex items-center justify-center gap-3 bg-primary text-white px-10 py-4 rounded-2xl font-black hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]"
                                         >
-                                            <Play className="w-4 h-4" />
+                                            <Play className="w-5 h-5 fill-current" />
                                             {currentLineIndex >= 0 ? 'Devam Et' : 'Oynat'}
                                         </button>
                                     ) : (
                                         <button
                                             onClick={handlePause}
-                                            className="flex items-center gap-2 bg-secondary text-foreground px-6 py-2.5 rounded-xl font-bold hover:bg-secondary/80 transition-all"
+                                            className="flex-1 sm:flex-none flex items-center justify-center gap-3 bg-secondary text-foreground px-10 py-4 rounded-2xl font-black hover:bg-secondary/80 transition-all hover:scale-[1.02] active:scale-[0.98]"
                                         >
-                                            <Pause className="w-4 h-4" />
+                                            <Pause className="w-5 h-5 fill-current" />
                                             Duraklat
                                         </button>
                                     )}
-                                    <button
-                                        onClick={() => { handlePause(); setPodcastData(null); setCurrentLineIndex(-1); }}
-                                        className="text-xs text-muted-foreground hover:text-foreground px-3 py-2 rounded-xl hover:bg-secondary transition-colors"
-                                    >
-                                        Yeniden Üret
-                                    </button>
                                 </div>
                             </div>
                         </div>
