@@ -26,17 +26,20 @@ export async function POST(request: Request) {
             'application/pdf',
             'text/plain',
             'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg',
+            'image/png',
+            'image/webp'
         ];
         
         const fileExt = file.name.split('.').pop()?.toLowerCase();
-        const allowedExtensions = ['pdf', 'txt', 'doc', 'docx'];
+        const allowedExtensions = ['pdf', 'txt', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'webp'];
 
         // Sadece URL değilse (fiziksel dosya ise) doğrula
         if (type !== 'url') {
             if (!allowedMimeTypes.includes(file.type)) {
                 console.warn(`🚨 Güvenlik Uyarısı: Geçersiz MIME tipi algılandı (${file.type}). Dosya: ${file.name}`);
-                return NextResponse.json({ error: 'Güvenlik ihlali: Sadece PDF, Word veya TXT formatındaki belgelere izin verilmektedir. Zararlı yazılım koruması aktif.' }, { status: 415 });
+                return NextResponse.json({ error: 'Güvenlik ihlali: Sadece PDF, Word, TXT veya Resim (JPG, PNG) formatındaki belgelere izin verilmektedir.' }, { status: 415 });
             }
 
             if (!fileExt || !allowedExtensions.includes(fileExt)) {

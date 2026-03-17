@@ -56,6 +56,13 @@ const toolsNav = [
         color: 'text-emerald-400',
     },
     {
+        name: 'Aralıklı Tekrar',
+        href: '/study',
+        icon: BrainCircuit,
+        badge: 'Beta',
+        color: 'text-pink-400',
+    },
+    {
         name: 'Kaynak Doğrulama',
         href: '/kaynak-dogrulama',
         icon: ShieldCheck,

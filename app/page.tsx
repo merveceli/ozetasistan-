@@ -6,20 +6,35 @@ import { UploadArea } from '@/components/UploadArea';
 import { ActivityList } from '@/components/ActivityList';
 import { StatsCard } from '@/components/StatsCard';
 import { BannerAd } from '@/components/BannerAd';
-import { Clock, BookOpen, Sparkles, MonitorPlay, ArrowRight } from 'lucide-react';
+import { Clock, BookOpen, Sparkles, MonitorPlay, ArrowRight, BrainCircuit } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function Home() {
   const [userName, setUserName] = useState('');
   const [stats, setStats] = useState({
     totalDocuments: 0,
     completedAnalyses: 0,
+    dueCount: 0,
   });
 
   useEffect(() => {
     fetchUserData();
     fetchStats();
+    fetchDueCount();
   }, []);
+
+  const fetchDueCount = async () => {
+    try {
+      const res = await fetch('/api/study/due');
+      if (res.ok) {
+        const data = await res.json();
+        setStats(prev => ({ ...prev, dueCount: data.dueCount || 0 }));
+      }
+    } catch (err) {
+      console.error('Due fetch error', err);
+    }
+  };
 
   const fetchUserData = async () => {
     try {
@@ -40,10 +55,11 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         const completed = data.documents?.filter((d: any) => d.analysis_status === 'completed').length || 0;
-        setStats({
+        setStats(prev => ({
+          ...prev,
           totalDocuments: data.documents?.length || 0,
           completedAnalyses: completed,
-        });
+        }));
       }
     } catch (error) {
       console.error('Failed to fetch stats', error);
@@ -70,6 +86,31 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Aralıklı Tekrar Hatırlatıcı */}
+        {stats.dueCount > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-pink-500/10 border border-pink-500/20 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-6"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-pink-500/20 rounded-2xl flex items-center justify-center text-pink-500 shrink-0">
+                <BrainCircuit className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-pink-500">Tekrar Zamanı!</h3>
+                <p className="text-sm text-muted-foreground">Bugün tekrar etmen gereken <b>{stats.dueCount} kart</b> var. Bilgilerini tazelemeye hazır mısın?</p>
+              </div>
+            </div>
+            <Link 
+              href="/study"
+              className="px-6 py-3 bg-pink-500 text-white font-bold rounded-2xl shadow-lg shadow-pink-500/20 hover:scale-[1.02] transition-all whitespace-nowrap"
+            >
+              Çalışmaya Başla
+            </Link>
+          </motion.div>
+        )}
 
         {/* Presentation Feature (Odak Özellik) */}
         <div className="relative group overflow-hidden bg-gradient-to-br from-indigo-600/20 via-primary/10 to-transparent border border-primary/20 rounded-3xl p-8 transition-all hover:border-primary/40">

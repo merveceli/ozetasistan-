@@ -1,0 +1,118 @@
+﻿
+> asistan@0.1.0 build
+> next build
+
+npm : ÔÜá `eslint` configuration in next.config.ts is no longer supported. See more info here: https://nextjs.org/docs/
+app/api-reference/cli/next#next-lint-options
+At line:1 char:1
++ npm run build 2>&1 | Out-File -FilePath build.log -Encoding utf8
++ ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ÔÜá `eslint` co...xt-lint-options:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ÔÜá Invalid next.config.ts options detected: 
+ÔÜá     Unrecognized key(s) in object: 'eslint'
+ÔÜá See more info here: https://nextjs.org/docs/messages/invalid-next-config
+Ôû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+- Experiments (use with caution):
+  ┬À serverActions
+
+ÔÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/mes
+sages/middleware-to-proxy
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 105s
+  Running TypeScript ...
+  Collecting page data using 3 workers ...
+ÔÜá Using edge runtime on a page currently disables static generation for that page
+  Generating static pages using 3 workers (0/72) ...
+  Generating static pages using 3 workers (18/72) 
+  Generating static pages using 3 workers (36/72) 
+  Generating static pages using 3 workers (54/72) 
+Ô£ô Generating static pages using 3 workers (72/72) in 5.7s
+  Finalizing page optimization ...
+
+Route (app)
+Ôöî Ôùï /
+Ôö£ Ôùï /_not-found
+Ôö£ Ôùï /admin
+Ôö£ Ôùï /admin/analyses
+Ôö£ Ôùï /admin/messages
+Ôö£ Ôùï /admin/payments
+Ôö£ Ôùï /admin/stats
+Ôö£ Ôùï /admin/system
+Ôö£ Ôùï /admin/users
+Ôö£ ãÆ /analyze/[id]
+Ôö£ ãÆ /api/admin/analyses
+Ôö£ ãÆ /api/admin/health
+Ôö£ ãÆ /api/admin/messages
+Ôö£ ãÆ /api/admin/payments
+Ôö£ ãÆ /api/admin/search
+Ôö£ ãÆ /api/admin/stats
+Ôö£ ãÆ /api/admin/stats/charts
+Ôö£ ãÆ /api/admin/users
+Ôö£ ãÆ /api/analyze
+Ôö£ ãÆ /api/chat
+Ôö£ ãÆ /api/chat/messages
+Ôö£ ãÆ /api/chat/sessions
+Ôö£ ãÆ /api/chat/sessions/[sessionId]
+Ôö£ ãÆ /api/compare
+Ôö£ ãÆ /api/contact
+Ôö£ ãÆ /api/cross-read
+Ôö£ ãÆ /api/documents
+Ôö£ ãÆ /api/exam-questions
+Ôö£ ãÆ /api/fact-check
+Ôö£ ãÆ /api/generate-mindmap
+Ôö£ ãÆ /api/generate-podcast
+Ôö£ ãÆ /api/generate-slides
+Ôö£ ãÆ /api/og
+Ôö£ ãÆ /api/quota
+Ôö£ ãÆ /api/share
+Ôö£ ãÆ /api/shared/[id]
+Ôö£ ãÆ /api/synthesize-podcast
+Ôö£ ãÆ /api/test-gemini
+Ôö£ ãÆ /api/upload
+Ôö£ ãÆ /api/user
+Ôö£ ãÆ /api/watch-ad
+Ôö£ ãÆ /api/watch-ad/remaining
+Ôö£ Ôùï /asistan
+Ôö£ Ôùï /asistan/gecmis
+Ôö£ ãÆ /auth-debug
+Ôö£ ãÆ /auth/callback
+Ôö£ Ôùï /auth/login
+Ôö£ Ôùï /auth/signup
+Ôö£ Ôùï /blog
+Ôö£ Ôùï /blog/akademik-makale-nasil-ozetlenir
+Ôö£ Ôùï /blog/flashcard-ile-hizli-ogrenme
+Ôö£ Ôùï /blog/ingilizce-akademik-metin-cevirisi
+Ôö£ Ôùï /blog/kurucunun-hikayesi
+Ôö£ Ôùï /blog/pomodoro-teknigi-ile-ders-calisma
+Ôö£ Ôùï /blog/sinav-kaygisi-nasil-yenilir
+Ôö£ Ôùï /blog/tez-okuma-teknikleri
+Ôö£ Ôùï /blog/yapay-zeka-ile-literatur-taramasi
+Ôö£ Ôùï /blog/yapay-zeka-ile-pdf-analizi
+Ôö£ Ôùï /calisma-merkezi
+Ôö£ Ôùï /capraz-okuma
+Ôö£ Ôùï /compare
+Ôö£ Ôùï /focus-radio
+Ôö£ Ôùï /gizlilik-politikasi
+Ôö£ Ôùï /hakkimizda
+Ôö£ Ôùï /iletisim
+Ôö£ Ôùï /kaynak-dogrulama
+Ôö£ Ôùï /kutuphanem
+Ôö£ Ôùï /landing
+Ôö£ Ôùï /manifest.webmanifest
+Ôö£ Ôùï /robots.txt
+Ôö£ Ôùï /sentez
+Ôö£ Ôùï /settings
+Ôö£ ãÆ /shared/[id]
+Ôö£ Ôùï /sitemap.xml
+Ôö£ Ôùï /sunum-uret
+Ôöö Ôùï /zihin-haritalari
+
+
+ãÆ Proxy (Middleware)
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+

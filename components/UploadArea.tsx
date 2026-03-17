@@ -114,9 +114,13 @@ export function UploadArea() {
 
         setIsUploading(true);
         setActiveMode('file');
+        
+        const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+        const isImage = ['jpg', 'jpeg', 'png', 'webp'].includes(fileExt);
+        
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('type', 'pdf');
+        formData.append('type', isImage ? 'image' : 'pdf');
 
         try {
             const response = await fetch('/api/upload', {
@@ -182,23 +186,59 @@ export function UploadArea() {
     const handleUrlSubmit = async () => {
         if (!urlInput.trim()) return;
         try { new URL(urlInput); } catch { toast.error('Geçerli bir URL girin. (örn: https://...)'); return; }
+        
         setIsUploading(true);
-        const formData = new FormData();
-        const blob = new Blob([urlInput], { type: 'text/plain' });
-        formData.append('file', blob, 'url_link.url');
-        formData.append('type', 'url');
+        const isYouTube = urlInput.includes('youtube.com') || urlInput.includes('youtu.be');
 
         try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-            if (!response.ok) throw new Error('URL ekleme başarısız oldu');
-            const data = await response.json();
-            toast.success('Web sayfası analiz ediliyor...');
-            if (data.document?.id) router.push(`/analyze/${data.document.id}`);
+            if (isYouTube) {
+                toast.loading('YouTube videosu analiz ediliyor (transkript alınıyor)...', { id: 'yt-loading' });
+                const ytResponse = await fetch('/api/youtube', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: urlInput })
+                });
+
+                if (!ytResponse.ok) {
+                    const err = await ytResponse.json();
+                    throw new Error(err.error || 'YouTube bilgileri alınamadı.');
+                }
+
+                const { transcript, title } = await ytResponse.json();
+                
+                // Transkripti metin olarak sisteme kaydet
+                const formData = new FormData();
+                const blob = new Blob([transcript], { type: 'text/plain' });
+                formData.append('file', blob, `${title || 'YouTube Video'}.txt`);
+                formData.append('type', 'txt');
+
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+                
+                if (!response.ok) throw new Error('Video transkripti kaydedilemedi.');
+                const data = await response.json();
+                toast.success('Video başarıyla analiz edildi!', { id: 'yt-loading' });
+                if (data.document?.id) router.push(`/analyze/${data.document.id}`);
+            } else {
+                // Standart URL Analizi
+                const formData = new FormData();
+                const blob = new Blob([urlInput], { type: 'text/plain' });
+                formData.append('file', blob, 'url_link.url');
+                formData.append('type', 'url');
+
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+                if (!response.ok) throw new Error('URL ekleme başarısız oldu');
+                const data = await response.json();
+                toast.success('Web sayfası analiz ediliyor...');
+                if (data.document?.id) router.push(`/analyze/${data.document.id}`);
+            }
         } catch (error: any) {
-            toast.error(error.message || 'Hata oluştu.');
+            toast.error(error.message || 'Hata oluştu.', { id: 'yt-loading' });
         } finally {
             setIsUploading(false);
             setUrlInput('');
@@ -272,7 +312,7 @@ export function UploadArea() {
                 type="file"
                 ref={fileInputRef}
                 className="hidden"
-                accept=".pdf,.doc,.docx,.txt"
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.webp"
                 onChange={handleFileSelect}
             />
 
@@ -283,36 +323,44 @@ export function UploadArea() {
                     <div className="flex items-center space-x-2 mb-2">
                         <span className="text-primary text-xs font-bold uppercase tracking-wider flex items-center">
                             <span className="w-2 h-2 rounded-full bg-primary mr-2 animate-pulse" />
-                            Yapay Zeka Destekli
+                            Zeka Katmanı Aktif
                         </span>
                     </div>
                     <h2 className="text-2xl font-bold mb-2">Zeki Yükleme Alanı</h2>
                     <p className="text-muted-foreground text-sm max-w-lg">
-                        Analiz etmek istediğiniz dokümanı, linki veya ses kaydını buraya bırakın.
+                        Analiz etmek istediğiniz dokümanı, linki, resmi veya ses kaydını buraya bırakın.
                     </p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <UploadOption
                     icon={UploadCloud}
-                    title="PDF veya Dosya"
-                    description="Sürükle veya tıkla"
+                    title="PDF / Belge"
+                    description="PDF, Word veya TXT"
+                    onClick={() => fileInputRef.current?.click()}
+                    isLoading={isUploading && activeMode === 'file'}
+                    userTier={user?.subscription_tier}
+                />
+                <UploadOption
+                    icon={Sparkles}
+                    title="Resim / OCR"
+                    description="El yazısı veya Fotoğraf"
                     onClick={() => fileInputRef.current?.click()}
                     isLoading={isUploading && activeMode === 'file'}
                     userTier={user?.subscription_tier}
                 />
                 <UploadOption
                     icon={Globe}
-                    title="Web Bağlantısı"
-                    description="Makale veya Web URL"
+                    title="Web / YouTube"
+                    description="Makale veya Video URL"
                     userTier={user?.subscription_tier}
                     onClick={() => setActiveMode(activeMode === 'url' ? null : 'url')}
                 />
                 <UploadOption
                     icon={FileText}
                     title="Metin Yapıştır"
-                    description="Doğrudan metin girin"
+                    description="Hızlı analiz"
                     userTier={user?.subscription_tier}
                     onClick={() => setActiveMode(activeMode === 'text' ? null : 'text')}
                 />

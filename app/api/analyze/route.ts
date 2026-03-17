@@ -483,6 +483,33 @@ JSON formatinda don: { "summary": "ozet", "key_points": ["madde 1", "madde 2"], 
         }, { status: 500 });
       }
 
+    } else if (document.file_type === 'image') {
+      try {
+        console.log('🖼️ Processing Image (OCR/Handwriting)...');
+        const arrayBuffer = await fileData.arrayBuffer();
+        const base64 = Buffer.from(arrayBuffer).toString('base64');
+        
+        const ocrPrompt = `Gonderilen resmi/el yazisini cok dikkatli bir sekilde oku. 
+        Eger bu bir el yazisi notuysa, her kelimeyi dogru cevirdiginden emin ol.
+        Okudugun metni temel alarak su analizi yap:
+        
+        ${promptTemplate}`;
+
+        result = await model.generateContent([
+          {
+            inlineData: {
+              mimeType: 'image/jpeg', // Standard for images in Gemini
+              data: base64
+            }
+          },
+          { text: ocrPrompt }
+        ]);
+        console.log('✅ Gemini Image/OCR responded');
+      } catch (imgError: any) {
+        console.error('❌ Image processing error:', imgError);
+        return NextResponse.json({ error: 'Resim/OCR işleme hatası.', details: imgError.message }, { status: 500 });
+      }
+
     } else if (document.file_type === 'url') {
       console.log('🌐 Processing URL...');
       const urlText = (await fileData.text()).trim();

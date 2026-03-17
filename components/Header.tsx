@@ -81,10 +81,10 @@ export function Header() {
                 setSearchLoading(true);
                 setShowSearchResults(true);
                 try {
-                    const response = await fetch(`/api/documents?q=${encodeURIComponent(searchQuery)}`);
+                    const response = await fetch(`/api/search/global?q=${encodeURIComponent(searchQuery)}`);
                     if (response.ok) {
                         const data = await response.json();
-                        setSearchResults(data.documents || []);
+                        setSearchResults(data.results || []);
                     }
                 } catch (error) {
                     console.error('Search error:', error);
@@ -95,7 +95,7 @@ export function Header() {
                 setSearchResults([]);
                 setShowSearchResults(false);
             }
-        }, 300);
+        }, 400);
 
         return () => clearTimeout(delayDebounceFn);
     }, [searchQuery]);
