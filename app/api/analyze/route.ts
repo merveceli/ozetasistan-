@@ -98,39 +98,39 @@ export async function POST(request: Request) {
     let promptTemplate = '';
 
     if (level === 'metadata') {
-      promptTemplate = `Yuklenmiş olan PDF dosyasini analiz et.
-Sadece bu PDF dosyasinin icerigini kullan.
-Dis bilgi kullanma.
+      promptTemplate = `Yüklenmiş olan PDF dosyasını analiz et.
+Sadece bu PDF dosyasının içeriğini kullan.
+Dış bilgi kullanma.
 
-Ciktinin tamami Turkce olmak zorundadir.
-Eger PDF Ingilizce bile olsa, ciktiy mutlaka Turkce uret.
+Çıktının tamamı Türkçe olmak zorundadır.
+Eğer PDF İngilizce bile olsa, çıktıyı mutlaka Türkçe üret.
 
-Asagidaki bilgileri aynen cikar:
-1. Makalenin basligi
+Aşağıdaki bilgileri aynen çıkar:
+1. Makalenin başlığı
 2. Yazar isimleri
-3. Yayin yili (varsa)
-4. Makalenin ilk paragrafinin ilk iki cumlesi
+3. Yayın yılı (varsa)
+4. Makalenin ilk paragrafının ilk iki cümlesi
 
-Eger bu bilgiler PDF den okunamazsa, "error" alanina "PDF icerigi okunamiyor" yaz.
+Eğer bu bilgiler PDF'den okunamazsa, "error" alanına "PDF içeriği okunamıyor" yaz.
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {
-  "title": "Makale basligi",
+  "title": "Makale başlığı",
   "authors": ["Yazar 1", "Yazar 2"],
   "year": "2024",
-  "first_paragraph_intro": "Ilk iki cumle...",
+  "first_paragraph_intro": "İlk iki cümle...",
   "error": null
 }`;
 
     } else if (level === 'deep_analysis') {
-      promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
+      promptTemplate = `Yüklenmiş olan akademik PDF dosyasını analiz et.
 
-Sadece ve sadece bu PDF icerigini kullan.
-Dis bilgi kullanma ve tahmin yapma.
-Ciktinin tamami Turkce olmalidir.
+Sadece ve sadece bu PDF içeriğini kullan.
+Dış bilgi kullanma ve tahmin yapma.
+Çıktının tamamı Türkçe olmalıdır.
 
-Asagidaki basliklar icin kisa maddeler olustur. Her alan icin 2-4 madde yeter.
-Eger bir baslik icin PDF de bilgi yoksa: "Bu bilgi makalede acikca belirtilmemistir." yaz.
+Aşağıdaki başlıklar için kısa maddeler oluştur. Her alan için 2-4 madde yeter.
+Eğer bir başlık için PDF'de bilgi yoksa: "Bu bilgi makalede açıkça belirtilmemiştir." yaz.
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {
@@ -143,13 +143,13 @@ Return ONLY valid JSON (no markdown, no code blocks):
 }`;
 
     } else if (level === 'presentation') {
-      promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
+      promptTemplate = `Yüklenmiş olan akademik PDF dosyasını analiz et.
 
-Sadece bu PDF dosyasinin icerigini kullan. Dis bilgi kullanma, tahmin etme.
-Ciktinin tamami Turkce olmalidir. PDF Ingilizce bile olsa Turkce yaz.
+Sadece bu PDF dosyasının içeriğini kullan. Dış bilgi kullanma, tahmin etme.
+Çıktının tamamı Türkçe olmalıdır. PDF İngilizce bile olsa Türkçe yaz.
 
-Bu PDF e dayanarak TAM OLARAK 10 slayttan olusan profesyonel bir akademik sunum hazirla.
-Her slaytta 3-5 kisa madde olsun.
+Bu PDF'e dayanarak TAM OLARAK 10 slayttan oluşan profesyonel bir akademik sunum hazırla.
+Her slaytta 3-5 kısa madde olsun.
 
 Slayt Akışı:
 1. Başlık Slaytı (Tüm detaylar)
@@ -173,7 +173,7 @@ Her slayt için aşağıdaki JSON yapısını kullan:
       "speaker_notes": "Sunumda söylenecek 2-3 cümlelik not.",
       "visual_suggestion": "İlgili görsel/diyagram tipi.",
       "layout_type": "title | content | comparison | steps | terms | quiz",
-      "image_prompt": "İngilizce görsel üretim promptu."
+      "image_prompt": "English short visual prompt."
     }
   ]
 }
@@ -181,45 +181,45 @@ Her slayt için aşağıdaki JSON yapısını kullan:
 Return ONLY valid JSON (no markdown, no code blocks):`;
 
     } else if (level === 'analysis_package') {
-      promptTemplate = `Yuklenmiş olan akademik PDF dosyasini analiz et.
+      promptTemplate = `Yüklenmiş olan akademik PDF dosyasını analiz et.
 
-Sadece bu PDF icerigini kullan. Dis bilgi kullanma.
-Ciktiyi tamamen Turkce ver.
+Sadece bu PDF içeriğini kullan. Dış bilgi kullanma.
+Çıktıyı tamamen Türkçe ver.
 
-Asagidaki yapida kompakt bir Analiz Paketi uret. Her alan en fazla 2-3 madde icerecek.
+Aşağıdaki yapıda kompakt bir Analiz Paketi üret. Her alan en fazla 2-3 madde içerecek.
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {
-  "analysis_package": "ANALIZ_PAKETI:\\n\\nBaslik: ...\\nYazarlar: ...\\nYil: ...\\n\\nAmac ve Problem: ...\\nYontem: ...\\nVeri: ...\\nBulgular: ...\\nKatki: ...\\nSinirliliklar: ..."
+  "analysis_package": "ANALİZ_PAKETİ:\\n\\nBaşlık: ...\\nYazarlar: ...\\nYıl: ...\\n\\nAmaç ve Problem: ...\\nYöntem: ...\\nVeri: ...\\nBulgular: ...\\nKatkı: ...\\nSınırlılıklar: ..."
 }`;
 
     } else if (level === 'student') {
       // ─── ÖĞRENCİ MODU: Kapsamlı ders notu formatı ───
-      promptTemplate = `Sen cok deneyimli, sevecen ve konuyu gercekten anlatan bir ogretmensin.
-Verilen PDF belgesini, konuyu hic bilmeyen bir lise veya universite ogrencisine sifirdan anlat.
+      promptTemplate = `Sen çok deneyimli, sevecen ve konuyu gerçekten anlatan bir öğretmensin.
+Verilen PDF belgesini, konuyu hiç bilmeyen bir lise veya üniversite öğrencisine sıfırdan anlat.
 
 MUTLAK KURALLAR:
 1. ${langInstruction}
-2. Sadece gecerli JSON uret. Markdown KULLANMA, kod blogu KULLANMA.
-3. JSON icinde satirbaslari icin sadece \\n kullan.
-4. Ozel karakterleri escape et.
+2. Sadece geçerli JSON üret. Markdown KULLANMA, kod bloğu KULLANMA.
+3. JSON içinde satırbaşları için sadece \\n kullan.
+4. Özel karakterleri escape et.
 5. UZUNLUK KURALI: ${lengthInstruction}
 
-OZET YAPISI - summary alani BU SIRAYA GORE yazilmali:
+ÖZET YAPISI - summary alanı BU SIRAYA GÖRE yazılmalı:
 
-GIRIS - konuya giris, neden onemli, hayatta nerede karsilasiyoruz? (en az 2 paragraf)
-TEMEL KAVRAMLAR - PDF deki temel tanimlar ve kavramlar sade dille (her birine ornek ver)
-ANA KONULAR - PDF deki TUM ana baslik ve alt basliklarini tek tek anlat, hic atlama (en buyuk bolum)
-UYGULAMA - bu konu gercek hayatta nerede kullanilir, ornekler
-OZET - akilda kalmasi gereken 3-5 kritik bilgi
+GİRİŞ - konuya giriş, neden önemli, hayatta nerede karşılıyoruz? (en az 2 paragraf)
+TEMEL KAVRAMLAR - PDF'deki temel tanımlar ve kavramlar sade dille (her birine örnek ver)
+ANA KONULAR - PDF'deki TÜM ana başlık ve alt başlıklarını tek tek anlat, hiç atlama (en büyük bölüm)
+UYGULAMA - bu konu gerçek hayatta nerede kullanılır, örnekler
+ÖZET - akılda kalması gereken 3-5 kritik bilgi
 
-Her bolum iki \\n ile ayrilsin. En az 800 kelime olsun. Ogrenciye ders anlatan bir ogretmen gibi yaz.
+Her bölüm iki \\n ile ayrılsın. En az 800 kelime olsun. Öğrenciye ders anlatan bir öğretmen gibi yaz.
 
 Return ONLY valid JSON (no markdown wrapper, no code fences):
 {
-  "summary": "GIRIS:\\n[konuya giris ve neden onemli - 2 paragraf]\\n\\nTEMEL KAVRAMLAR:\\n[temel tanimlar ve aciklamalar - her biri ornekli]\\n\\nANA KONULAR:\\n[PDF deki her bolum tek tek, kapsamli anlatim]\\n\\nUYGULAMA:\\n[gercek hayat ornekleri ve kullanim alanlari]\\n\\nOZET:\\n[akilda kalmasi gerekenler - 3-5 madde]",
+  "summary": "GİRİŞ:\\n[konuya giriş ve neden önemli - 2 paragraf]\\n\\nTEMEL KAVRAMLAR:\\n[temel tanımlar ve açıklamalar - her biri örnekli]\\n\\nANA KONULAR:\\n[PDF'deki her bölüm tek tek, kapsamlı anlatım]\\n\\nUYGULAMA:\\n[gerçek hayat örnekleri ve kullanım alanları]\\n\\nÖZET:\\n[akılda kalması gerekenler - 3-5 madde]",
   "key_points": [
-    "1. kritik nokta - ogrenci icin neden onemli oldugunu yaz",
+    "1. kritik nokta - öğrenci için neden önemli olduğunu yaz",
     "2. kritik nokta",
     "3. kritik nokta",
     "4. kritik nokta",
@@ -228,125 +228,125 @@ Return ONLY valid JSON (no markdown wrapper, no code fences):
     "7. kritik nokta"
   ],
   "glossary": {
-    "Terim 1": "Ogrenci diline cevirilmis aciklama ve gunluk hayat ornegi",
-    "Terim 2": "Aciklama ve ornek",
-    "Terim 3": "Aciklama ve ornek",
-    "Terim 4": "Aciklama ve ornek",
-    "Terim 5": "Aciklama ve ornek"
+    "Terim 1": "Öğrenci diline çevrilmiş açıklama ve günlük hayat örneği",
+    "Terim 2": "Açıklama ve örnek",
+    "Terim 3": "Açıklama ve örnek",
+    "Terim 4": "Açıklama ve örnek",
+    "Terim 5": "Açıklama ve örnek"
   },
   "critique": {
-    "strengths": ["Belgenin ogrenci icin anlasilir yonu 1", "Guclu yon 2", "Guclu yon 3"],
-    "weaknesses": ["Ogrenciyi zorlayabilecek nokta 1", "Eksik nokta 2"],
-    "methodology": "Bu bilgi nasil elde edilmis? Arastirma mi, deney mi? Ogrenci icin anlasılir sekilde acikla."
+    "strengths": ["Belgenin öğrenci için anlaşılır yönü 1", "Güçlü yön 2", "Güçlü yön 3"],
+    "weaknesses": ["Öğrenciyi zorlayabilecek nokta 1", "Eksik nokta 2"],
+    "methodology": "Bu bilgi nasıl elde edilmiş? Araştırma mı, deney mi? Öğrenci için anlaşılır şekilde açıkla."
   },
-  "level_specific_insight": "OGRENCI REHBERI\\n\\nBu Konuyu Anlamak Icin Once Sunlari Bil:\\n- [on bilgi 1]\\n- [on bilgi 2]\\n\\nGunluk Hayatta Nerede Karsilasariz:\\n- [somut ornek 1]\\n- [somut ornek 2]\\n\\nOgrencilerin Sik Yaptigi Hatalar:\\n- [yanilgi 1 ve nasil onlenir]\\n- [yanilgi 2 ve nasil onlenir]\\n\\nSinavda Cikabilecek Soru Tipleri:\\n- [soru tipi 1]\\n- [soru tipi 2]\\n- [soru tipi 3]\\n\\nKonuyu Pekistirmek Icin Ipuclari:\\n- [strateji 1]\\n- [strateji 2]",
+  "level_specific_insight": "ÖĞRENCİ REHBERİ\\n\\nBu Konuyu Anlamak İçin Önce Şunları Bil:\\n- [ön bilgi 1]\\n- [ön bilgi 2]\\n\\nGünlük Hayatta Nerede Karşılaşırız:\\n- [somut örnek 1]\\n- [somut örnek 2]\\n\\nÖğrencilerin Sık Yaptığı Hatalar:\\n- [yanılgı 1 ve nasıl önlenir]\\n- [yanılgı 2 ve nasıl önlenir]\\n\\nSınavda Çıkabilecek Soru Tipleri:\\n- [soru tipi 1]\\n- [soru tipi 2]\\n- [soru tipi 3]\\n\\nKonuyu Pekiştirmek İçin İpuçları:\\n- [strateji 1]\\n- [strateji 2]",
   "mind_map": {
     "name": "Ana Konu",
     "children": [
-      { "name": "Alt Baslik 1", "children": [{ "name": "Detay 1" }, { "name": "Detay 2" }] },
-      { "name": "Alt Baslik 2", "children": [{ "name": "Detay 3" }, { "name": "Detay 4" }] },
-      { "name": "Alt Baslik 3", "children": [{ "name": "Detay 5" }] }
+      { "name": "Alt Başlık 1", "children": [{ "name": "Detay 1" }, { "name": "Detay 2" }] },
+      { "name": "Alt Başlık 2", "children": [{ "name": "Detay 3" }, { "name": "Detay 4" }] },
+      { "name": "Alt Başlık 3", "children": [{ "name": "Detay 5" }] }
     ]
   },
   "citation_metadata": {
-    "title": "Belge Basligi",
+    "title": "Belge Başlığı",
     "author": "Yazar(lar)",
     "year": "2024",
     "doi": "N/A",
-    "publisher": "Yayinci"
+    "publisher": "Yayıncı"
   },
   "study_module": {
     "flashcards": [
-      { "front": "Konu 1 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
-      { "front": "Konu 2 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
-      { "front": "Konu 3 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
-      { "front": "Konu 4 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
-      { "front": "Konu 5 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
-      { "front": "Konu 6 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
-      { "front": "Konu 7 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
-      { "front": "Konu 8 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
-      { "front": "Konu 9 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
-      { "front": "Konu 10 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
-      { "front": "Konu 11 nedir?", "back": "Kisa net cevap ve gunluk ornek" },
-      { "front": "Konu 12 nedir?", "back": "Kisa net cevap ve gunluk ornek" }
+      { "front": "Konu 1 nedir?", "back": "Kısa net cevap ve günlük örnek" },
+      { "front": "Konu 2 nedir?", "back": "Kısa net cevap ve günlük örnek" },
+      { "front": "Konu 3 nedir?", "back": "Kısa net cevap ve günlük örnek" },
+      { "front": "Konu 4 nedir?", "back": "Kısa net cevap ve günlük örnek" },
+      { "front": "Konu 5 nedir?", "back": "Kısa net cevap ve günlük örnek" },
+      { "front": "Konu 6 nedir?", "back": "Kısa net cevap ve günlük örnek" },
+      { "front": "Konu 7 nedir?", "back": "Kısa net cevap ve günlük örnek" },
+      { "front": "Konu 8 nedir?", "back": "Kısa net cevap ve günlük örnek" },
+      { "front": "Konu 9 nedir?", "back": "Kısa net cevap ve günlük örnek" },
+      { "front": "Konu 10 nedir?", "back": "Kısa net cevap ve günlük örnek" },
+      { "front": "Konu 11 nedir?", "back": "Kısa net cevap ve günlük örnek" },
+      { "front": "Konu 12 nedir?", "back": "Kısa net cevap ve günlük örnek" }
     ],
     "quiz": [
-      { "question": "Bilgi sorusu 1?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 0 },
-      { "question": "Kavrama sorusu 2?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 1 },
-      { "question": "Uygulama sorusu 3?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 2 },
-      { "question": "Analiz sorusu 4?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 0 },
-      { "question": "Degerlendirme sorusu 5?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 3 },
-      { "question": "Sentez sorusu 6?", "options": ["A secenegi", "B secenegi", "C secenegi", "D secenegi"], "answer": 1 }
+      { "question": "Bilgi sorusu 1?", "options": ["A seçeneği", "B seçeneği", "C seçeneği", "D seçeneği"], "answer": 0 },
+      { "question": "Kavrama sorusu 2?", "options": ["A seçeneği", "B seçeneği", "C seçeneği", "D seçeneği"], "answer": 1 },
+      { "question": "Uygulama sorusu 3?", "options": ["A seçeneği", "B seçeneği", "C seçeneği", "D seçeneği"], "answer": 2 },
+      { "question": "Analiz sorusu 4?", "options": ["A seçeneği", "B seçeneği", "C seçeneği", "D seçeneği"], "answer": 0 },
+      { "question": "Değerlendirme sorusu 5?", "options": ["A seçeneği", "B seçeneği", "C seçeneği", "D seçeneği"], "answer": 3 },
+      { "question": "Sentez sorusu 6?", "options": ["A seçeneği", "B seçeneği", "C seçeneği", "D seçeneği"], "answer": 1 }
     ]
   }
 }`;
 
     } else if (level === 'academic') {
       // ─── AKADEMİK MOD: PDF kalite değerlendirmesi ───
-      promptTemplate = `Sen akademik bir danisман ve literatur uzmanisın. Verilen PDF belgesini hem icerik hem de akademik kalite acisindan cok yonlu degerlendir.
+      promptTemplate = `Sen akademik bir danışman ve literatür uzmanısın. Verilen PDF belgesini hem içerik hem de akademik kalite açısından çok yönlü değerlendir.
 
 MUTLAK KURALLAR:
 1. ${langInstruction}
-2. Sadece gecerli JSON uret. Markdown kullanma.
-3. JSON icinde satirbaslari icin sadece \\n kullan.
+2. Sadece geçerli JSON üret. Markdown kullanma.
+3. JSON içinde satırbaşları için sadece \\n kullan.
 4. UZUNLUK KURALI: ${lengthInstruction}
 
-AKADEMIK MOD - PDF KALITE DEGERLENDIRMESI:
-Bu mod belgeyi ozetlemekle kalmaz; akademik kalitesini ve yeterlilgini degerlendirir.
+AKADEMİK MOD - PDF KALİTE DEĞERLENDİRMESİ:
+Bu mod belgeyi özetlemekle kalmaz; akademik kalitesini ve yeterlilğini değerlendirir.
 
 Analiz et:
-1. KAYNAK YETERLILIGI - Yeterli referans var mi? Atiflar guncel mi? Kaynak cesitliligi?
-2. KAPSAM - Konu derinlemesine islenmis mi? Literatur bosluklar kapatilmis mi?
-3. METODOLOJİK RIGOR - Yontem uygun mu? Gecerlilik ve guvenilirlik saglanmis mi?
-4. TEORİK CERCEVE - Hangi teoriye dayanıyor? Yeterli mi?
-5. OZGUNLUK - Katki orijinal mi? Alanda neyi one suruyor?
+1. KAYNAK YETERLİLİĞİ - Yeterli referans var mı? Atıflar güncel mi? Kaynak çeşitliliği?
+2. KAPSAM - Konu derinlemesine işlenmiş mi? Literatür boşluklar kapatılmış mı?
+3. METODOLOJİK RIGOR - Yöntem uygun mu? Geçerlilik ve güvenilirlik sağlanmış mı?
+4. TEORİK ÇERÇEVE - Hangi teoriye dayanıyor? Yeterli mi?
+5. ÖZGÜNLÜK - Katkı orijinal mi? Alanda neyi öne sürüyor?
 
-Ozet: Icerik ozeti → Akademik baglam → Guclu ve zayif yonler → Genel degerlendirme (en az 4 paragraf)
+Özet: İçerik özeti → Akademik bağlam → Güçlü ve zayıf yönler → Genel değerlendirme (en az 4 paragraf)
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {
-  "summary": "icerik ozeti paragraf\\n\\nakademik baglam paragraf\\n\\nguclu ve zayif yonler paragraf\\n\\ngenel degerlendirme paragraf",
+  "summary": "içerik özeti paragraf\\n\\nakademik bağlam paragraf\\n\\ngüçlü ve zayıf yönler paragraf\\n\\ngenel değerlendirme paragraf",
   "key_points": [
     "Akademik bulgu 1", "Bulgu 2", "Bulgu 3", "Bulgu 4", "Bulgu 5", "Bulgu 6", "Bulgu 7"
   ],
   "glossary": {
-    "Teknik Terim 1": "Akademik baglamda tanimi ve literaturdeki kullanimi",
-    "Teknik Terim 2": "Tanim ve kullanim",
-    "Teknik Terim 3": "Tanim ve kullanim"
+    "Teknik Terim 1": "Akademik bağlamda tanımı ve literatürdeki kullanımı",
+    "Teknik Terim 2": "Tanım ve kullanım",
+    "Teknik Terim 3": "Tanım ve kullanım"
   },
   "critique": {
-    "strengths": ["Akademik guclu yon 1 - neden?", "Guclu yon 2", "Guclu yon 3"],
-    "weaknesses": ["Akademik zayif yon 1 - nasil giderilebilir?", "Zayif yon 2"],
-    "methodology": "Kullanilan arastirma yontemi, veri toplama ve analiz yaklasimi, validite ve guvenilirlik degerlendirmesi."
+    "strengths": ["Akademik güçlü yön 1 - neden?", "Güçlü yön 2", "Güçlü yön 3"],
+    "weaknesses": ["Akademik zayıf yön 1 - nasıl giderilebilir?", "Zayıf yön 2"],
+    "methodology": "Kullanılan araştırma yöntemi, veri toplama ve analiz yaklaşımı, validite ve güvenilirlik değerlendirmesi."
   },
-  "level_specific_insight": "AKADEMIK DEGERLENDIRME RAPORU\\n\\nKaynak Yeterliligi:\\n[Bu belge yeterli kaynak sunuyor mu? Atiflarin sayisi, guncelligi ve cesitliligi? Eksik kaynaklar?]\\n\\nKapsam ve Derinlik:\\n[Konu yeterince ele alinmis mi? Hangi alt basliklar eksik? Literatur bosluklari ne olcude kapatiliyor?]\\n\\nMetodoloji Degerlendirmesi:\\n[Arastirma deseni uygun mu? Orneklem yeterli mi? İstatistiksel analizler dogru mu?]\\n\\nTeorik Cerceve:\\n[Hangi teorilere dayaniyor? Bu cerceve yeterli mi? Alternatif teorik yaklasimlar var mi?]\\n\\nGenel Akademik Degerlendirme:\\n[Bu belge literatore ne kadar katki sagliyor? Hangi arastirmaci profile hitap ediyor?]",
+  "level_specific_insight": "AKADEMİK DEĞERLENDİRME RAPORU\\n\\nKaynak Yeterliliği:\\n[Bu belge yeterli kaynak sunuyor mu? Atıfların sayısı, güncelliği ve çeşitliliği? Eksik kaynaklar?]\\n\\nKapsam ve Derinlik:\\n[Konu yeterince ele alınmış mı? Hangi alt başlıklar eksik? Literatür boşlukları ne ölçüde kapatılıyor?]\\n\\nMetodoloji Değerlendirmesi:\\n[Araştırma deseni uygun mu? Örneklem yeterli mi? İstatistiksel analizler doğru mu?]\\n\\nTeorik Çerçeve:\\n[Hangi teorilere dayanıyor? Bu çerçeve yeterli mi? Alternatif teorik yaklaşımlar var mı?]\\n\\nGenel Akademik Değerlendirme:\\n[Bu belge literatüre ne kadar katkı sağlıyor? Hangi araştırmacı profile hitap ediyor?]",
   "mind_map": {
-    "name": "Arastirma Konusu",
+    "name": "Araştırma Konusu",
     "children": [
-      { "name": "Arastirma Sorusu", "children": [{ "name": "Alt problem 1" }, { "name": "Alt problem 2" }] },
-      { "name": "Metodoloji", "children": [{ "name": "Yontem" }, { "name": "Veri" }] },
-      { "name": "Bulgular", "children": [{ "name": "Ana bulgu" }, { "name": "Katki" }] }
+      { "name": "Araştırma Sorusu", "children": [{ "name": "Alt problem 1" }, { "name": "Alt problem 2" }] },
+      { "name": "Metodoloji", "children": [{ "name": "Yöntem" }, { "name": "Veri" }] },
+      { "name": "Bulgular", "children": [{ "name": "Ana bulgu" }, { "name": "Katkı" }] }
     ]
   },
   "citation_metadata": {
-    "title": "Belge Basligi",
+    "title": "Belge Başlığı",
     "author": "Yazar(lar)",
     "year": "2024",
     "doi": "N/A",
-    "publisher": "Yayinci"
+    "publisher": "Yayıncı"
   },
   "study_module": {
     "flashcards": [
-      { "front": "Akademik kavram 1", "back": "Literaturdeki tanimi ve bu belgede nasil kullanildigi" },
-      { "front": "Akademik kavram 2", "back": "Tanimi ve kullanimi" },
-      { "front": "Akademik kavram 3", "back": "Tanimi ve kullanimi" },
-      { "front": "Akademik kavram 4", "back": "Tanimi ve kullanimi" },
-      { "front": "Akademik kavram 5", "back": "Tanimi ve kullanimi" },
-      { "front": "Akademik kavram 6", "back": "Tanimi ve kullanimi" },
-      { "front": "Akademik kavram 7", "back": "Tanimi ve kullanimi" },
-      { "front": "Akademik kavram 8", "back": "Tanimi ve kullanimi" },
-      { "front": "Akademik kavram 9", "back": "Tanimi ve kullanimi" },
-      { "front": "Akademik kavram 10", "back": "Tanimi ve kullanimi" }
+      { "front": "Akademik kavram 1", "back": "Literatürdeki tanımı ve bu belgede nasıl kullanıldığı" },
+      { "front": "Akademik kavram 2", "back": "Tanımı ve kullanımı" },
+      { "front": "Akademik kavram 3", "back": "Tanımı ve kullanımı" },
+      { "front": "Akademik kavram 4", "back": "Tanımı ve kullanımı" },
+      { "front": "Akademik kavram 5", "back": "Tanımı ve kullanımı" },
+      { "front": "Akademik kavram 6", "back": "Tanımı ve kullanımı" },
+      { "front": "Akademik kavram 7", "back": "Tanımı ve kullanımı" },
+      { "front": "Akademik kavram 8", "back": "Tanımı ve kullanımı" },
+      { "front": "Akademik kavram 9", "back": "Tanımı ve kullanımı" },
+      { "front": "Akademik kavram 10", "back": "Tanımı ve kullanımı" }
     ],
     "quiz": [
       { "question": "Akademik analitik soru 1?", "options": ["A", "B", "C", "D"], "answer": 0 },
@@ -360,79 +360,79 @@ Return ONLY valid JSON (no markdown, no code blocks):
 
     } else if (level === 'professor') {
       // ─── PROFESÖR MODU: İleri düzey akademik analiz ───
-      promptTemplate = `Sen alaninда uzman, yillarin deneyimine sahip bir profesorsun. Verilen PDF belgesini, meslektasin olan baska bir profesore sunar gibi ileri duzey akademik terminolojiyle analiz et.
+      promptTemplate = `Sen alanında uzman, yılların deneyimine sahip bir profesörsün. Verilen PDF belgesini, meslektaşın olan başka bir profesöre sunar gibi ileri düzey akademik terminolojiyle analiz et.
 
 MUTLAK KURALLAR:
-1. ${langInstruction} Teknik terimler orijinal dilde parantez icinde gosterilebilir.
-2. Sadece gecerli JSON uret. Markdown kullanma.
-3. JSON icinde satirbaslari icin sadece \\n kullan.
+1. ${langInstruction} Teknik terimler orijinal dilde parantez içinde gösterilebilir.
+2. Sadece geçerli JSON üret. Markdown kullanma.
+3. JSON içinde satırbaşları için sadece \\n kullan.
 4. UZUNLUK KURALI: ${lengthInstruction}
 
-PROFESOR MODU - İLERI DUZEY ANALIZ:
-- Epistemolojik cerceve ve ontolojik varsayimlari sorgula
-- Metodolojik paradigma (pozitivizm, yorumsamacilik, elestirel teori) belirle ve elestir
-- Atif agi potansiyeli ve h-endeks etkisini degerlendir
-- Alandaki teorik catismalar baglaminda eseri konumlandir
-- Karsit argümanlar ve alternatif paradigmatik yaklasimlar sun
-- Arastirma boslukları (research gap) ve gelecek arastirma ajandasi ciz
-- İstatistiksel guc analizi, effect size, replikasyon krizi baglaminda degerlendir
+PROFESÖR MODU - İLERİ DÜZEY ANALİZ:
+- Epistemolojik çerçeve ve ontolojik varsayımları sorgula
+- Metodolojik paradigma (pozitivizm, yorumsamacılık, eleştirel teori) belirle ve eleştir
+- Atıf ağı potansiyeli ve h-endeks etkisini değerlendir
+- Alandaki teorik çatışmalar bağlamında eseri konumlandır
+- Karşıt argümanlar ve alternatif paradigmatik yaklaşımlar sun
+- Araştırma boşlukları (research gap) ve gelecek araştırma ajandası çiz
+- İstatistiksel güç analizi, effect size, replikasyon krizi bağlamında değerlendir
 
-Ozet: en az 5 teknik paragraf, akademik terminoloji agirlikli.
+Özet: en az 5 teknik paragraf, akademik terminoloji ağırlıklı.
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {
-  "summary": "Epistemolojik zemin paragraf\\n\\nMetodolojik paradigma paragraf\\n\\nTeorik konumlanma paragraf\\n\\nBulgular ve oncekilerle kiyaslama paragraf\\n\\nAlandaki yansimalar paragraf",
+  "summary": "Epistemolojik zemin paragraf\\n\\nMetodolojik paradigma paragraf\\n\\nTeorik konumlanma paragraf\\n\\nBulgular ve öncekilerle kıyaslama paragraf\\n\\nAlandaki yansımalar paragraf",
   "key_points": [
-    "İleri duzey akademik iddia 1 - teorik cerceve ile birlikte",
+    "İleri düzey akademik iddia 1 - teorik çerçeve ile birlikte",
     "Kritik bulgu 2",
-    "Metodolojik katki 3",
-    "Teorik celisiki 4",
-    "Arastirma boslugu 5",
-    "Atif potansiyeli 6",
+    "Metodolojik katkı 3",
+    "Teorik çelişki 4",
+    "Araştırma boşluğu 5",
+    "Atıf potansiyeli 6",
     "Paradigmatik etkisi 7",
-    "Gelecek arastirma yonu 8"
+    "Gelecek araştırma yönü 8"
   ],
   "glossary": {
-    "Teknik Terim 1 (EN)": "Tanimi, literaturdeki tartisma gecmisi ve bu eserle iliskisi",
-    "Teknik Terim 2 (EN)": "Tanimi ve iliskisi",
-    "Teknik Terim 3 (EN)": "Tanimi ve iliskisi",
-    "Teknik Terim 4 (EN)": "Tanimi ve iliskisi"
+    "Teknik Terim 1 (EN)": "Tanımı, literatürdeki tartışma geçmişi ve bu eserle ilişkisi",
+    "Teknik Terim 2 (EN)": "Tanımı ve ilişkisi",
+    "Teknik Terim 3 (EN)": "Tanımı ve ilişkisi",
+    "Teknik Terim 4 (EN)": "Tanımı ve ilişkisi"
   },
   "critique": {
-    "strengths": ["Epistemolojik tutarlilik - neden?", "Metodolojik guc - hangi acidon?", "Teorik ozgunluk", "Atif degeri"],
-    "weaknesses": ["Metodolojik sinirlilik - hangi paradigmatik acidon?", "İc gecerlilik sorunlari", "Dis gecerlilik kisitlari", "Kavramsal belirsizlikler"],
-    "methodology": "Arastirma paradigmasi (pozitivist/yorumsamaci/karma), orneklem teorisi (purposive/random), veri analiz yaklasimi (tumevariм/tumdengelim), guvenilirlik ve gecerlilik stratejileri, olasi onyargi kaynaklari ve confounding degiskenler."
+    "strengths": ["Epistemolojik tutarlılık - neden?", "Metodolojik güç - hangi açıdan?", "Teorik özgünlük", "Atıf değeri"],
+    "weaknesses": ["Metodolojik sınırlılık - hangi paradigmatik açıdan?", "İç geçerlilik sorunları", "Dış geçerlilik kısıtları", "Kavramsal belirsizlikler"],
+    "methodology": "Araştırma paradigması (pozitivist/yorumsamacı/karma), örneklem teorisi (purposive/random), veri analiz yaklaşımı (tümevarım/tümdengelim), güvenilirlik ve geçerlilik stratejileri, olası önyargı kaynakları ve confounding değişkenler."
   },
-  "level_specific_insight": "PROFESOR MODU - İLERİ DUZEY ANALIZ\\n\\nEpistemolojik Cerceve:\\n[Eserin dayandigı bilgi teorisi? Ontolojik varsayımlar? Paradigma nerede konumlaniyor?]\\n\\nTeorik Catismalar ve Karsit Gorusler:\\n[Bu eser hangi teorilere meydan okuyor? Hangi akademisyenler karsi arguman uretir? Literatur tartismasi?]\\n\\nAtif Agi ve Alan Etkisi:\\n[Atif potansiyeli? Hangi calismalari etkileyecek? h-endeksine katkisi? Hangi dergilerde yayimlanabilir?]\\n\\nMetodolojik Rigor Degerlendirmesi:\\n[Statistical power, effect size, p-value yorumlama, replikasyon krizi baglamı, confounding faktorler]\\n\\nArastirma Boslukları (Research Gap):\\n[Hangi sorular acikta kaliyor? Hangi metodoloji ile takip edilmeli? Interdisciplinary firsatlar?]\\n\\nYayin Stratejisi:\\n[Hangi Q1/Q2 dergilere gonderilebilir? Hangi konferanslar uygun?]",
+  "level_specific_insight": "PROFESÖR MODU - İLERİ DÜZEY ANALİZ\\n\\nEpistemolojik Çerçeve:\\n[Eserin dayandığı bilgi teorisi? Ontolojik varsayımlar? Paradigma nerede konumlanıyor?]\\n\\nTeorik Çatışmalar ve Karşıt Görüşler:\\n[Bu eser hangi teorilere meydan okuyor? Hangi akademisyenler karşı argüman üretir? Literatür tartışması?]\\n\\nAtıf Ağı ve Alan Etkisi:\\n[Atıf potansiyeli? Hangi çalışmaları etkileyecek? h-endeksine katkısı? Hangi dergilerde yayımlanabilir?]\\n\\nMetodolojik Rigor Değerlendirmesi:\\n[Statistical power, effect size, p-value yorumlama, replikasyon krizi bağlamı, confounding faktörler]\\n\\nAraştırma Boşlukları (Research Gap):\\n[Hangi sorular açıkta kalıyor? Hangi metodoloji ile takip edilmeli? Interdisciplinary fırsatlar?]\\n\\nYayın Stratejisi:\\n[Hangi Q1/Q2 dergilere gönderilebilir? Hangi konferanslar uygun?]",
   "mind_map": {
-    "name": "Arastirma Paradigmasi",
+    "name": "Araştırma Paradigması",
     "children": [
-      { "name": "Epistemolojik Zemin", "children": [{ "name": "Ontolojik varsayim" }, { "name": "Paradigma" }] },
-      { "name": "Metodolojik Cerceve", "children": [{ "name": "Arastirma deseni" }, { "name": "Analiz yaklasimi" }] },
-      { "name": "Teorik Katki", "children": [{ "name": "Mevcut teorilerle iliski" }] },
-      { "name": "Arastirma Boslukları", "children": [{ "name": "Takip arastirma yonleri" }] }
+      { "name": "Epistemolojik Zemin", "children": [{ "name": "Ontolojik Varsayım" }, { "name": "Paradigma" }] },
+      { "name": "Metodolojik Çerçeve", "children": [{ "name": "Araştırma Deseni" }, { "name": "Analiz Yaklaşımı" }] },
+      { "name": "Teorik Katkı", "children": [{ "name": "Mevcut Teorilerle İlişki" }] },
+      { "name": "Araştırma Boşlukları", "children": [{ "name": "Takip Araştırma Yönleri" }] }
     ]
   },
   "citation_metadata": {
-    "title": "Belge Basligi",
+    "title": "Belge Başlığı",
     "author": "Yazar(lar)",
     "year": "2024",
     "doi": "N/A",
-    "publisher": "Yayinci"
+    "publisher": "Yayıncı"
   },
   "study_module": {
     "flashcards": [
-      { "front": "İleri duzey kavram 1", "back": "Literaturdeki kullanimi, tartisma tarihi ve bu eserdeki rolu" },
-      { "front": "İleri duzey kavram 2", "back": "Kullanimi ve rolu" },
-      { "front": "İleri duzey kavram 3", "back": "Kullanimi ve rolu" },
-      { "front": "İleri duzey kavram 4", "back": "Kullanimi ve rolu" },
-      { "front": "İleri duzey kavram 5", "back": "Kullanimi ve rolu" },
-      { "front": "İleri duzey kavram 6", "back": "Kullanimi ve rolu" },
-      { "front": "İleri duzey kavram 7", "back": "Kullanimi ve rolu" },
-      { "front": "İleri duzey kavram 8", "back": "Kullanimi ve rolu" }
+      { "front": "İleri düzey kavram 1", "back": "Literatürdeki kullanımı, tartışma tarihi ve bu eserdeki rolü" },
+      { "front": "İleri düzey kavram 2", "back": "Kullanımı ve rolü" },
+      { "front": "İleri düzey kavram 3", "back": "Kullanımı ve rolü" },
+      { "front": "İleri düzey kavram 4", "back": "Kullanımı ve rolü" },
+      { "front": "İleri düzey kavram 5", "back": "Kullanımı ve rolü" },
+      { "front": "İleri düzey kavram 6", "back": "Kullanımı ve rolü" },
+      { "front": "İleri düzey kavram 7", "back": "Kullanımı ve rolü" },
+      { "front": "İleri düzey kavram 8", "back": "Kullanımı ve rolü" }
     ],
     "quiz": [
-      { "question": "İleri duzey analitik soru 1 (sentez/degerlendirme)?", "options": ["A", "B", "C", "D"], "answer": 0 },
+      { "question": "İleri düzey analitik soru 1 (sentez/değerlendirme)?", "options": ["A", "B", "C", "D"], "answer": 0 },
       { "question": "Analitik soru 2?", "options": ["A", "B", "C", "D"], "answer": 1 },
       { "question": "Analitik soru 3?", "options": ["A", "B", "C", "D"], "answer": 2 },
       { "question": "Analitik soru 4?", "options": ["A", "B", "C", "D"], "answer": 3 },

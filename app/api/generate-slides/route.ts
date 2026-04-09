@@ -63,23 +63,30 @@ export async function POST(request: Request) {
             }
         }
 
-        const prompt = `Akademik ANALIZ_PAKETI'ne dayalı 7 slaytlık hızlı Türkçe sunum hazırla. Sadece bu bilgileri kullan.
+        const prompt = `Akademik ANALİZ_PAKETİ'ne dayalı 7-10 slaytlık profesyonel bir Türkçe akademik sunum hazırla. Sadece sağlanan bilgileri kullan, dışarıdan bilgi ekleme.
+
+Çıktı mutlaka geçerli bir JSON formatında olmalıdır.
+
 JSON Yapısı:
 {
   "slides": [
     {
       "slide_number": number,
-      "title": "Kısa Başlık (max 50 kr)",
-      "content": ["Madde 1 (max 70 kr)", "Madde 2", "Madde 3"],
-      "speaker_notes": "1 kısa cümle",
-      "visual_suggestion": "Kısa öneri",
+      "title": "Slayt Başlığı (max 60 karakter)",
+      "content": ["Madde 1 (max 90 karakter)", "Madde 2", "Madde 3", "Madde 4"],
+      "speaker_notes": "Sunum yapan kişi için 1-2 cümlelik açıklama.",
+      "visual_suggestion": "Slayt için görsel önerisi (örn: 'Akış şeması', 'Sonuç grafiği').",
       "layout_type": "title|content|steps|quiz|terms",
-      "image_prompt": "English short prompt"
+      "image_prompt": "English descriptive image generation prompt."
     }
   ]
 }
+
 Not: layout_type 'terms' ise content dizisi "Terim: Açıklama" formatında olmalı.
-ANALIZ_PAKETI: ${analysisPackage.substring(0, 4000)}
+
+ANALİZ_PAKETİ:
+${analysisPackage.substring(0, 5000)}
+
 Return ONLY valid JSON:`;
 
         const result = await model.generateContent(prompt);

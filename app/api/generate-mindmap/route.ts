@@ -7,7 +7,7 @@ export async function POST(request: Request) {
         const { analysisPackage } = await request.json();
 
         if (!analysisPackage) {
-            return NextResponse.json({ error: 'ANALIZ_PAKETI içeriği gereklidir' }, { status: 400 });
+            return NextResponse.json({ error: 'ANALİZ_PAKETİ içeriği gereklidir' }, { status: 400 });
         }
 
         const supabase = await createClient();
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
         }
 
-        const prompt = `Aşağıda bir akademik makaleye ait ANALIZ_PAKETI bulunmaktadır.
+        const prompt = `Aşağıda bir akademik makaleye ait ANALİZ_PAKETİ bulunmaktadır.
 
 SADECE bu analiz paketindeki bilgileri kullan.
 PDF dosyasını tekrar analiz etmeye çalışma.
@@ -26,19 +26,19 @@ Varsayım yapma.
 
 Çıktıyı tamamen Türkçe ver.
 
-Bu analiz paketine dayanarak bir zihin haritası yapısı üret.
+Bu analiz paketine dayanarak profesyonel bir zihin haritası yapısı üret. Her ana dal için en az 3-4 detaylı alt madde ekle.
 
 Zihin haritasının merkezinde çalışmanın genel konusu yer alsın.
 
 Ana dallar şu başlıklara tam olarak karşılık gelsin:
 - Amaç ve Problem
-- Yöntem
-- Veri / Deney ortamı
-- Bulgular
-- Katkı
-- Sınırlılıklar
+- Yöntem ve Metodoloji
+- Veri ve Deney Ortamı
+- Temel Bulgular
+- Akademik Katkı
+- Sınırlılıklar ve Gelecek Çalışmalar
 
-ANALIZ_PAKETI:
+ANALİZ_PAKETİ:
 ${analysisPackage}
 
 Return ONLY valid JSON (no markdown, no code blocks):
